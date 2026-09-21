@@ -1,0 +1,113 @@
+package com.edunest.backend.security.jwt;
+
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
+@Service
+public class JwtService {
+
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+    @Value("${jwt.access-token-expiration}")
+    private long accessTokenExpiration;
+
+    @Value("${jwt.refresh-token-expiration}")
+    private long refreshTokenExpiration;
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public String generateAccessToken(String email) {
+        return buildToken(new HashMap<>(), email, accessTokenExpiration, "access");
+    }
+
+    public String generateRefreshToken(String email) {
+        return buildToken(new HashMap<>(), email, refreshTokenExpiration, "refresh");
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return userDetails.getUsername().equals(claims.getSubject())
+                    && !claims.getExpiration().before(new Date())
+                    && "access".equals(claims.get("typ", String.class));
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    public boolean isRefreshTokenValid(String token, String expectedUsername) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return expectedUsername.equals(claims.getSubject())
+                    && !claims.getExpiration().before(new Date())
+                    && "refresh".equals(claims.get("typ", String.class));
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    private String buildToken(Map<String, Object> extraClaims, String email,
+                              long expiration, String type) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .claims(extraClaims)
+                .subject(email)
+                .claim("typ", type)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(expiration)))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public LocalDateTime getRefreshTokenExpiryDate() {
+        return LocalDateTime.now(ZoneOffset.UTC).plusMillis(refreshTokenExpiration);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        return claimsResolver.apply(extractAllClaims(token));
+    }
+
+    private Claims extractAllClaims(String token) {
+        Jws<Claims> parsed = Jwts.parser()
+                .verifyWith((javax.crypto.SecretKey) getSigningKey())
+                .build()
+                .parseSignedClaims(token);
+        return parsed.getPayload();
+    }
+
+    private Key getSigningKey() {
+        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("JWT_SECRET must be at least 32 bytes");
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return claims.getExpiration() != null && !claims.getExpiration().before(new Date());
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+}
