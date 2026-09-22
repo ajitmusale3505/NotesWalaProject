@@ -72,16 +72,24 @@ public class R2StorageServiceImpl implements StorageService {
     }
 
     @Override
+    public String generatePresignedUrl(String key, Duration duration) {
+        if (duration == null || duration.isNegative() || duration.isZero() || duration.compareTo(Duration.ofHours(12)) > 0) {
+            throw new BadRequestException("Invalid presigned URL duration");
+        }
+        return generatePresignedUrlInternal(key, duration);
+    }
+
+    @Override
     public String generateImageUrl(String key) {
-        return generatePresignedUrl(key, Duration.ofMinutes(15));
+        return generatePresignedUrlInternal(key, Duration.ofMinutes(15));
     }
 
     @Override
     public String generatePublicUrl(String key) {
-        return key == null || key.isBlank() ? null : generatePresignedUrl(key, Duration.ofMinutes(15));
+        return key == null || key.isBlank() ? null : generatePresignedUrlInternal(key, Duration.ofMinutes(15));
     }
 
-    private String generatePresignedUrl(String key, Duration duration) {
+    private String generatePresignedUrlInternal(String key, Duration duration) {
         validateKey(key);
         GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(bucketName).key(key).build();

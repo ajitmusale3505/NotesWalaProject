@@ -59,7 +59,8 @@ public class AdminPutResourceRequest {
 
     private String version;
     private String language;
-    private String tags;
+    @Size(max = 2000) private String tags;
+    @Size(max = 10000) private String metadata;
 
     private boolean downloadable;
     private boolean watermarkEnabled;

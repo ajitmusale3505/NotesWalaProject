@@ -1,6 +1,7 @@
 package com.edunest.backend.modules.storage.service;
 
 import java.io.InputStream;
+import java.time.Duration;
 
 
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +20,8 @@ public interface StorageService {
 
     // Keep this temporarily for thumbnail URLs
     String generatePublicUrl(String key);
+
+    String generatePresignedUrl(String key, Duration duration);
 
     FileStreamResponse getFile(String key);
 

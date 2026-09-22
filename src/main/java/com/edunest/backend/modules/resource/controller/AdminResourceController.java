@@ -117,6 +117,20 @@ public class AdminResourceController {
         return ResponseEntity.ok(response);
     }
     
+    @PostMapping("/{resourceId}/publish")
+    public ResponseEntity<ApiResponse<ResourceResponse>> publish(@PathVariable Long resourceId) {
+        return ResponseEntity.ok(ApiResponse.<ResourceResponse>builder()
+                .success(true).message("Resource published successfully")
+                .data(resourceService.publishResource(resourceId)).build());
+    }
+
+    @PostMapping("/{resourceId}/unpublish")
+    public ResponseEntity<ApiResponse<ResourceResponse>> unpublish(@PathVariable Long resourceId) {
+        return ResponseEntity.ok(ApiResponse.<ResourceResponse>builder()
+                .success(true).message("Resource unpublished successfully")
+                .data(resourceService.unpublishResource(resourceId)).build());
+    }
+
     @PatchMapping("/{resourceId}")
     public ResponseEntity<ApiResponse<ResourceResponse>> patchResource(
             @PathVariable Long resourceId,

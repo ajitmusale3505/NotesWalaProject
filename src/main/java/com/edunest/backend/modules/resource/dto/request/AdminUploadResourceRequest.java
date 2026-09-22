@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import com.edunest.backend.common.enums.AccessType;
 import com.edunest.backend.common.enums.MaterialType;
 import lombok.*;
+import jakarta.validation.constraints.*;
 
 @Getter
 @Setter
@@ -13,7 +14,7 @@ import lombok.*;
 @Builder
 public class AdminUploadResourceRequest {
 
-    private String title;
+    @NotBlank @Size(max = 200) private String title;
     private String slug;
     private String description;
 
@@ -36,7 +37,8 @@ public class AdminUploadResourceRequest {
 
     private String version;
     private String language;
-    private String tags;
+    @Size(max = 2000) private String tags;
+    @Size(max = 10000) private String metadata;
 
     private boolean downloadable;
     private boolean watermarkEnabled;

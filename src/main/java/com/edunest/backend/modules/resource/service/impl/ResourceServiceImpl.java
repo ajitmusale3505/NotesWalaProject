@@ -94,6 +94,8 @@ public class ResourceServiceImpl implements ResourceService {
         Subject subject = subjectRepository.findById(request.getSubjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Subject not found"));
 
+        validateAcademicHierarchy(branch.getUniversity(), null, branch, branch.getAcademicYear(), semester, subject);
+
         Resource resource = Resource.builder()
                 .title(request.getTitle())
                 .slug(uniqueSlug(generateSlug(request.getTitle())))
@@ -309,6 +311,8 @@ public class ResourceServiceImpl implements ResourceService {
             college = collegeRepository.findById(request.getCollegeId())
                     .orElseThrow(() -> new ResourceNotFoundException("College not found"));
         }
+
+        validateAcademicHierarchy(university, college, branch, academicYear, semester, subject);
 
         User uploader = userRepository.findById(SecurityUtils.getCurrentUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
@@ -858,6 +862,9 @@ public class ResourceServiceImpl implements ResourceService {
         resource.setWatermarkEnabled(request.isWatermarkEnabled());
         resource.setActive(request.isActive());
         resource.setPublished(request.isPublished());
+
+        validateAcademicHierarchy(resource.getUniversity(), resource.getCollege(), resource.getBranch(),
+                resource.getAcademicYear(), resource.getSemester(), resource.getSubject());
 
         Resource saved = resourceRepository.save(resource);
 

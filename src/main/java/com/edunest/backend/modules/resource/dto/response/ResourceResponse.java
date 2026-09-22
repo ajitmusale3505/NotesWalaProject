@@ -57,6 +57,7 @@ public class ResourceResponse {
     private String version;
     private String language;
     private String tags;
+    private String metadata;
 
     // Access state
     private boolean purchased;

@@ -81,6 +81,10 @@ public interface ResourceService {
     void trackView(Long resourceId);
     
     void deleteResource(Long resourceId);
+
+    ResourceResponse publishResource(Long resourceId);
+
+    ResourceResponse unpublishResource(Long resourceId);
     
     ResourceResponse adminUploadResource(
             MultipartFile pdfFile,

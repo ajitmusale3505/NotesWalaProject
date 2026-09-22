@@ -30,7 +30,10 @@ import com.edunest.backend.modules.college.entity.College;
         @Index(name = "idx_resource_public", columnList = "active, published"),
         @Index(name = "idx_resource_branch_semester", columnList = "branch_id, semester_id"),
         @Index(name = "idx_resource_subject", columnList = "subject_id"),
-        @Index(name = "idx_resource_material_access", columnList = "material_type, access_type")
+        @Index(name = "idx_resource_material_access", columnList = "material_type, access_type"),
+        @Index(name = "idx_resource_category", columnList = "category_id"),
+        @Index(name = "idx_resource_access", columnList = "access_type"),
+        @Index(name = "idx_resource_published_created", columnList = "published, created_at")
 })
 @Getter
 @Setter
@@ -129,6 +132,9 @@ public class Resource extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String tags;
+
+    @Column(name = "metadata", columnDefinition = "TEXT")
+    private String metadata;
 
     // Status Flags
     @Column(nullable = false)

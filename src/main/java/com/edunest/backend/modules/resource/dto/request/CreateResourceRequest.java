@@ -7,6 +7,7 @@ import com.edunest.backend.common.enums.AccessType;
 import com.edunest.backend.common.enums.MaterialType;
 
 import lombok.*;
+import jakarta.validation.constraints.*;
 
 @Getter
 @Setter
@@ -15,24 +16,25 @@ import lombok.*;
 @Builder
 public class CreateResourceRequest {
 
+    @NotBlank @Size(max = 200)
     private String title;
     private String slug;
     private String description;
     
     private Long collegeId;
 
-    private Long categoryId;
+    @NotNull private Long categoryId;
     private Long universityId;
-    private Long branchId;
-    private Long academicYearId;
-    private Long semesterId;
-    private Long subjectId;
+    @NotNull private Long branchId;
+    @NotNull private Long academicYearId;
+    @NotNull private Long semesterId;
+    @NotNull private Long subjectId;
 
-    private MaterialType materialType;
-    private AccessType accessType;
+    @NotNull private MaterialType materialType;
+    @NotNull private AccessType accessType;
 
-    private BigDecimal price;
-    private BigDecimal discountPrice;
+    @NotNull @DecimalMin("0.00") private BigDecimal price;
+    @DecimalMin("0.00") private BigDecimal discountPrice;
 
     private String fileKey;
     private String previewKey;
@@ -46,7 +48,8 @@ public class CreateResourceRequest {
 
     private String version;
     private String language;
-    private String tags;
+    @Size(max = 2000) private String tags;
+    @Size(max = 10000) private String metadata;
 
     private boolean downloadable;
     private boolean watermarkEnabled;

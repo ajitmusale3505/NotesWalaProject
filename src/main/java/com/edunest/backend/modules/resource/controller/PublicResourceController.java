@@ -1,6 +1,9 @@
 package com.edunest.backend.modules.resource.controller;
 
 import java.util.List;
+import java.math.BigDecimal;
+import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.common.enums.MaterialType;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +41,41 @@ public class PublicResourceController {
                 .success(true)
                 .message("Search completed successfully")
                 .data(resourceService.searchPublicResourcesPage(keyword, page, size))
+                .build());
+    }
+
+
+    @GetMapping("/filter")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<ResourceResponse>>> filter(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long universityId,
+            @RequestParam(required = false) Long collegeId,
+            @RequestParam(required = false) Long branchId,
+            @RequestParam(required = false) Long academicYearId,
+            @RequestParam(required = false) Long semesterId,
+            @RequestParam(required = false) Long subjectId,
+            @RequestParam(required = false) MaterialType materialType,
+            @RequestParam(required = false) AccessType accessType,
+            @RequestParam(required = false) String language,
+            @RequestParam(defaultValue = "false") boolean freeOnly,
+            @RequestParam(defaultValue = "false") boolean discountedOnly,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "newest") String sort,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        var result = resourceService.filterPublicResources(
+                keyword, categoryId, universityId, collegeId, branchId, academicYearId,
+                semesterId, subjectId, materialType, accessType, language,
+                freeOnly, discountedOnly, minPrice, maxPrice, page, size, sort, direction);
+
+        return ResponseEntity.ok(ApiResponse.<org.springframework.data.domain.Page<ResourceResponse>>builder()
+                .success(true)
+                .message("Resources filtered successfully")
+                .data(result)
                 .build());
     }
 
