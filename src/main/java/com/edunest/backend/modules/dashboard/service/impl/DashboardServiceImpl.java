@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.edunest.backend.common.enums.AccessType;
 import com.edunest.backend.modules.dashboard.dto.DashboardResponse;
@@ -30,6 +31,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final ResourceRepository resourceRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public DashboardResponse getDashboard(Long userId) {
 
         UserAcademicProfile profile = profileRepository

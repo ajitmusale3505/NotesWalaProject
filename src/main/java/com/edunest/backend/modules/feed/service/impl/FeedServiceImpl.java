@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.edunest.backend.common.enums.AccessType;
 import com.edunest.backend.modules.feed.dto.response.FeedResponse;
@@ -29,6 +30,7 @@ public class FeedServiceImpl implements FeedService {
     
 
     @Override
+    @Transactional(readOnly = true)
     public FeedResponse getFeed(Long userId) {
 
         UserAcademicProfile profile = profileRepository
