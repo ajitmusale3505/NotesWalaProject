@@ -987,7 +987,9 @@ public class ResourceServiceImpl implements ResourceService {
                 .discountPrice(resource.getDiscountPrice())
 
                 .free(resource.getAccessType() == AccessType.FREE)
-                .discounted(resource.getDiscountPrice() != null)
+                .discounted(resource.getDiscountPrice() != null
+                        && resource.getPrice() != null
+                        && resource.getDiscountPrice().compareTo(resource.getPrice()) < 0)
 
                 .previewPages(resource.getPreviewPages())
                 .pageCount(resource.getPageCount())
@@ -1066,7 +1068,7 @@ public class ResourceServiceImpl implements ResourceService {
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 50);
         return resourceRepository.findByActiveTrueAndPublishedTrue(
-                        org.springframework.data.domain.PageRequest.of(safePage, safeSize))
+                        org.springframework.data.domain.PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt")))
                 .map(this::mapToResponse);
     }
 
@@ -1077,7 +1079,7 @@ public class ResourceServiceImpl implements ResourceService {
         int safeSize = Math.min(Math.max(size, 1), 50);
         String safeKeyword = keyword == null ? "" : keyword.trim();
         return resourceRepository.findByTitleContainingIgnoreCaseAndActiveTrueAndPublishedTrue(
-                        safeKeyword, org.springframework.data.domain.PageRequest.of(safePage, safeSize))
+                        safeKeyword, org.springframework.data.domain.PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt")))
                 .map(this::mapToResponse);
     }
 
