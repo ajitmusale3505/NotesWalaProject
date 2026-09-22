@@ -1,5 +1,6 @@
 package com.edunest.backend.modules.userprofile.dto.request;
 
+import java.math.BigDecimal;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -40,7 +41,7 @@ public class UserAcademicProfileRequest {
     @DecimalMin(value = "0.0", message = "CGPA cannot be negative")
     @DecimalMax(value = "10.0", message = "CGPA cannot exceed 10")
     @Digits(integer = 2, fraction = 2, message = "CGPA can have at most 2 decimal places")
-    private Double cgpa;
+    private BigDecimal cgpa;
 
     @Min(value = 0, message = "Backlog count cannot be negative")
     @Max(value = 100, message = "Backlog count is too large")
