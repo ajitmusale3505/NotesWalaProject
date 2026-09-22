@@ -47,13 +47,6 @@ cloudflare:
     endpoint: ${R2_ENDPOINT}
     bucket: ${R2_BUCKET:zenlearn-pdfs}
 
-payment:
-  razorpay:
-    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET}
-
-  subscription:
-    allow-direct-activation: ${ALLOW_DIRECT_SUBSCRIPTION_ACTIVATION:false}
-
 app:
   bootstrap:
     seed-demo: ${SEED_DEMO_DATA:false}
