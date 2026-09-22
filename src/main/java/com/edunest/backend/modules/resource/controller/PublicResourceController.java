@@ -1,0 +1,112 @@
+package com.edunest.backend.modules.resource.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.edunest.backend.common.response.ApiResponse;
+import com.edunest.backend.modules.resource.dto.response.ResourceResponse;
+import com.edunest.backend.modules.resource.service.ResourceService;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequestMapping("/public/resources")
+@RequiredArgsConstructor
+public class PublicResourceController {
+
+    private final ResourceService resourceService;
+
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<ResourceResponse>>> getPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.<org.springframework.data.domain.Page<ResourceResponse>>builder()
+                .success(true)
+                .message("Public resources fetched successfully")
+                .data(resourceService.getPublicResourcesPage(page, size))
+                .build());
+    }
+
+    @GetMapping("/search/page")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<ResourceResponse>>> searchPage(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.<org.springframework.data.domain.Page<ResourceResponse>>builder()
+                .success(true)
+                .message("Search completed successfully")
+                .data(resourceService.searchPublicResourcesPage(keyword, page, size))
+                .build());
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ResourceResponse>>> getAll() {
+
+        ApiResponse<List<ResourceResponse>> response =
+                ApiResponse.<List<ResourceResponse>>builder()
+                        .success(true)
+                        .message("Public resources fetched successfully")
+                        .data(resourceService.getPublicResources())
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<ResourceResponse>>> search(
+            @RequestParam String keyword) {
+
+        ApiResponse<List<ResourceResponse>> response =
+                ApiResponse.<List<ResourceResponse>>builder()
+                        .success(true)
+                        .message("Search completed successfully")
+                        .data(resourceService.searchPublicResources(keyword))
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/branch/{branchId}")
+    public ResponseEntity<ApiResponse<List<ResourceResponse>>> byBranch(
+            @PathVariable Long branchId) {
+
+        ApiResponse<List<ResourceResponse>> response =
+                ApiResponse.<List<ResourceResponse>>builder()
+                        .success(true)
+                        .message("Branch resources fetched successfully")
+                        .data(resourceService.getPublicResourcesByBranch(branchId))
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/semester/{semesterId}")
+    public ResponseEntity<ApiResponse<List<ResourceResponse>>> bySemester(
+            @PathVariable Long semesterId) {
+
+        ApiResponse<List<ResourceResponse>> response =
+                ApiResponse.<List<ResourceResponse>>builder()
+                        .success(true)
+                        .message("Semester resources fetched successfully")
+                        .data(resourceService.getPublicResourcesBySemester(semesterId))
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/subject/{subjectId}")
+    public ResponseEntity<ApiResponse<List<ResourceResponse>>> bySubject(
+            @PathVariable Long subjectId) {
+
+        ApiResponse<List<ResourceResponse>> response =
+                ApiResponse.<List<ResourceResponse>>builder()
+                        .success(true)
+                        .message("Subject resources fetched successfully")
+                        .data(resourceService.getPublicResourcesBySubject(subjectId))
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+}
