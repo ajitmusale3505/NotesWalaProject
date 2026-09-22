@@ -140,6 +140,8 @@ public class ResourceServiceImpl implements ResourceService {
                 .popularityScore(0.0)
                 .build();
 
+        validatePricing(resource.getAccessType(), resource.getPrice(), resource.getDiscountPrice());
+        normalizePublicationState(resource);
         Resource saved = resourceRepository.save(resource);
 
         return mapToResponse(saved);

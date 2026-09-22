@@ -36,6 +36,7 @@ public class CreateResourceRequest {
     @NotNull @DecimalMin("0.00") private BigDecimal price;
     @DecimalMin("0.00") private BigDecimal discountPrice;
 
+    @NotBlank @Size(max = 500)
     private String fileKey;
     private String previewKey;
 
