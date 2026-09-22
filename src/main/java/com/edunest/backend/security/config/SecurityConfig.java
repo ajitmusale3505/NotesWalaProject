@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers(HttpMethod.GET, "/universities/**", "/colleges/**", "/branches/**",
                         "/academic-years/**", "/semesters/**", "/subjects/**", "/college-branches/**",
-                        "/units/**", "/subscription-plans/**").permitAll()
+                        "/units/**", "/subscription-plans/**", "/categories/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/files/**").hasAnyRole("ADMIN", "CONTRIBUTOR")
                 .anyRequest().authenticated())
