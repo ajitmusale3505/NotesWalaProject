@@ -1017,9 +1017,13 @@ public class ResourceServiceImpl implements ResourceService {
                 .version(resource.getVersion())
                 .language(resource.getLanguage())
                 .tags(resource.getTags())
+                .metadata(resource.getMetadata())
 
                 .purchased(false)
                 .downloadable(resource.isDownloadable())
+                .active(resource.isActive())
+                .published(resource.isPublished())
+                .publishedAt(resource.getPublishedAt())
                 .downloadsCount(resource.getDownloadsCount())
                 .ratingAverage(resource.getRatingAverage())
                 .ratingCount(resource.getRatingCount())
