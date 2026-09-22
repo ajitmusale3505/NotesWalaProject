@@ -55,6 +55,6 @@ public class CreateResourceRequest {
 
     private boolean downloadable;
     private boolean watermarkEnabled;
-    private boolean active;
-    private boolean published;
+    private boolean active = true;
+    private boolean published = false;
 }

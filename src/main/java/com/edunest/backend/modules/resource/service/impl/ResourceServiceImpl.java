@@ -132,8 +132,8 @@ public class ResourceServiceImpl implements ResourceService {
                 .tags(normalizeTags(request.getTags()))
                 .metadata(request.getMetadata())
 
-                .active(true)
-                .published(true)
+                .active(request.isActive())
+                .published(request.isPublished())
 
                 .downloadsCount(0L)
                 .salesCount(0L)
