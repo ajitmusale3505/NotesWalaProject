@@ -1,17 +1,15 @@
 package com.edunest.backend.modules.university.repository;
 
-import java.util.Optional;
-
+import com.edunest.backend.modules.university.entity.University;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import com.edunest.backend.modules.university.entity.University;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface UniversityRepository
-        extends JpaRepository<University, Long> {
-
+public interface UniversityRepository extends JpaRepository<University, Long> {
+    List<University> findAllByActiveTrue();
+    Optional<University> findByIdAndActiveTrue(Long id);
     Optional<University> findByShortCode(String shortCode);
-
     Optional<University> findByName(String name);
 }

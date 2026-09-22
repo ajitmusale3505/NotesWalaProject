@@ -1,31 +1,22 @@
 package com.edunest.backend.modules.branch.repository;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.edunest.backend.modules.branch.entity.Branch;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import com.edunest.backend.modules.branch.entity.Branch;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BranchRepository extends JpaRepository<Branch, Long> {
-
-    @Override
     @EntityGraph(attributePaths = {"university", "academicYear"})
-    List<Branch> findAll();
-
-    @Override
+    List<Branch> findAllByActiveTrue();
     @EntityGraph(attributePaths = {"university", "academicYear"})
-    Optional<Branch> findById(Long id);
-
+    Optional<Branch> findByIdAndActiveTrue(Long id);
     @EntityGraph(attributePaths = {"university", "academicYear"})
-    List<Branch> findByUniversityId(Long universityId);
-
+    List<Branch> findByUniversityIdAndActiveTrue(Long universityId);
     @EntityGraph(attributePaths = {"university", "academicYear"})
-    List<Branch> findByAcademicYearId(Long academicYearId);
-
+    List<Branch> findByAcademicYearIdAndActiveTrue(Long academicYearId);
     @EntityGraph(attributePaths = {"university", "academicYear"})
     Optional<Branch> findByCode(String code);
 }

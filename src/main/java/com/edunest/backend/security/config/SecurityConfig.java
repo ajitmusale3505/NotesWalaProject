@@ -20,46 +20,39 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
+        http.csrf(csrf -> csrf.disable())
             .cors(cors -> {})
-            .headers(headers -> headers
-                    .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny))
+            .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::deny))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/register", "/auth/login", "/auth/refresh-token").permitAll()
-                    .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                    .requestMatchers("/public/**").permitAll()
-                    .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                    .requestMatchers(HttpMethod.GET,
-                            "/universities/**", "/colleges/**", "/branches/**",
-                            "/academic-years/**", "/semesters/**", "/subjects/**",
-                            "/subscription-plans/**").permitAll()
-                    .requestMatchers("/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/files/**").hasAnyRole("ADMIN", "CONTRIBUTOR")
-                    .anyRequest().authenticated())
+                .requestMatchers("/auth/register", "/auth/login", "/auth/refresh-token").permitAll()
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/public/**").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                .requestMatchers(HttpMethod.GET, "/universities/**", "/colleges/**", "/branches/**",
+                        "/academic-years/**", "/semesters/**", "/subjects/**", "/college-branches/**",
+                        "/units/**", "/subscription-plans/**").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/files/**").hasAnyRole("ADMIN", "CONTRIBUTOR")
+                .anyRequest().authenticated())
             .exceptionHandling(exceptions -> exceptions
-                    .authenticationEntryPoint((request, response, authException) -> {
-                        response.setStatus(401);
-                        response.setContentType("application/json");
-                        response.getWriter().write(
-                                "{\"success\":false,\"message\":\"Authentication required\"}");
-                    })
-                    .accessDeniedHandler((request, response, accessDeniedException) -> {
-                        response.setStatus(403);
-                        response.setContentType("application/json");
-                        response.getWriter().write(
-                                "{\"success\":false,\"message\":\"Access denied\"}");
-                    }))
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(401);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Authentication required\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(403);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Access denied\"}");
+                }))
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
