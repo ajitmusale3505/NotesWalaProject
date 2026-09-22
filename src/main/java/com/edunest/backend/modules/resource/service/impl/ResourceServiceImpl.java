@@ -698,7 +698,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         String fileKey = resource.getFileKey();
 
-        return storageService.generatePublicUrl(fileKey);
+        return generateSignedUrl(fileKey, 60);
     }
     
     @Override
@@ -713,7 +713,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 
         trackView(resourceId);
-        return storageService.generatePublicUrl(resource.getFileKey());
+        return generateSignedUrl(resource.getFileKey(), 30);
     }
 
     @Override
