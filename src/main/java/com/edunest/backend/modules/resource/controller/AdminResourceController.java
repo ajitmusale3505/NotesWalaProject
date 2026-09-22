@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.common.enums.DocumentType;
 import com.edunest.backend.common.enums.MaterialType;
 import com.edunest.backend.common.response.ApiResponse;
 import com.edunest.backend.modules.resource.dto.request.AdminUploadResourceRequest;
@@ -52,7 +53,8 @@ public class AdminResourceController {
             @RequestParam Long semesterId,
             @RequestParam Long subjectId,
 
-            @RequestParam MaterialType materialType,
+            @RequestParam DocumentType documentType,
+            @RequestParam(required = false) MaterialType materialType,
             @RequestParam AccessType accessType,
 
             @RequestParam BigDecimal price,
@@ -84,6 +86,7 @@ public class AdminResourceController {
                         .academicYearId(academicYearId)
                         .semesterId(semesterId)
                         .subjectId(subjectId)
+                        .documentType(documentType)
                         .materialType(materialType)
                         .accessType(accessType)
                         .price(price)

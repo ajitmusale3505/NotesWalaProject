@@ -3,6 +3,7 @@ package com.edunest.backend.modules.resource.controller;
 import java.util.List;
 import java.math.BigDecimal;
 import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.common.enums.DocumentType;
 import com.edunest.backend.common.enums.MaterialType;
 
 import org.springframework.http.ResponseEntity;
@@ -55,6 +56,7 @@ public class PublicResourceController {
             @RequestParam(required = false) Long academicYearId,
             @RequestParam(required = false) Long semesterId,
             @RequestParam(required = false) Long subjectId,
+            @RequestParam(required = false) DocumentType documentType,
             @RequestParam(required = false) MaterialType materialType,
             @RequestParam(required = false) AccessType accessType,
             @RequestParam(required = false) String language,
@@ -68,7 +70,7 @@ public class PublicResourceController {
             @RequestParam(defaultValue = "desc") String direction) {
 
         var result = resourceService.filterPublicResources(
-                keyword, categoryId, universityId, collegeId, branchId, academicYearId,
+                keyword, documentType, categoryId, universityId, collegeId, branchId, academicYearId,
                 semesterId, subjectId, materialType, accessType, language,
                 freeOnly, discountedOnly, minPrice, maxPrice, page, size, sort, direction);
 
