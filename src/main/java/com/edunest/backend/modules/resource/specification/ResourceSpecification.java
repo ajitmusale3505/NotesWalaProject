@@ -57,9 +57,9 @@ public final class ResourceSpecification {
             if (hasText(language)) predicate = cb.and(predicate, cb.equal(cb.lower(root.get("language")), language.trim().toLowerCase(Locale.ROOT)));
             if (Boolean.TRUE.equals(freeOnly)) predicate = cb.and(predicate, cb.equal(root.get("accessType"), AccessType.FREE));
             if (Boolean.TRUE.equals(discountedOnly)) predicate = cb.and(predicate,
-                    cb.and(cb.isNotNull(root.get("discountPrice")), cb.lessThan(root.get("discountPrice"), root.get("price"))));
-            if (minPrice != null) predicate = cb.and(predicate, cb.greaterThanOrEqualTo(root.get("price"), minPrice));
-            if (maxPrice != null) predicate = cb.and(predicate, cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+                    cb.and(cb.isNotNull(root.get("discountPrice")), cb.lessThan(root.<BigDecimal>get("discountPrice"), root.<BigDecimal>get("price"))));
+            if (minPrice != null) predicate = cb.and(predicate, cb.greaterThanOrEqualTo(root.<BigDecimal>get("price"), minPrice));
+            if (maxPrice != null) predicate = cb.and(predicate, cb.lessThanOrEqualTo(root.<BigDecimal>get("price"), maxPrice));
 
             return predicate;
         };
