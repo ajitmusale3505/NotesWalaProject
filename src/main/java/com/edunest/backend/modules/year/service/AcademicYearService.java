@@ -2,46 +2,45 @@ package com.edunest.backend.modules.year.service;
 
 import com.edunest.backend.common.exception.ResourceNotFoundException;
 import com.edunest.backend.common.util.PublicIdUtils;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
 import com.edunest.backend.modules.year.dto.AcademicYearResponse;
 import com.edunest.backend.modules.year.entity.AcademicYear;
 import com.edunest.backend.modules.year.repository.AcademicYearRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 public class AcademicYearService {
-
     private final AcademicYearRepository academicYearRepository;
-
     public AcademicYearService(AcademicYearRepository academicYearRepository) {
         this.academicYearRepository = academicYearRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<AcademicYearResponse> getAllAcademicYears() {
-        return academicYearRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        return academicYearRepository.findAllByActiveTrue().stream().map(this::mapToResponse).toList();
     }
 
+    @Transactional(readOnly = true)
     public AcademicYearResponse getAcademicYearById(Long id) {
-        AcademicYear academicYear = academicYearRepository.findById(id)
+        return academicYearRepository.findByIdAndActiveTrue(id).map(this::mapToResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Academic Year not found"));
-
-        return mapToResponse(academicYear);
     }
 
-    private AcademicYearResponse mapToResponse(AcademicYear academicYear) {
+    @Transactional(readOnly = true)
+    public List<AcademicYearResponse> getAcademicYearsByUniversityId(Long universityId) {
+        return academicYearRepository.findByUniversityIdAndActiveTrue(universityId)
+                .stream().map(this::mapToResponse).toList();
+    }
+
+    private AcademicYearResponse mapToResponse(AcademicYear year) {
         return AcademicYearResponse.builder()
-                .id(PublicIdUtils.academicYearId(academicYear.getId()))
-                .name(academicYear.getName())
-                .code(academicYear.getCode())
-                .startYear(academicYear.getStartYear())
-                .endYear(academicYear.getEndYear())
-                .active(academicYear.isActive())
+                .id(PublicIdUtils.academicYearId(year.getId()))
+                .name(year.getName()).code(year.getCode())
+                .startYear(year.getStartYear()).endYear(year.getEndYear())
+                .active(year.isActive())
+                .universityId(year.getUniversity() == null ? null : PublicIdUtils.universityId(year.getUniversity().getId()))
+                .universityName(year.getUniversity() == null ? null : year.getUniversity().getName())
                 .build();
     }
 }

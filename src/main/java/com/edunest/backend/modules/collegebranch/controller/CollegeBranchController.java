@@ -1,32 +1,27 @@
 package com.edunest.backend.modules.collegebranch.controller;
 
-import java.util.List;
-
-import org.springframework.web.bind.annotation.*;
-
 import com.edunest.backend.common.util.PublicIdUtils;
 import com.edunest.backend.modules.collegebranch.dto.CollegeBranchResponse;
 import com.edunest.backend.modules.collegebranch.service.CollegeBranchService;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/college-branches")
 public class CollegeBranchController {
-
     private final CollegeBranchService service;
-
-    public CollegeBranchController(CollegeBranchService service) {
-        this.service = service;
-    }
+    public CollegeBranchController(CollegeBranchService service) { this.service = service; }
 
     @GetMapping
-    public List<CollegeBranchResponse> getAll() {
-        return service.getAll();
-    }
+    public List<CollegeBranchResponse> getAll() { return service.getAll(); }
 
     @GetMapping("/college/{collegeId}")
-    public List<CollegeBranchResponse> getByCollege(
-            @PathVariable String collegeId) {
-        return service.getByCollegeId(
-                PublicIdUtils.parseCollegeId(collegeId));
+    public List<CollegeBranchResponse> getByCollege(@PathVariable String collegeId) {
+        return service.getByCollegeId(PublicIdUtils.parseCollegeId(collegeId));
+    }
+
+    @GetMapping("/branch/{branchId}")
+    public List<CollegeBranchResponse> getByBranch(@PathVariable String branchId) {
+        return service.getByBranchId(PublicIdUtils.parseBranchId(branchId));
     }
 }
