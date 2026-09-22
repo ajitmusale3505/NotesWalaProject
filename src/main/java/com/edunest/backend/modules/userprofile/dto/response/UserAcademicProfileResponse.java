@@ -1,5 +1,6 @@
 package com.edunest.backend.modules.userprofile.dto.response;
 
+import java.math.BigDecimal;
 import lombok.*;
 
 @Getter
@@ -25,7 +26,7 @@ public class UserAcademicProfileResponse {
     private String rollNumber;
     private String division;
     private Integer graduationYear;
-    private Double cgpa;
+    private BigDecimal cgpa;
     private Integer backlogCount;
     private int profileCompletionPercentage;
     private boolean profileCompleted;
