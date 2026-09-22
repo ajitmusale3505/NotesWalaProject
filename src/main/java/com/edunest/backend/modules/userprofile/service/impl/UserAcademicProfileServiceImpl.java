@@ -25,6 +25,7 @@ import com.edunest.backend.modules.year.repository.AcademicYearRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Locale;
 
 @Service
@@ -210,7 +211,7 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
 
     private void applyProfileData(UserAcademicProfile profile, AcademicReferences references,
                                   String rollNumber, String division, Integer graduationYear,
-                                  Double cgpa, Integer backlogCount) {
+                                  BigDecimal cgpa, Integer backlogCount) {
         profile.setUniversity(references.university());
         profile.setCollege(references.college());
         profile.setBranch(references.branch());
