@@ -64,6 +64,7 @@ public class AdminResourceController {
             @RequestParam(required = false) String version,
             @RequestParam(required = false) String language,
             @RequestParam(required = false) String tags,
+            @RequestParam(required = false) String metadata,
 
             @RequestParam boolean downloadable,
             @RequestParam boolean watermarkEnabled,
@@ -92,6 +93,7 @@ public class AdminResourceController {
                         .version(version)
                         .language(language)
                         .tags(tags)
+                        .metadata(metadata)
                         .downloadable(downloadable)
                         .watermarkEnabled(watermarkEnabled)
                         .active(active)
