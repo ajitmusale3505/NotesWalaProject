@@ -3,6 +3,7 @@ package com.edunest.backend.modules.resource.dto.request;
 import java.math.BigDecimal;
 
 import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.common.enums.DocumentType;
 import com.edunest.backend.common.enums.MaterialType;
 
 import jakarta.validation.constraints.NotNull;
@@ -44,6 +45,7 @@ public class AdminPutResourceRequest {
     private Long subjectId;
 
     @NotNull
+    @NotNull private DocumentType documentType;
     private MaterialType materialType;
 
     @NotNull

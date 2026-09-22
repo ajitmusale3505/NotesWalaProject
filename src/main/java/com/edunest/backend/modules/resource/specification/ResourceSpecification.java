@@ -1,6 +1,7 @@
 package com.edunest.backend.modules.resource.specification;
 
 import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.common.enums.DocumentType;
 import com.edunest.backend.common.enums.MaterialType;
 import com.edunest.backend.modules.resource.entity.Resource;
 import org.springframework.data.jpa.domain.Specification;
@@ -15,6 +16,7 @@ public final class ResourceSpecification {
 
     public static Specification<Resource> publicFilter(
             String keyword,
+            DocumentType documentType,
             Long categoryId,
             Long universityId,
             Long collegeId,
@@ -45,6 +47,7 @@ public final class ResourceSpecification {
                         cb.like(cb.lower(root.get("language")), like)
                 ));
             }
+            if (documentType != null) predicate = cb.and(predicate, cb.equal(root.get("documentType"), documentType));
             if (categoryId != null) predicate = cb.and(predicate, cb.equal(root.get("category").get("id"), categoryId));
             if (universityId != null) predicate = cb.and(predicate, cb.equal(root.get("university").get("id"), universityId));
             if (collegeId != null) predicate = cb.and(predicate, cb.equal(root.get("college").get("id"), collegeId));
@@ -67,7 +70,7 @@ public final class ResourceSpecification {
 
     public static Specification<Resource> filter(
             String keyword, Long branchId, Long semesterId, Long subjectId, MaterialType materialType) {
-        return publicFilter(keyword, null, null, null, branchId, null, semesterId, subjectId,
+        return publicFilter(keyword, null, null, null, null, branchId, null, semesterId, subjectId,
                 materialType, null, null, null, null, null, null);
     }
 

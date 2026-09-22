@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 
 import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.common.enums.DocumentType;
 import com.edunest.backend.common.enums.MaterialType;
 import com.edunest.backend.common.enums.ResourceStatus;
 import com.edunest.backend.common.entity.BaseEntity;
@@ -89,6 +90,10 @@ public class Resource extends BaseEntity {
     private Subject subject;
 
     // Resource Type
+    @Enumerated(EnumType.STRING)
+    @Column(name = "document_type")
+    private DocumentType documentType;
+
     @Enumerated(EnumType.STRING)
     private MaterialType materialType;
 

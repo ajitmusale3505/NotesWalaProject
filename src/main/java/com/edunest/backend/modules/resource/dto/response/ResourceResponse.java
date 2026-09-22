@@ -3,6 +3,7 @@ package com.edunest.backend.modules.resource.dto.response;
 import java.math.BigDecimal;
 
 import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.common.enums.DocumentType;
 import com.edunest.backend.common.enums.MaterialType;
 
 import lombok.*;
@@ -30,6 +31,7 @@ public class ResourceResponse {
     private String collegeName;
 
     // Type
+    private DocumentType documentType;
     private MaterialType materialType;
     private AccessType accessType;
 

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 
 import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.common.enums.DocumentType;
 import com.edunest.backend.common.enums.MaterialType;
 
 import lombok.*;

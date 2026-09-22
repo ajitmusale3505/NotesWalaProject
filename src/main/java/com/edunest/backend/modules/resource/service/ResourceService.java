@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 
 
 import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.common.enums.DocumentType;
 import com.edunest.backend.common.enums.MaterialType;
 import com.edunest.backend.modules.resource.dto.request.CreateResourceRequest;
 import com.edunest.backend.modules.resource.dto.response.ResourceAccessResponse;
@@ -56,6 +57,7 @@ public interface ResourceService {
 
     Page<ResourceResponse> filterPublicResources(
             String keyword,
+            DocumentType documentType,
             Long categoryId,
             Long universityId,
             Long collegeId,

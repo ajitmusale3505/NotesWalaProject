@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
  
 
 import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.common.enums.DocumentType;
 import com.edunest.backend.common.enums.MaterialType;
 import com.edunest.backend.common.enums.ResourceStatus;
 import com.edunest.backend.modules.branch.entity.Branch;
@@ -109,6 +110,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .semester(semester)
                 .subject(subject)
                 
+                .documentType(request.getDocumentType())
                 .materialType(request.getMaterialType())
                 .accessType(request.getAccessType())
                 .status(request.isPublished() ? ResourceStatus.APPROVED : ResourceStatus.DRAFT)
@@ -228,6 +230,9 @@ public class ResourceServiceImpl implements ResourceService {
             resource.setSubject(subject);
         }
 
+        if (request.getDocumentType() != null) {
+            resource.setDocumentType(request.getDocumentType());
+        }
         if (request.getMaterialType() != null) {
             resource.setMaterialType(request.getMaterialType());
         }
@@ -355,6 +360,7 @@ public class ResourceServiceImpl implements ResourceService {
                     .college(college)
                     .semester(semester)
                     .subject(subject)
+                    .documentType(request.getDocumentType())
                     .materialType(request.getMaterialType())
                     .accessType(request.getAccessType())
                     .price(request.getPrice())
@@ -923,7 +929,7 @@ public class ResourceServiceImpl implements ResourceService {
         if (request.getTitle() == null || request.getTitle().isBlank() || request.getTitle().length() > 200) {
             throw new IllegalArgumentException("Title is required and must be at most 200 characters");
         }
-        if (request.getMaterialType() == null || request.getAccessType() == null) {
+        if (request.getDocumentType() == null || request.getAccessType() == null) {
             throw new IllegalArgumentException("Material type and access type are required");
         }
         if (request.getPrice() == null || request.getPrice().signum() < 0) {
@@ -972,6 +978,7 @@ public class ResourceServiceImpl implements ResourceService {
                         ? resource.getSubject().getName()
                         : null)
 
+                .documentType(resource.getDocumentType())
                 .materialType(resource.getMaterialType())
                 .accessType(resource.getAccessType())
 
@@ -1071,7 +1078,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public org.springframework.data.domain.Page<ResourceResponse> filterPublicResources(
-            String keyword, Long categoryId, Long universityId, Long collegeId, Long branchId,
+            String keyword, DocumentType documentType, Long categoryId, Long universityId, Long collegeId, Long branchId,
             Long academicYearId, Long semesterId, Long subjectId, MaterialType materialType,
             AccessType accessType, String language, Boolean freeOnly, Boolean discountedOnly,
             java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice,
@@ -1092,7 +1099,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         return resourceRepository.findAll(
                 ResourceSpecification.publicFilter(
-                        keyword, categoryId, universityId, collegeId, branchId, academicYearId,
+                        keyword, documentType, categoryId, universityId, collegeId, branchId, academicYearId,
                         semesterId, subjectId, materialType, accessType, language, freeOnly,
                         discountedOnly, minPrice, maxPrice),
                 PageRequest.of(safePage, safeSize, Sort.by(sortDirection, property)))
