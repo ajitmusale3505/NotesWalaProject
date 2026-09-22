@@ -1,5 +1,7 @@
 package com.edunest.backend.modules.userprofile.entity;
 
+import java.math.BigDecimal;
+
 import com.edunest.backend.common.entity.BaseEntity;
 import com.edunest.backend.modules.branch.entity.Branch;
 import com.edunest.backend.modules.college.entity.College;
@@ -66,7 +68,7 @@ public class UserAcademicProfile extends BaseEntity {
     private Integer graduationYear;
 
     @Column(precision = 4, scale = 2)
-    private Double cgpa;
+    private BigDecimal cgpa;
 
     @Column(name = "backlog_count")
     private Integer backlogCount;
