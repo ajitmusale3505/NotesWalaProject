@@ -497,8 +497,11 @@ public class ResourceServiceImpl implements ResourceService {
             Long resourceId) {
 
         Resource resource = resourceRepository.findById(resourceId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Resource not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
+
+        if (!resource.isActive() || !resource.isPublished()) {
+            throw new ResourceNotFoundException("Resource not available");
+        }
 
         AccessType accessType = resource.getAccessType();
 
@@ -782,6 +785,9 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Resource not found"));
 
+        if (!resource.isActive() || !resource.isPublished()) {
+            throw new ResourceNotFoundException("Resource not available");
+        }
         if (resource.getPreviewKey() == null || resource.getPreviewKey().isBlank()) {
             throw new BadRequestException("Preview not available");
         }
@@ -1057,7 +1063,9 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public List<ResourceResponse> getPublicResources() {
         return resourceRepository
-                .findByActiveTrueAndPublishedTrue()
+                .findByActiveTrueAndPublishedTrue(
+                        PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "createdAt")))
+                .getContent()
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
