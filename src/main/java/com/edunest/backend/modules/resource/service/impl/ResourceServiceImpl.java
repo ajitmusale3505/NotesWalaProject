@@ -111,7 +111,8 @@ public class ResourceServiceImpl implements ResourceService {
                 
                 .materialType(request.getMaterialType())
                 .accessType(request.getAccessType())
-                .status(ResourceStatus.APPROVED)
+                .status(request.isPublished() ? ResourceStatus.APPROVED : ResourceStatus.DRAFT)
+                .publishedAt(request.isPublished() ? java.time.LocalDateTime.now(java.time.ZoneOffset.UTC) : null)
 
                 .price(request.getPrice())
                 .discountPrice(request.getDiscountPrice())
@@ -126,7 +127,8 @@ public class ResourceServiceImpl implements ResourceService {
 
                 .version(request.getVersion())
                 .language(request.getLanguage())
-                .tags(request.getTags())
+                .tags(normalizeTags(request.getTags()))
+                .metadata(request.getMetadata())
 
                 .active(true)
                 .published(true)
@@ -257,7 +259,10 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         if (request.getTags() != null) {
-            resource.setTags(request.getTags());
+            resource.setTags(normalizeTags(request.getTags()));
+        }
+        if (request.getMetadata() != null) {
+            resource.setMetadata(request.getMetadata().trim());
         }
 
         if (request.getDownloadable() != null) {
@@ -360,7 +365,8 @@ public class ResourceServiceImpl implements ResourceService {
                     .previewPages(request.getPreviewPages())
                     .version(request.getVersion())
                     .language(request.getLanguage())
-                    .tags(request.getTags())
+                    .tags(normalizeTags(request.getTags()))
+                    .metadata(request.getMetadata())
                     .downloadable(request.isDownloadable())
                     .watermarkEnabled(request.isWatermarkEnabled())
                     .active(request.isActive())
@@ -701,6 +707,32 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
+    public ResourceResponse publishResource(Long resourceId) {
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
+        if (!resource.isActive()) {
+            throw new BadRequestException("Inactive resource cannot be published");
+        }
+        if (resource.getFileKey() == null || resource.getFileKey().isBlank()) {
+            throw new BadRequestException("Resource file is required before publishing");
+        }
+        resource.setPublished(true);
+        resource.setStatus(ResourceStatus.APPROVED);
+        resource.setPublishedAt(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC));
+        return mapToResponse(resourceRepository.save(resource));
+    }
+
+    @Override
+    @Transactional
+    public ResourceResponse unpublishResource(Long resourceId) {
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
+        resource.setPublished(false);
+        return mapToResponse(resourceRepository.save(resource));
+    }
+
+    @Override
+    @Transactional
     public void deleteResource(Long resourceId) {
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
@@ -710,7 +742,20 @@ public class ResourceServiceImpl implements ResourceService {
         deleteQuietlyOrThrow(resource.getThumbnailUrl());
         deleteQuietlyOrThrow(resource.getCoverImageUrl());
 
-        resourceRepository.delete(resource);
+        resource.setActive(false);
+        resource.setPublished(false);
+        resource.setStatus(ResourceStatus.ARCHIVED);
+        resourceRepository.save(resource);
+    }
+
+    private String normalizeTags(String tags) {
+        if (tags == null || tags.isBlank()) return null;
+        return java.util.Arrays.stream(tags.split(","))
+                .map(String::trim)
+                .filter(v -> !v.isBlank())
+                .distinct()
+                .limit(30)
+                .collect(java.util.stream.Collectors.joining(","));
     }
 
     private void deleteQuietlyOrThrow(String key) {
@@ -719,7 +764,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     private String generateSignedUrl(String fileKey, int minutes) {
-        return storageService.generatePublicUrl(fileKey);
+        return storageService.generatePresignedUrl(fileKey, java.time.Duration.ofMinutes(minutes));
     }
 
     @Override
@@ -1019,6 +1064,36 @@ public class ResourceServiceImpl implements ResourceService {
         String safeKeyword = keyword == null ? "" : keyword.trim();
         return resourceRepository.findByTitleContainingIgnoreCaseAndActiveTrueAndPublishedTrue(
                         safeKeyword, org.springframework.data.domain.PageRequest.of(safePage, safeSize))
+                .map(this::mapToResponse);
+    }
+
+    @Override
+    public org.springframework.data.domain.Page<ResourceResponse> filterPublicResources(
+            String keyword, Long categoryId, Long universityId, Long collegeId, Long branchId,
+            Long academicYearId, Long semesterId, Long subjectId, MaterialType materialType,
+            AccessType accessType, String language, Boolean freeOnly, Boolean discountedOnly,
+            java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice,
+            int page, int size, String sort, String direction) {
+
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        String property = switch (sort == null ? "newest" : sort.trim().toLowerCase(java.util.Locale.ROOT)) {
+            case "title" -> "title";
+            case "price" -> "price";
+            case "rating" -> "ratingAverage";
+            case "downloads" -> "downloadsCount";
+            case "popularity" -> "popularityScore";
+            default -> "createdAt";
+        };
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction)
+                ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        return resourceRepository.findAll(
+                ResourceSpecification.publicFilter(
+                        keyword, categoryId, universityId, collegeId, branchId, academicYearId,
+                        semesterId, subjectId, materialType, accessType, language, freeOnly,
+                        discountedOnly, minPrice, maxPrice),
+                PageRequest.of(safePage, safeSize, Sort.by(sortDirection, property)))
                 .map(this::mapToResponse);
     }
 
