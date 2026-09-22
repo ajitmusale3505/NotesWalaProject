@@ -54,6 +54,27 @@ public interface ResourceService {
     Page<ResourceResponse> getPublicResourcesPage(int page, int size);
     Page<ResourceResponse> searchPublicResourcesPage(String keyword, int page, int size);
 
+    Page<ResourceResponse> filterPublicResources(
+            String keyword,
+            Long categoryId,
+            Long universityId,
+            Long collegeId,
+            Long branchId,
+            Long academicYearId,
+            Long semesterId,
+            Long subjectId,
+            MaterialType materialType,
+            AccessType accessType,
+            String language,
+            Boolean freeOnly,
+            Boolean discountedOnly,
+            java.math.BigDecimal minPrice,
+            java.math.BigDecimal maxPrice,
+            int page,
+            int size,
+            String sort,
+            String direction);
+
     List<ResourceResponse> searchPublicResources(String keyword);
 
     List<ResourceResponse> getPublicResourcesByBranch(Long branchId);
