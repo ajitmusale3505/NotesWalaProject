@@ -980,6 +980,7 @@ public class ResourceServiceImpl implements ResourceService {
 
                 .documentType(resource.getDocumentType())
                 .materialType(resource.getMaterialType())
+                .status(resource.getStatus())
                 .accessType(resource.getAccessType())
 
                 .price(resource.getPrice())

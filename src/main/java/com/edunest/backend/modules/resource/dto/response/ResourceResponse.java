@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import com.edunest.backend.common.enums.AccessType;
 import com.edunest.backend.common.enums.DocumentType;
+import com.edunest.backend.common.enums.ResourceStatus;
 import com.edunest.backend.common.enums.MaterialType;
 
 import lombok.*;
@@ -33,6 +34,7 @@ public class ResourceResponse {
     // Type
     private DocumentType documentType;
     private MaterialType materialType;
+    private ResourceStatus status;
     private AccessType accessType;
 
     // Pricing
@@ -64,6 +66,9 @@ public class ResourceResponse {
     // Access state
     private boolean purchased;
     private boolean downloadable;
+    private boolean active;
+    private boolean published;
+    private java.time.LocalDateTime publishedAt;
 
     // Storage Keys
     @JsonIgnore
