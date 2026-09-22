@@ -11,7 +11,7 @@ import lombok.*;
 @Builder
 public class SubjectResponseDto {
 
-    private Long id;
+    private String id;
     private String name;
     private String code;
     private boolean active;
@@ -21,12 +21,12 @@ public class SubjectResponseDto {
 
     private Integer credits;
 
-    private Long branchId;
+    private String branchId;
     private String branchName;
 
-    private Long semesterId;
+    private String semesterId;
     private String semesterName;
 
-    private Long academicYearId;
+    private String academicYearId;
     private String academicYearName;
 }

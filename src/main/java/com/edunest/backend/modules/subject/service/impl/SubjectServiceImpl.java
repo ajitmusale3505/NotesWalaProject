@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.edunest.backend.common.util.PublicIdUtils;
 import com.edunest.backend.modules.subject.dto.SubjectResponseDto;
 import com.edunest.backend.modules.subject.entity.Subject;
 import com.edunest.backend.modules.subject.repository.SubjectRepository;
@@ -21,18 +22,18 @@ public class SubjectServiceImpl implements SubjectService {
 
     private SubjectResponseDto map(Subject s) {
         return SubjectResponseDto.builder()
-                .id(s.getId())
+                .id(PublicIdUtils.subjectId(s.getId()))
                 .name(s.getName())
                 .code(s.getCode())
                 .active(s.isActive())
                 .subjectCategory(s.getSubjectCategory())
                 .examType(s.getExamType())
                 .credits(s.getCredits())
-                .branchId(s.getBranch().getId())
+                .branchId(PublicIdUtils.branchId(s.getBranch().getId()))
                 .branchName(s.getBranch().getName())
-                .semesterId(s.getSemester().getId())
+                .semesterId(PublicIdUtils.semesterId(s.getSemester().getId()))
                 .semesterName(s.getSemester().getName())
-                .academicYearId(s.getAcademicYear().getId())
+                .academicYearId(PublicIdUtils.academicYearId(s.getAcademicYear().getId()))
                 .academicYearName(s.getAcademicYear().getName())
                 .build();
     }
@@ -65,7 +66,6 @@ public class SubjectServiceImpl implements SubjectService {
                 .map(this::map)
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public List<SubjectResponseDto> getSubjectsByBranchAndSemester(

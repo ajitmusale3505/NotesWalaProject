@@ -14,19 +14,19 @@ public class UserAcademicProfileResponse {
     private Long userId;
     private String userName;
 
-    private Long universityId;
+    private String universityId;
     private String universityName;
 
-    private Long collegeId;
+    private String collegeId;
     private String collegeName;
 
-    private Long branchId;
+    private String branchId;
     private String branchName;
 
-    private Long academicYearId;
+    private String academicYearId;
     private String academicYearName;
 
-    private Long semesterId;
+    private String semesterId;
     private String semesterName;
 
     private String rollNumber;
@@ -35,6 +35,5 @@ public class UserAcademicProfileResponse {
     private Double cgpa;
     private Integer backlogCount;
 
-    // IMPORTANT FOR FRONTEND
     private boolean profileCompleted;
 }

@@ -9,12 +9,12 @@ import lombok.*;
 @Builder
 public class CollegeBranchResponse {
 
-    private Long id;
+    private String id;
 
-    private Long collegeId;
+    private String collegeId;
     private String collegeName;
 
-    private Long branchId;
+    private String branchId;
     private String branchName;
     private String branchCode;
 

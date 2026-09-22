@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.edunest.backend.common.util.PublicIdUtils;
 import com.edunest.backend.modules.collegebranch.dto.CollegeBranchResponse;
 import com.edunest.backend.modules.collegebranch.entity.CollegeBranch;
 import com.edunest.backend.modules.collegebranch.repository.CollegeBranchRepository;
@@ -21,10 +22,10 @@ public class CollegeBranchServiceImpl implements CollegeBranchService {
 
     private CollegeBranchResponse map(CollegeBranch cb) {
         return CollegeBranchResponse.builder()
-                .id(cb.getId())
-                .collegeId(cb.getCollege().getId())
+                .id(PublicIdUtils.collegeBranchId(cb.getId()))
+                .collegeId(PublicIdUtils.collegeId(cb.getCollege().getId()))
                 .collegeName(cb.getCollege().getName())
-                .branchId(cb.getBranch().getId())
+                .branchId(PublicIdUtils.branchId(cb.getBranch().getId()))
                 .branchName(cb.getBranch().getName())
                 .branchCode(cb.getBranch().getCode())
                 .active(cb.isActive())

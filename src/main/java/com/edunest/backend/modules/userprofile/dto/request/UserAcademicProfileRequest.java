@@ -13,20 +13,20 @@ public class UserAcademicProfileRequest {
     // Set by the authenticated controller; never trusted from the client.
     private Long userId;
 
-    @NotNull(message = "University ID is required")
-    private Long universityId;
+    @NotBlank(message = "University ID is required")
+    private String universityId;
 
-    @NotNull(message = "College ID is required")
-    private Long collegeId;
+    @NotBlank(message = "College ID is required")
+    private String collegeId;
 
-    @NotNull(message = "Branch ID is required")
-    private Long branchId;
+    @NotBlank(message = "Branch ID is required")
+    private String branchId;
 
-    @NotNull(message = "Academic year ID is required")
-    private Long academicYearId;
+    @NotBlank(message = "Academic year ID is required")
+    private String academicYearId;
 
-    @NotNull(message = "Semester ID is required")
-    private Long semesterId;
+    @NotBlank(message = "Semester ID is required")
+    private String semesterId;
 
     @Size(max = 50, message = "Roll number too long")
     private String rollNumber;

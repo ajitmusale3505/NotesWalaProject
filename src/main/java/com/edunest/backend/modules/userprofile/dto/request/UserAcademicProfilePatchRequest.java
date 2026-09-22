@@ -10,11 +10,11 @@ import lombok.*;
 @Builder
 public class UserAcademicProfilePatchRequest {
 
-    private Long universityId;
-    private Long collegeId;
-    private Long branchId;
-    private Long academicYearId;
-    private Long semesterId;
+    private String universityId;
+    private String collegeId;
+    private String branchId;
+    private String academicYearId;
+    private String semesterId;
 
     @Size(max = 50)
     private String rollNumber;

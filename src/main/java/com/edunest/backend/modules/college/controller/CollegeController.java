@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.edunest.backend.common.util.PublicIdUtils;
 import com.edunest.backend.modules.college.dto.response.CollegeResponse;
 import com.edunest.backend.modules.college.service.CollegeService;
 
@@ -23,13 +24,15 @@ public class CollegeController {
 
     @GetMapping("/{id}")
     public CollegeResponse getCollegeById(
-            @PathVariable Long id) {
-        return collegeService.getCollegeById(id);
+            @PathVariable String id) {
+        return collegeService.getCollegeById(
+                PublicIdUtils.parseCollegeId(id));
     }
 
     @GetMapping("/university/{universityId}")
     public List<CollegeResponse> getCollegesByUniversityId(
-            @PathVariable Long universityId) {
-        return collegeService.getCollegesByUniversityId(universityId);
+            @PathVariable String universityId) {
+        return collegeService.getCollegesByUniversityId(
+                PublicIdUtils.parseUniversityId(universityId));
     }
 }

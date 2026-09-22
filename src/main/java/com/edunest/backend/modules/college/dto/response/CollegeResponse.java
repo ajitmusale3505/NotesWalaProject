@@ -9,11 +9,11 @@ import lombok.*;
 @Builder
 public class CollegeResponse {
 
-    private Long id;
+    private String id;
     private String name;
     private String code;
     private boolean active;
 
-    private Long universityId;
+    private String universityId;
     private String universityName;
 }

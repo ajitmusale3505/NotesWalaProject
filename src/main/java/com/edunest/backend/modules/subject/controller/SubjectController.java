@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.edunest.backend.common.response.ApiResponse;
+import com.edunest.backend.common.util.PublicIdUtils;
 import com.edunest.backend.modules.subject.dto.SubjectResponseDto;
 import com.edunest.backend.modules.subject.service.SubjectService;
 
@@ -34,13 +35,14 @@ public class SubjectController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<SubjectResponseDto>> getSubjectById(
-            @PathVariable Long id) {
+            @PathVariable String id) {
 
         ApiResponse<SubjectResponseDto> response =
                 ApiResponse.<SubjectResponseDto>builder()
                         .success(true)
                         .message("Subject fetched successfully")
-                        .data(subjectService.getSubjectById(id))
+                        .data(subjectService.getSubjectById(
+                                PublicIdUtils.parseSubjectId(id)))
                         .build();
 
         return ResponseEntity.ok(response);
@@ -48,13 +50,14 @@ public class SubjectController {
 
     @GetMapping("/branch/{branchId}")
     public ResponseEntity<ApiResponse<List<SubjectResponseDto>>> getSubjectsByBranch(
-            @PathVariable Long branchId) {
+            @PathVariable String branchId) {
 
         ApiResponse<List<SubjectResponseDto>> response =
                 ApiResponse.<List<SubjectResponseDto>>builder()
                         .success(true)
                         .message("Subjects fetched successfully")
-                        .data(subjectService.getSubjectsByBranch(branchId))
+                        .data(subjectService.getSubjectsByBranch(
+                                PublicIdUtils.parseBranchId(branchId)))
                         .build();
 
         return ResponseEntity.ok(response);
@@ -62,13 +65,14 @@ public class SubjectController {
 
     @GetMapping("/semester/{semesterId}")
     public ResponseEntity<ApiResponse<List<SubjectResponseDto>>> getSubjectsBySemester(
-            @PathVariable Long semesterId) {
+            @PathVariable String semesterId) {
 
         ApiResponse<List<SubjectResponseDto>> response =
                 ApiResponse.<List<SubjectResponseDto>>builder()
                         .success(true)
                         .message("Subjects fetched successfully")
-                        .data(subjectService.getSubjectsBySemester(semesterId))
+                        .data(subjectService.getSubjectsBySemester(
+                                PublicIdUtils.parseSemesterId(semesterId)))
                         .build();
 
         return ResponseEntity.ok(response);
@@ -76,17 +80,16 @@ public class SubjectController {
 
     @GetMapping("/filter")
     public ResponseEntity<ApiResponse<List<SubjectResponseDto>>> filterSubjects(
-            @RequestParam Long branchId,
-            @RequestParam Long semesterId) {
+            @RequestParam String branchId,
+            @RequestParam String semesterId) {
 
         ApiResponse<List<SubjectResponseDto>> response =
                 ApiResponse.<List<SubjectResponseDto>>builder()
                         .success(true)
                         .message("Filtered subjects fetched successfully")
-                        .data(subjectService
-                                .getSubjectsByBranchAndSemester(
-                                        branchId,
-                                        semesterId))
+                        .data(subjectService.getSubjectsByBranchAndSemester(
+                                PublicIdUtils.parseBranchId(branchId),
+                                PublicIdUtils.parseSemesterId(semesterId)))
                         .build();
 
         return ResponseEntity.ok(response);

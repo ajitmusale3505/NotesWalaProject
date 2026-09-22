@@ -1,7 +1,7 @@
 package com.edunest.backend.modules.university.service.impl;
 
-import com.edunest.backend.common.exception.BadRequestException;
 import com.edunest.backend.common.exception.ResourceNotFoundException;
+import com.edunest.backend.common.util.PublicIdUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,11 +38,10 @@ public class UniversityServiceImpl implements UniversityService {
         return mapToResponse(university);
     }
 
-    private UniversityResponse mapToResponse(
-            University university) {
+    private UniversityResponse mapToResponse(University university) {
 
         return UniversityResponse.builder()
-                .id(university.getId())
+                .id(PublicIdUtils.universityId(university.getId()))
                 .name(university.getName())
                 .shortCode(university.getShortCode())
                 .active(university.isActive())

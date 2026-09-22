@@ -1,7 +1,7 @@
 package com.edunest.backend.modules.branch.service.impl;
 
-import com.edunest.backend.common.exception.BadRequestException;
 import com.edunest.backend.common.exception.ResourceNotFoundException;
+import com.edunest.backend.common.util.PublicIdUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,13 +29,13 @@ public class BranchServiceImpl implements BranchService {
 
     private BranchResponseDto mapToDto(Branch branch) {
         return BranchResponseDto.builder()
-                .id(branch.getId())
+                .id(PublicIdUtils.branchId(branch.getId()))
                 .name(branch.getName())
                 .code(branch.getCode())
                 .active(branch.isActive())
-                .universityId(branch.getUniversity().getId())
+                .universityId(PublicIdUtils.universityId(branch.getUniversity().getId()))
                 .universityName(branch.getUniversity().getName())
-                .academicYearId(branch.getAcademicYear().getId())
+                .academicYearId(PublicIdUtils.academicYearId(branch.getAcademicYear().getId()))
                 .academicYearName(branch.getAcademicYear().getName())
                 .build();
     }

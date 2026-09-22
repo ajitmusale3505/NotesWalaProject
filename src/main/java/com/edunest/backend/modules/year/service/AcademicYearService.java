@@ -1,7 +1,7 @@
 package com.edunest.backend.modules.year.service;
 
-import com.edunest.backend.common.exception.BadRequestException;
 import com.edunest.backend.common.exception.ResourceNotFoundException;
+import com.edunest.backend.common.util.PublicIdUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +36,7 @@ public class AcademicYearService {
 
     private AcademicYearResponse mapToResponse(AcademicYear academicYear) {
         return AcademicYearResponse.builder()
-                .id(academicYear.getId())
+                .id(PublicIdUtils.academicYearId(academicYear.getId()))
                 .name(academicYear.getName())
                 .code(academicYear.getCode())
                 .startYear(academicYear.getStartYear())

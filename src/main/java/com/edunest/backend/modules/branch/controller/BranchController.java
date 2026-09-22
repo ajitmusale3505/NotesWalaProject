@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.edunest.backend.common.util.PublicIdUtils;
 import com.edunest.backend.modules.branch.dto.BranchResponseDto;
 import com.edunest.backend.modules.branch.service.BranchService;
 
@@ -23,25 +24,29 @@ public class BranchController {
     }
 
     @GetMapping("/{id}")
-    public BranchResponseDto getBranchById(@PathVariable Long id) {
-        return branchService.getBranchById(id);
+    public BranchResponseDto getBranchById(@PathVariable String id) {
+        return branchService.getBranchById(
+                PublicIdUtils.parseBranchId(id));
     }
 
     @GetMapping("/university/{universityId}")
     public List<BranchResponseDto> getBranchesByUniversity(
-            @PathVariable Long universityId) {
-        return branchService.getBranchesByUniversityId(universityId);
+            @PathVariable String universityId) {
+        return branchService.getBranchesByUniversityId(
+                PublicIdUtils.parseUniversityId(universityId));
     }
-    
+
     @GetMapping("/college/{collegeId}")
     public List<BranchResponseDto> getBranchesByCollege(
-            @PathVariable Long collegeId) {
-        return branchService.getBranchesByCollegeId(collegeId);
+            @PathVariable String collegeId) {
+        return branchService.getBranchesByCollegeId(
+                PublicIdUtils.parseCollegeId(collegeId));
     }
 
     @GetMapping("/academic-year/{academicYearId}")
     public List<BranchResponseDto> getBranchesByAcademicYear(
-            @PathVariable Long academicYearId) {
-        return branchService.getBranchesByAcademicYearId(academicYearId);
+            @PathVariable String academicYearId) {
+        return branchService.getBranchesByAcademicYearId(
+                PublicIdUtils.parseAcademicYearId(academicYearId));
     }
 }

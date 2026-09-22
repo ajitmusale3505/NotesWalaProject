@@ -9,11 +9,11 @@ import lombok.*;
 @Builder
 public class SemesterResponseDto {
 
-    private Long id;
+    private String id;
     private Integer number;
     private String name;
     private boolean active;
 
-    private Long academicYearId;
+    private String academicYearId;
     private String academicYearName;
 }

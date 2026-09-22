@@ -1,7 +1,7 @@
 package com.edunest.backend.modules.semester.service.impl;
 
-import com.edunest.backend.common.exception.BadRequestException;
 import com.edunest.backend.common.exception.ResourceNotFoundException;
+import com.edunest.backend.common.util.PublicIdUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,11 +23,11 @@ public class SemesterServiceImpl implements SemesterService {
 
     private SemesterResponseDto mapToDto(Semester semester) {
         return SemesterResponseDto.builder()
-                .id(semester.getId())
+                .id(PublicIdUtils.semesterId(semester.getId()))
                 .number(semester.getNumber())
                 .name(semester.getName())
                 .active(semester.isActive())
-                .academicYearId(semester.getAcademicYear().getId())
+                .academicYearId(PublicIdUtils.academicYearId(semester.getAcademicYear().getId()))
                 .academicYearName(semester.getAcademicYear().getName())
                 .build();
     }

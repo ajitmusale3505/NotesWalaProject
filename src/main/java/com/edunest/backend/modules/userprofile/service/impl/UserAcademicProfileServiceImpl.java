@@ -2,8 +2,8 @@ package com.edunest.backend.modules.userprofile.service.impl;
 
 import com.edunest.backend.common.exception.BadRequestException;
 import com.edunest.backend.common.exception.ResourceNotFoundException;
+import com.edunest.backend.common.util.PublicIdUtils;
 import org.springframework.stereotype.Service;
-
 
 import com.edunest.backend.modules.branch.entity.Branch;
 import com.edunest.backend.modules.branch.repository.BranchRepository;
@@ -16,6 +16,7 @@ import com.edunest.backend.modules.university.entity.University;
 import com.edunest.backend.modules.university.repository.UniversityRepository;
 import com.edunest.backend.modules.user.entity.User;
 import com.edunest.backend.modules.user.repository.UserRepository;
+import com.edunest.backend.modules.userprofile.dto.request.UserAcademicProfilePatchRequest;
 import com.edunest.backend.modules.userprofile.dto.request.UserAcademicProfileRequest;
 import com.edunest.backend.modules.userprofile.dto.response.UserAcademicProfileResponse;
 import com.edunest.backend.modules.userprofile.entity.UserAcademicProfile;
@@ -23,8 +24,6 @@ import com.edunest.backend.modules.userprofile.repository.UserAcademicProfileRep
 import com.edunest.backend.modules.userprofile.service.UserAcademicProfileService;
 import com.edunest.backend.modules.year.entity.AcademicYear;
 import com.edunest.backend.modules.year.repository.AcademicYearRepository;
-
-import com.edunest.backend.modules.userprofile.dto.request.UserAcademicProfilePatchRequest;
 
 @Service
 public class UserAcademicProfileServiceImpl
@@ -62,116 +61,81 @@ public class UserAcademicProfileServiceImpl
     private UserAcademicProfileResponse map(UserAcademicProfile profile) {
         return UserAcademicProfileResponse.builder()
                 .id(profile.getId())
-
                 .userId(profile.getUser().getId())
                 .userName(profile.getUser().getFullName())
-
-                .universityId(profile.getUniversity().getId())
+                .universityId(PublicIdUtils.universityId(profile.getUniversity().getId()))
                 .universityName(profile.getUniversity().getName())
-
-                .collegeId(profile.getCollege().getId())
+                .collegeId(PublicIdUtils.collegeId(profile.getCollege().getId()))
                 .collegeName(profile.getCollege().getName())
-
-                .branchId(profile.getBranch().getId())
+                .branchId(PublicIdUtils.branchId(profile.getBranch().getId()))
                 .branchName(profile.getBranch().getName())
-
-                .academicYearId(profile.getAcademicYear().getId())
+                .academicYearId(PublicIdUtils.academicYearId(profile.getAcademicYear().getId()))
                 .academicYearName(profile.getAcademicYear().getName())
-
-                .semesterId(profile.getCurrentSemester().getId())
+                .semesterId(PublicIdUtils.semesterId(profile.getCurrentSemester().getId()))
                 .semesterName(profile.getCurrentSemester().getName())
-
                 .rollNumber(profile.getRollNumber())
                 .division(profile.getDivision())
                 .graduationYear(profile.getGraduationYear())
                 .cgpa(profile.getCgpa())
                 .backlogCount(profile.getBacklogCount())
-
                 .profileCompleted(true)
                 .build();
     }
+
     @Override
     public UserAcademicProfileResponse getByUserId(Long userId) {
-        UserAcademicProfile profile = profileRepository
-                .findByUserId(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Profile not found"));
+        UserAcademicProfile profile = profileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
 
         return map(profile);
     }
-    
+
     @Override
     public UserAcademicProfileResponse patchProfile(
             Long userId,
             UserAcademicProfilePatchRequest request) {
 
-        UserAcademicProfile profile = profileRepository
-                .findByUserId(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Profile not found"));
+        UserAcademicProfile profile = profileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
 
         if (request.getUniversityId() != null) {
-            University university = universityRepository
-                    .findById(request.getUniversityId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("University not found"));
-            profile.setUniversity(university);
+            profile.setUniversity(findUniversity(request.getUniversityId()));
         }
 
         if (request.getCollegeId() != null) {
-            College college = collegeRepository
-                    .findById(request.getCollegeId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("College not found"));
-            profile.setCollege(college);
+            profile.setCollege(findCollege(request.getCollegeId()));
         }
 
         if (request.getBranchId() != null) {
-            Branch branch = branchRepository
-                    .findById(request.getBranchId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Branch not found"));
-            profile.setBranch(branch);
+            profile.setBranch(findBranch(request.getBranchId()));
         }
 
         if (request.getAcademicYearId() != null) {
-            AcademicYear year = academicYearRepository
-                    .findById(request.getAcademicYearId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Academic year not found"));
-            profile.setAcademicYear(year);
+            profile.setAcademicYear(findAcademicYear(request.getAcademicYearId()));
         }
 
         if (request.getSemesterId() != null) {
-            Semester semester = semesterRepository
-                    .findById(request.getSemesterId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Semester not found"));
-            profile.setCurrentSemester(semester);
+            profile.setCurrentSemester(findSemester(request.getSemesterId()));
         }
 
-        if (request.getRollNumber() != null)
+        if (request.getRollNumber() != null) {
             profile.setRollNumber(request.getRollNumber());
-
-        if (request.getDivision() != null)
+        }
+        if (request.getDivision() != null) {
             profile.setDivision(request.getDivision());
-
-        if (request.getGraduationYear() != null)
+        }
+        if (request.getGraduationYear() != null) {
             profile.setGraduationYear(request.getGraduationYear());
-
-        if (request.getCgpa() != null)
+        }
+        if (request.getCgpa() != null) {
             profile.setCgpa(request.getCgpa());
-
-        if (request.getBacklogCount() != null)
+        }
+        if (request.getBacklogCount() != null) {
             profile.setBacklogCount(request.getBacklogCount());
+        }
 
-        profile.setProfileVersion(
-                profile.getProfileVersion() + 1
-        );
-
-        profile = profileRepository.save(profile);
-
-        return map(profile);
+        profile.setProfileVersion(profile.getProfileVersion() + 1);
+        return map(profileRepository.save(profile));
     }
 
     @Override
@@ -181,61 +145,20 @@ public class UserAcademicProfileServiceImpl
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        University university = universityRepository
-                .findById(request.getUniversityId())
-                .orElseThrow(() -> new ResourceNotFoundException("University not found"));
+        University university = findUniversity(request.getUniversityId());
+        College college = findCollege(request.getCollegeId());
+        Branch branch = findBranch(request.getBranchId());
+        AcademicYear academicYear = findAcademicYear(request.getAcademicYearId());
+        Semester semester = findSemester(request.getSemesterId());
 
-        College college = collegeRepository
-                .findById(request.getCollegeId())
-                .orElseThrow(() -> new ResourceNotFoundException("College not found"));
+        validateAcademicHierarchy(
+                university,
+                college,
+                branch,
+                academicYear,
+                semester);
 
-        Branch branch = branchRepository
-                .findById(request.getBranchId())
-                .orElseThrow(() -> new ResourceNotFoundException("Branch not found"));
-
-        AcademicYear academicYear = academicYearRepository
-                .findById(request.getAcademicYearId())
-                .orElseThrow(() -> new ResourceNotFoundException("Academic year not found"));
-
-        Semester semester = semesterRepository
-                .findById(request.getSemesterId())
-                .orElseThrow(() -> new ResourceNotFoundException("Semester not found"));
-
-        // Validation 1
-        if (!college.getUniversity().getId().equals(university.getId())) {
-            throw new BadRequestException(
-                    "Selected college does not belong to selected university");
-        }
-
-        // Validation 2
-        if (!branch.getUniversity().getId().equals(university.getId())) {
-            throw new BadRequestException(
-                    "Selected branch does not belong to selected university");
-        }
-
-        // Validation 3
-        if (!collegeBranchRepository.existsByCollegeIdAndBranchId(
-                college.getId(), branch.getId())) {
-            throw new BadRequestException(
-                    "Selected college does not offer selected branch");
-        }
-
-        // Validation 4
-        if (!branch.getAcademicYear().getId()
-                .equals(academicYear.getId())) {
-            throw new BadRequestException(
-                    "Branch does not belong to selected academic year");
-        }
-
-        // Validation 5
-        if (!semester.getAcademicYear().getId()
-                .equals(academicYear.getId())) {
-            throw new BadRequestException(
-                    "Semester does not belong to selected academic year");
-        }
-
-        UserAcademicProfile profile = profileRepository
-                .findByUserId(user.getId())
+        UserAcademicProfile profile = profileRepository.findByUserId(user.getId())
                 .orElse(null);
 
         if (profile == null) {
@@ -245,62 +168,72 @@ public class UserAcademicProfileServiceImpl
                     .active(true)
                     .build();
         } else {
-            profile.setProfileVersion(
-                    profile.getProfileVersion() + 1);
+            profile.setProfileVersion(profile.getProfileVersion() + 1);
         }
 
-        profile.setUniversity(university);
-        profile.setCollege(college);
-        profile.setBranch(branch);
-        profile.setAcademicYear(academicYear);
-        profile.setCurrentSemester(semester);
-        profile.setRollNumber(request.getRollNumber());
-        profile.setDivision(request.getDivision());
-        profile.setGraduationYear(request.getGraduationYear());
-        profile.setCgpa(request.getCgpa());
-        profile.setBacklogCount(request.getBacklogCount());
-
-        profile = profileRepository.save(profile);
-
-        return map(profile);
+        applyProfileData(profile, university, college, branch, academicYear, semester, request);
+        return map(profileRepository.save(profile));
     }
-    
+
     @Override
     public UserAcademicProfileResponse updateProfile(
             Long userId,
             UserAcademicProfileRequest request) {
 
-        UserAcademicProfile profile = profileRepository
-                .findByUserId(userId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Profile not found"));
+        UserAcademicProfile profile = profileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Profile not found"));
 
-        University university = universityRepository
-                .findById(request.getUniversityId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("University not found"));
+        University university = findUniversity(request.getUniversityId());
+        College college = findCollege(request.getCollegeId());
+        Branch branch = findBranch(request.getBranchId());
+        AcademicYear academicYear = findAcademicYear(request.getAcademicYearId());
+        Semester semester = findSemester(request.getSemesterId());
 
-        College college = collegeRepository
-                .findById(request.getCollegeId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("College not found"));
+        validateAcademicHierarchy(
+                university,
+                college,
+                branch,
+                academicYear,
+                semester);
 
-        Branch branch = branchRepository
-                .findById(request.getBranchId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Branch not found"));
+        applyProfileData(profile, university, college, branch, academicYear, semester, request);
+        profile.setProfileVersion(profile.getProfileVersion() + 1);
 
-        AcademicYear academicYear = academicYearRepository
-                .findById(request.getAcademicYearId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Academic year not found"));
+        return map(profileRepository.save(profile));
+    }
 
-        Semester semester = semesterRepository
-                .findById(request.getSemesterId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Semester not found"));
+    private University findUniversity(String publicId) {
+        return universityRepository.findById(PublicIdUtils.parseUniversityId(publicId))
+                .orElseThrow(() -> new ResourceNotFoundException("University not found"));
+    }
 
-        // validations
+    private College findCollege(String publicId) {
+        return collegeRepository.findById(PublicIdUtils.parseCollegeId(publicId))
+                .orElseThrow(() -> new ResourceNotFoundException("College not found"));
+    }
+
+    private Branch findBranch(String publicId) {
+        return branchRepository.findById(PublicIdUtils.parseBranchId(publicId))
+                .orElseThrow(() -> new ResourceNotFoundException("Branch not found"));
+    }
+
+    private AcademicYear findAcademicYear(String publicId) {
+        return academicYearRepository.findById(PublicIdUtils.parseAcademicYearId(publicId))
+                .orElseThrow(() -> new ResourceNotFoundException("Academic year not found"));
+    }
+
+    private Semester findSemester(String publicId) {
+        return semesterRepository.findById(PublicIdUtils.parseSemesterId(publicId))
+                .orElseThrow(() -> new ResourceNotFoundException("Semester not found"));
+    }
+
+    private void validateAcademicHierarchy(
+            University university,
+            College college,
+            Branch branch,
+            AcademicYear academicYear,
+            Semester semester) {
+
         if (!college.getUniversity().getId().equals(university.getId())) {
             throw new BadRequestException(
                     "Selected college does not belong to selected university");
@@ -312,42 +245,40 @@ public class UserAcademicProfileServiceImpl
         }
 
         if (!collegeBranchRepository.existsByCollegeIdAndBranchId(
-                college.getId(),
-                branch.getId())) {
+                college.getId(), branch.getId())) {
             throw new BadRequestException(
                     "Selected college does not offer selected branch");
         }
 
-        if (!branch.getAcademicYear().getId()
-                .equals(academicYear.getId())) {
+        if (!branch.getAcademicYear().getId().equals(academicYear.getId())) {
             throw new BadRequestException(
                     "Branch does not belong to selected academic year");
         }
 
-        if (!semester.getAcademicYear().getId()
-                .equals(academicYear.getId())) {
+        if (!semester.getAcademicYear().getId().equals(academicYear.getId())) {
             throw new BadRequestException(
                     "Semester does not belong to selected academic year");
         }
+    }
+
+    private void applyProfileData(
+            UserAcademicProfile profile,
+            University university,
+            College college,
+            Branch branch,
+            AcademicYear academicYear,
+            Semester semester,
+            UserAcademicProfileRequest request) {
 
         profile.setUniversity(university);
         profile.setCollege(college);
         profile.setBranch(branch);
         profile.setAcademicYear(academicYear);
         profile.setCurrentSemester(semester);
-
         profile.setRollNumber(request.getRollNumber());
         profile.setDivision(request.getDivision());
         profile.setGraduationYear(request.getGraduationYear());
         profile.setCgpa(request.getCgpa());
         profile.setBacklogCount(request.getBacklogCount());
-
-        profile.setProfileVersion(
-                profile.getProfileVersion() + 1
-        );
-
-        profile = profileRepository.save(profile);
-
-        return map(profile);
     }
 }

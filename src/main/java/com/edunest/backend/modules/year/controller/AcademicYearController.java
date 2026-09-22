@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.edunest.backend.common.util.PublicIdUtils;
 import com.edunest.backend.modules.year.dto.AcademicYearResponse;
 import com.edunest.backend.modules.year.service.AcademicYearService;
 
@@ -23,7 +24,8 @@ public class AcademicYearController {
     }
 
     @GetMapping("/{id}")
-    public AcademicYearResponse getAcademicYearById(@PathVariable Long id) {
-        return academicYearService.getAcademicYearById(id);
+    public AcademicYearResponse getAcademicYearById(@PathVariable String id) {
+        return academicYearService.getAcademicYearById(
+                PublicIdUtils.parseAcademicYearId(id));
     }
 }
