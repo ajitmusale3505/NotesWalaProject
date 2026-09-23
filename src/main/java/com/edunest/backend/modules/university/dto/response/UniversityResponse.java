@@ -12,5 +12,8 @@ public class UniversityResponse {
     private String id;
     private String name;
     private String shortCode;
+    private String city;
+    private String state;
+    private String country;
     private boolean active;
 }
