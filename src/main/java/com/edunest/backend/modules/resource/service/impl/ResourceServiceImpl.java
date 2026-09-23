@@ -779,6 +779,7 @@ public class ResourceServiceImpl implements ResourceService {
         deleteQuietlyOrThrow(resource.getPreviewKey());
         deleteQuietlyOrThrow(resource.getThumbnailUrl());
         deleteQuietlyOrThrow(resource.getCoverImageUrl());
+        resourceFileRepository.deleteByResourceId(resourceId);
 
         resource.setActive(false);
         resource.setPublished(false);
