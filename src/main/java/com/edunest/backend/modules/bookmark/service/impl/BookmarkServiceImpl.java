@@ -5,6 +5,7 @@ import com.edunest.backend.common.exception.ResourceNotFoundException;
 import com.edunest.backend.modules.bookmark.dto.response.BookmarkResponse;
 import com.edunest.backend.modules.bookmark.entity.Bookmark;
 import com.edunest.backend.modules.bookmark.repository.BookmarkRepository;
+import com.edunest.backend.modules.bookmark.service.BookmarkService;
 import com.edunest.backend.modules.resource.dto.response.ResourceAccessResponse;
 import com.edunest.backend.modules.resource.entity.Resource;
 import com.edunest.backend.modules.resource.repository.ResourceRepository;
