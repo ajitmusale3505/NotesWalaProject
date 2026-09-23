@@ -14,6 +14,7 @@ public final class PublicIdUtils {
     private static final long SUBJECT_OFFSET = 10_000L;
     private static final long COLLEGE_BRANCH_OFFSET = 10_000L;
     private static final long UNIT_OFFSET = 10_000L;
+    private static final long TOPIC_OFFSET = 10_000L;
 
     private PublicIdUtils() {}
 
@@ -25,6 +26,7 @@ public final class PublicIdUtils {
     public static String subjectId(Long id) { return format("SUB", id, SUBJECT_OFFSET, 5); }
     public static String collegeBranchId(Long id) { return format("CB", id, COLLEGE_BRANCH_OFFSET, 5); }
     public static String unitId(Long id) { return format("UNIT", id, UNIT_OFFSET, 5); }
+    public static String topicId(Long id) { return format("TOPIC", id, TOPIC_OFFSET, 5); }
 
     public static Long parseUniversityId(String value) { return parse("University", "U", value, UNIVERSITY_OFFSET); }
     public static Long parseCollegeId(String value) { return parse("College", "C", value, COLLEGE_OFFSET); }
@@ -34,6 +36,7 @@ public final class PublicIdUtils {
     public static Long parseSubjectId(String value) { return parse("Subject", "SUB", value, SUBJECT_OFFSET); }
     public static Long parseCollegeBranchId(String value) { return parse("College branch", "CB", value, COLLEGE_BRANCH_OFFSET); }
     public static Long parseUnitId(String value) { return parse("Unit", "UNIT", value, UNIT_OFFSET); }
+    public static Long parseTopicId(String value) { return parse("Topic", "TOPIC", value, TOPIC_OFFSET); }
 
     private static String format(String prefix, Long id, long offset, int width) {
         if (id == null || id < 1) throw new IllegalArgumentException("Internal identifier must be positive");
