@@ -2,7 +2,9 @@ package com.edunest.backend.modules.storage.service.impl;
 
 import com.edunest.backend.common.exception.BadRequestException;
 import com.edunest.backend.modules.storage.dto.FileStreamResponse;
+import com.edunest.backend.modules.storage.dto.PdfUploadResponse;
 import com.edunest.backend.modules.storage.dto.UploadResponse;
+import com.edunest.backend.modules.storage.service.MalwareScanner;
 import com.edunest.backend.modules.storage.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,22 +20,33 @@ import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignReques
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class R2StorageServiceImpl implements StorageService {
 
-    private static final long MAX_UPLOAD_BYTES = 25L * 1024 * 1024;
-    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
-            "application/pdf", "image/jpeg", "image/png", "image/webp");
+    private static final long DEFAULT_MAX_UPLOAD_BYTES = 25L * 1024 * 1024;
+    private static final long DEFAULT_MAX_IMAGE_BYTES = 5L * 1024 * 1024;
+    private static final Duration DEFAULT_SIGNED_URL_LIFETIME = Duration.ofMinutes(15);
+    private static final Duration MAX_SIGNED_URL_LIFETIME = Duration.ofHours(12);
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
+    private final MalwareScanner malwareScanner;
+    private final PdfPreviewGenerator previewGenerator;
 
     @Value("${cloudflare.r2.bucket}")
     private String bucketName;
+
+    @Value("${app.storage.max-pdf-size-bytes:26214400}")
+    private long maxPdfBytes;
+
+    @Value("${app.storage.max-image-size-bytes:5242880}")
+    private long maxImageBytes;
+
+    @Value("${app.storage.signed-url-lifetime-minutes:15}")
+    private long signedUrlLifetimeMinutes;
 
     @Override
     public UploadResponse uploadPdf(MultipartFile file) {
@@ -42,57 +55,94 @@ public class R2StorageServiceImpl implements StorageService {
 
     @Override
     public UploadResponse uploadFile(MultipartFile file, String folder) {
-        validate(file);
-        String safeFolder = folder == null ? "uploads" :
-                folder.replaceAll("[^a-zA-Z0-9/_-]", "").replaceAll("/{2,}", "/");
-        if (safeFolder.isBlank()) {
-            throw new BadRequestException("Invalid upload folder");
+        validateGenericFile(file);
+        return putObject(file, sanitizeFolder(folder));
+    }
+
+    @Override
+    public PdfUploadResponse uploadPdfWithPreview(
+            MultipartFile file, String mainFolder, String previewFolder) {
+
+        StorageFileValidator.validatePdf(file, maxPdfBytes);
+
+        byte[] pdfBytes;
+        try {
+            pdfBytes = file.getBytes();
+        } catch (IOException ex) {
+            throw new BadRequestException("Unable to read uploaded PDF");
         }
 
-        String extension = extensionFor(file.getOriginalFilename());
-        String key = safeFolder + "/" + UUID.randomUUID() + extension;
+        MalwareScanner.ScanResult scan = malwareScanner.scan(pdfBytes);
+        if (!scan.clean()) {
+            throw new BadRequestException("Uploaded file failed malware scanning");
+        }
+
+        PdfPreviewGenerator.GeneratedPreview generated = previewGenerator.generate(pdfBytes);
+        String mainKey = null;
+        String previewKey = null;
 
         try {
-            PutObjectRequest request = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .contentType(normalizeContentType(file.getContentType()))
-                    .contentLength(file.getSize())
-                    .build();
+            mainKey = putBytes(
+                    pdfBytes,
+                    "application/pdf",
+                    sanitizeFolder(mainFolder) + "/" + UUID.randomUUID() + ".pdf",
+                    file.getOriginalFilename());
 
-            s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+            previewKey = putBytes(
+                    generated.getContent(),
+                    "image/png",
+                    sanitizeFolder(previewFolder) + "/" + UUID.randomUUID() + ".png",
+                    "preview.png");
 
-            return UploadResponse.builder()
-                    .fileName(key)
-                    .fileUrl("r2://" + bucketName + "/" + key)
+            return PdfUploadResponse.builder()
+                    .mainFile(UploadResponse.builder()
+                            .fileName(mainKey)
+                            .fileUrl("r2://" + bucketName + "/" + mainKey)
+                            .build())
+                    .previewFile(UploadResponse.builder()
+                            .fileName(previewKey)
+                            .fileUrl("r2://" + bucketName + "/" + previewKey)
+                            .build())
+                    .pageCount(generated.getPageCount())
+                    .previewPages(generated.getPreviewPages())
                     .build();
-        } catch (IOException | S3Exception e) {
-            throw new IllegalStateException("File upload failed", e);
+        } catch (RuntimeException ex) {
+            deleteQuietly(mainKey);
+            deleteQuietly(previewKey);
+            throw ex;
         }
     }
 
     @Override
     public String generatePresignedUrl(String key, Duration duration) {
-        if (duration == null || duration.isNegative() || duration.isZero() || duration.compareTo(Duration.ofHours(12)) > 0) {
+        validateKey(key);
+        Duration safeDuration = duration == null ? configuredSignedUrlLifetime() : duration;
+        if (safeDuration.isNegative() || safeDuration.isZero()
+                || safeDuration.compareTo(MAX_SIGNED_URL_LIFETIME) > 0) {
             throw new BadRequestException("Invalid presigned URL duration");
         }
-        return generatePresignedUrlInternal(key, duration);
+        return generatePresignedUrlInternal(key, safeDuration);
     }
 
     @Override
     public String generateImageUrl(String key) {
-        return generatePresignedUrlInternal(key, Duration.ofMinutes(15));
+        return key == null || key.isBlank()
+                ? null
+                : generatePresignedUrlInternal(key, configuredSignedUrlLifetime());
     }
 
     @Override
     public String generatePublicUrl(String key) {
-        return key == null || key.isBlank() ? null : generatePresignedUrlInternal(key, Duration.ofMinutes(15));
+        return key == null || key.isBlank()
+                ? null
+                : generatePresignedUrlInternal(key, configuredSignedUrlLifetime());
     }
 
     private String generatePresignedUrlInternal(String key, Duration duration) {
-        validateKey(key);
         GetObjectRequest request = GetObjectRequest.builder()
-                .bucket(bucketName).key(key).build();
+                .bucket(bucketName)
+                .key(key)
+                .build();
 
         GetObjectPresignRequest presign = GetObjectPresignRequest.builder()
                 .signatureDuration(duration)
@@ -106,18 +156,29 @@ public class R2StorageServiceImpl implements StorageService {
     public FileStreamResponse getFile(String key) {
         validateKey(key);
 
-        HeadObjectResponse metadata = s3Client.headObject(HeadObjectRequest.builder()
-                .bucket(bucketName).key(key).build());
+        try {
+            HeadObjectResponse metadata = s3Client.headObject(HeadObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build());
 
-        ResponseInputStream<GetObjectResponse> stream = s3Client.getObject(
-                GetObjectRequest.builder().bucket(bucketName).key(key).build());
+            ResponseInputStream<GetObjectResponse> stream = s3Client.getObject(
+                    GetObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(key)
+                            .build());
 
-        return FileStreamResponse.builder()
-                .inputStream(stream)
-                .contentType(metadata.contentType())
-                .contentLength(metadata.contentLength())
-                .fileName(key.substring(key.lastIndexOf('/') + 1))
-                .build();
+            return FileStreamResponse.builder()
+                    .inputStream(stream)
+                    .contentType(metadata.contentType())
+                    .contentLength(metadata.contentLength())
+                    .fileName(key.substring(key.lastIndexOf('/') + 1))
+                    .build();
+        } catch (NoSuchKeyException ex) {
+            throw new BadRequestException("Stored file not found");
+        } catch (S3Exception ex) {
+            throw new IllegalStateException("Unable to retrieve stored file", ex);
+        }
     }
 
     @Override
@@ -125,28 +186,99 @@ public class R2StorageServiceImpl implements StorageService {
         validateKey(key);
         try {
             s3Client.deleteObject(DeleteObjectRequest.builder()
-                    .bucket(bucketName).key(key).build());
+                    .bucket(bucketName)
+                    .key(key)
+                    .build());
         } catch (S3Exception ex) {
-            throw new IllegalStateException("File cleanup failed", ex);
+            throw new IllegalStateException("File deletion failed", ex);
         }
     }
 
-    private static void validate(MultipartFile file) {
-        if (file == null || file.isEmpty()) throw new BadRequestException("File is required");
-        if (file.getSize() > MAX_UPLOAD_BYTES) throw new BadRequestException("File exceeds 25 MB limit");
+    private UploadResponse putObject(MultipartFile file, String folder) {
+        try {
+            String key = folder + "/" + UUID.randomUUID() + extensionFor(file.getOriginalFilename());
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .contentType(normalizeContentType(file.getContentType()))
+                    .contentLength(file.getSize())
+                    .build();
 
-        String contentType = normalizeContentType(file.getContentType());
-        if (!ALLOWED_CONTENT_TYPES.contains(contentType)) {
-            throw new BadRequestException("Unsupported file type");
+            s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+            return UploadResponse.builder()
+                    .fileName(key)
+                    .fileUrl("r2://" + bucketName + "/" + key)
+                    .build();
+        } catch (IOException | S3Exception ex) {
+            throw new IllegalStateException("File upload failed", ex);
         }
-        if ("application/pdf".equals(contentType)
-                && !extensionFor(file.getOriginalFilename()).equals(".pdf")) {
-            throw new BadRequestException("PDF uploads must have a .pdf extension");
+    }
+
+    private String putBytes(byte[] content, String contentType, String key, String originalName) {
+        try {
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .contentType(contentType)
+                    .contentLength((long) content.length)
+                    .metadata(java.util.Map.of("original-filename",
+                            originalName == null ? "file" : sanitizeMetadata(originalName)))
+                    .build();
+
+            s3Client.putObject(request, RequestBody.fromBytes(content));
+            return key;
+        } catch (S3Exception ex) {
+            throw new IllegalStateException("File upload failed", ex);
+        }
+    }
+
+    private void validateGenericFile(MultipartFile file) {
+        StorageFileValidator.validateGeneric(file, maxPdfBytes);
+        String type = normalizeContentType(file.getContentType());
+        if (!"application/pdf".equals(type) && file.getSize() > maxImageBytes) {
+            throw new BadRequestException("Image exceeds the maximum allowed size");
+        }
+        if ("application/pdf".equals(type)) {
+            try {
+                byte[] bytes = file.getBytes();
+                MalwareScanner.ScanResult scan = malwareScanner.scan(bytes);
+                if (!scan.clean()) {
+                    throw new BadRequestException("Uploaded file failed malware scanning");
+                }
+            } catch (IOException ex) {
+                throw new BadRequestException("Unable to read uploaded file");
+            }
+        }
+    }
+
+    private Duration configuredSignedUrlLifetime() {
+        if (signedUrlLifetimeMinutes <= 0
+                || signedUrlLifetimeMinutes > MAX_SIGNED_URL_LIFETIME.toMinutes()) {
+            throw new IllegalStateException("Invalid configured signed URL lifetime");
+        }
+        return Duration.ofMinutes(signedUrlLifetimeMinutes);
+    }
+
+    private String sanitizeFolder(String folder) {
+        String safe = folder == null ? "uploads" : folder.trim()
+                .replaceAll("[^a-zA-Z0-9/_-]", "")
+                .replaceAll("/{2,}", "/");
+        if (safe.isBlank() || safe.startsWith("/") || safe.contains("..")) {
+            throw new BadRequestException("Invalid upload folder");
+        }
+        return safe;
+    }
+
+    private static void validateKey(String key) {
+        if (key == null || key.isBlank() || key.startsWith("/")
+                || key.contains("..") || key.contains("\\")) {
+            throw new BadRequestException("Invalid storage key");
         }
     }
 
     private static String normalizeContentType(String contentType) {
-        return contentType == null ? "" : contentType.toLowerCase(Locale.ROOT);
+        return contentType == null ? "" : contentType.toLowerCase(Locale.ROOT).trim();
     }
 
     private static String extensionFor(String originalName) {
@@ -156,10 +288,15 @@ public class R2StorageServiceImpl implements StorageService {
         return dot >= 0 ? name.substring(dot) : "";
     }
 
-    private static void validateKey(String key) {
-        if (key == null || key.isBlank() || key.contains("..")
-                || key.startsWith("/") || key.contains("\\")) {
-            throw new BadRequestException("Invalid storage key");
+    private static String sanitizeMetadata(String value) {
+        return value.replaceAll("[\\r\\n]", "_");
+    }
+
+    private void deleteQuietly(String key) {
+        if (key == null || key.isBlank()) return;
+        try {
+            deleteFile(key);
+        } catch (Exception ignored) {
         }
     }
 }
