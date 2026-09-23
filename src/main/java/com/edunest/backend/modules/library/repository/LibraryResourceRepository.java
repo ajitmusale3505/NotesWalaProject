@@ -13,10 +13,13 @@ public interface LibraryResourceRepository extends JpaRepository<Resource, Long>
 
     @Query("""
             select r
-            from ResourceEntitlement re
-            join re.resource r
-            where re.subscriptionPlan.id = :planId
-              and re.active = true
+            from UserResourceEntitlement e
+            join e.resource r
+            where e.user.id = :userId
+              and e.source = :source
+              and e.active = true
+              and e.startsAt <= :now
+              and (e.expiresAt is null or e.expiresAt > :now)
               and r.active = true
               and r.published = true
               and (
@@ -28,7 +31,9 @@ public interface LibraryResourceRepository extends JpaRepository<Resource, Long>
             order by r.publishedAt desc, r.id desc
             """)
     Page<Resource> findSubscriptionResources(
-            @Param("planId") Long planId,
+            @Param("userId") Long userId,
+            @Param("source") com.edunest.backend.modules.resourceentitlement.entity.EntitlementSource source,
+            @Param("now") java.time.LocalDateTime now,
             @Param("keyword") String keyword,
             @Param("materialType") com.edunest.backend.common.enums.MaterialType materialType,
             Pageable pageable);
