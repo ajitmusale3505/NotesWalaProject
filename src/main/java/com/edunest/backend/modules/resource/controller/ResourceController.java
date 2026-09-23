@@ -37,7 +37,7 @@ public class ResourceController {
     private final ResourceService resourceService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','CONTRIBUTOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<ResourceResponse>> createResource(
             @Valid @RequestBody CreateResourceRequest request) {
 
