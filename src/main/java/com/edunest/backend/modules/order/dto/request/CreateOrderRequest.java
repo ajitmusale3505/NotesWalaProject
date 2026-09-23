@@ -18,4 +18,5 @@ public class CreateOrderRequest {
 
     @NotNull
     private Long resourceId;
+    private String couponCode;
 }
