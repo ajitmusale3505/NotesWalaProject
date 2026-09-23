@@ -60,6 +60,12 @@ public class R2StorageServiceImpl implements StorageService {
     }
 
     @Override
+    public UploadResponse uploadImage(MultipartFile file, String folder) {
+        StorageFileValidator.validateImage(file, maxImageBytes);
+        return putObject(file, sanitizeFolder(folder));
+    }
+
+    @Override
     public PdfUploadResponse uploadPdfWithPreview(
             MultipartFile file, String mainFolder, String previewFolder) {
 
