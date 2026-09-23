@@ -7,8 +7,7 @@ import com.edunest.backend.modules.notification.dto.response.UnreadCountResponse
 import com.edunest.backend.modules.notification.entity.Notification;
 import com.edunest.backend.modules.notification.entity.NotificationType;
 import com.edunest.backend.modules.notification.repository.NotificationRepository;
-import com.edunest.backend.modules.resource.entity.Resource;
-import com.edunest.backend.modules.resource.repository.ResourceRepository;
+import com.edunest.backend.modules.notification.service.NotificationService;
 import com.edunest.backend.modules.user.entity.User;
 import com.edunest.backend.modules.user.repository.UserRepository;
 import com.edunest.backend.modules.userprofile.repository.UserAcademicProfileRepository;
@@ -31,7 +30,6 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final UserAcademicProfileRepository profileRepository;
-    private final ResourceRepository resourceRepository;
 
     @Override
     public Page<NotificationResponse> getMyNotifications(Long userId, int page, int size) {
@@ -87,7 +85,7 @@ public class NotificationServiceImpl implements NotificationService {
                 userId,
                 NotificationType.PURCHASE,
                 "Purchase successful",
-                "Your purchase of "" + safeTitle(resourceTitle) + "" was completed successfully.",
+                "Your purchase of \"" + safeTitle(resourceTitle) + "\" was completed successfully.",
                 "RESOURCE",
                 resourceId);
     }
@@ -99,7 +97,7 @@ public class NotificationServiceImpl implements NotificationService {
                 userId,
                 NotificationType.SUBSCRIPTION,
                 "Subscription activated",
-                "Your "" + safeTitle(planName) + "" subscription is now active.",
+                "Your \"" + safeTitle(planName) + "\" subscription is now active.",
                 "SUBSCRIPTION",
                 subscriptionId);
     }
@@ -122,7 +120,7 @@ public class NotificationServiceImpl implements NotificationService {
                         user,
                         NotificationType.NEW_RESOURCE,
                         "New resource available",
-                        """ + safeTitle(resourceTitle) + "" is now available for your university.",
+                        "\"" + safeTitle(resourceTitle) + "\" is now available for your university.",
                         "RESOURCE",
                         resourceId))
                 .toList();
