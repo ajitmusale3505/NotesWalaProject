@@ -1,5 +1,6 @@
 package com.edunest.backend.modules.bookmark.service.impl;
 
+import com.edunest.backend.modules.bookmark.dto.response.BookmarkResponse;
 import com.edunest.backend.modules.bookmark.entity.Bookmark;
 import com.edunest.backend.modules.bookmark.repository.BookmarkRepository;
 import com.edunest.backend.modules.resource.dto.response.ResourceAccessResponse;
