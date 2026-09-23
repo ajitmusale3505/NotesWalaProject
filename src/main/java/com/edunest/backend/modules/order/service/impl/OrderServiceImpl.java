@@ -30,6 +30,9 @@ import com.edunest.backend.modules.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import com.edunest.backend.common.enums.AccessType;
+import com.edunest.backend.modules.coupon.dto.request.CouponValidationRequest;
+import com.edunest.backend.modules.coupon.dto.response.CouponValidationResponse;
+import com.edunest.backend.modules.coupon.service.CouponService;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +43,7 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
     private final ResourceRepository resourceRepository;
+    private final CouponService couponService;
 
     @Override
     @Transactional
@@ -71,17 +75,28 @@ public class OrderServiceImpl implements OrderService {
             throw new BadRequestException("Resource has invalid pricing");
         }
 
+        BigDecimal discount = BigDecimal.ZERO;
+        String couponCode = null;
+        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
+            CouponValidationResponse coupon = couponService.validate(user.getId(), CouponValidationRequest.builder().code(request.getCouponCode()).orderAmount(price).resourceId(resource.getId()).build());
+            discount = coupon.getDiscountAmount();
+            couponCode = coupon.getCode();
+        }
+        BigDecimal finalAmount = price.subtract(discount).max(BigDecimal.ZERO);
+
         Order order = Order.builder()
                 .orderNumber("ORD-" + UUID.randomUUID().toString().substring(0, 8))
                 .user(user)
                 .orderType(OrderType.RESOURCE)
                 .subtotalAmount(price)
-                .discountAmount(BigDecimal.ZERO)
+                .discountAmount(discount)
                 .taxAmount(BigDecimal.ZERO)
-                .finalAmount(price)
+                .finalAmount(finalAmount)
                 .currency("INR")
                 .status(OrderStatus.PENDING_PAYMENT)
                 .invoiceGenerated(false)
+                .couponCode(couponCode)
+                .couponDiscount(discount)
                 .build();
 
         order = orderRepository.save(order);
@@ -92,10 +107,10 @@ public class OrderServiceImpl implements OrderService {
                 .resourceTitleSnapshot(resource.getTitle())
                 .materialTypeSnapshot(resource.getMaterialType())
                 .unitPrice(resource.getPrice())
-                .discountAmount(BigDecimal.ZERO)
-                .finalUnitPrice(price)
+                .discountAmount(discount)
+                .finalUnitPrice(finalAmount)
                 .quantity(1)
-                .lineTotal(price)
+                .lineTotal(finalAmount)
                 .pageCountSnapshot(resource.getPageCount())
                 .fileSizeBytesSnapshot(resource.getFileSizeBytes())
                 .build();
@@ -122,8 +137,10 @@ public class OrderServiceImpl implements OrderService {
                 .taxAmount(order.getTaxAmount())
                 .finalAmount(order.getFinalAmount())
                 .resourceTitle(resource.getTitle())
-                .amount(price)
+                .amount(finalAmount)
                 .currency(order.getCurrency())
+                .couponCode(couponCode)
+                .couponDiscount(discount)
                 .paymentRequired(true)
                 .build();
     }
