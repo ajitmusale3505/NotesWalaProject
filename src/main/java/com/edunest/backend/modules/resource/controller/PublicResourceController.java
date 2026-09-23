@@ -46,6 +46,55 @@ public class PublicResourceController {
     }
 
 
+    @GetMapping("/recent")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<ResourceResponse>>> recent(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.<org.springframework.data.domain.Page<ResourceResponse>>builder()
+                .success(true)
+                .message("Recent resources fetched successfully")
+                .data(resourceService.getRecentPublicResourcesPage(page, size))
+                .build());
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<ResourceResponse>>> popular(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.<org.springframework.data.domain.Page<ResourceResponse>>builder()
+                .success(true)
+                .message("Popular resources fetched successfully")
+                .data(resourceService.getPopularPublicResourcesPage(page, size))
+                .build());
+    }
+
+    @GetMapping("/recommended")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<ResourceResponse>>> recommended(
+            @RequestParam(required = false) Long universityId,
+            @RequestParam(required = false) Long branchId,
+            @RequestParam(required = false) Long academicYearId,
+            @RequestParam(required = false) Long semesterId,
+            @RequestParam(required = false) Long subjectId,
+            @RequestParam(required = false) MaterialType materialType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.<org.springframework.data.domain.Page<ResourceResponse>>builder()
+                .success(true)
+                .message("Recommended resources fetched successfully")
+                .data(resourceService.getRecommendedPublicResourcesPage(
+                        universityId,
+                        branchId,
+                        academicYearId,
+                        semesterId,
+                        subjectId,
+                        materialType,
+                        page,
+                        size))
+                .build());
+    }
+
+
+
     @GetMapping("/filter")
     public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<ResourceResponse>>> filter(
             @RequestParam(required = false) String keyword,
