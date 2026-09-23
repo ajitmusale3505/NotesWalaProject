@@ -79,11 +79,11 @@ public class DashboardServiceImpl implements DashboardService {
                 .subjectCategory(s.getSubjectCategory())
                 .examType(s.getExamType())
                 .credits(s.getCredits())
-                .branchId(s.getBranch().getId())
+                .branchId(com.edunest.backend.common.util.PublicIdUtils.branchId(s.getBranch().getId()))
                 .branchName(s.getBranch().getName())
-                .semesterId(s.getSemester().getId())
+                .semesterId(com.edunest.backend.common.util.PublicIdUtils.semesterId(s.getSemester().getId()))
                 .semesterName(s.getSemester().getName())
-                .academicYearId(s.getAcademicYear().getId())
+                .academicYearId(com.edunest.backend.common.util.PublicIdUtils.academicYearId(s.getAcademicYear().getId()))
                 .academicYearName(s.getAcademicYear().getName())
                 .build();
     }
