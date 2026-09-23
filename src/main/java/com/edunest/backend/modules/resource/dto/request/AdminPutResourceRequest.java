@@ -7,6 +7,7 @@ import com.edunest.backend.common.enums.DocumentType;
 import com.edunest.backend.common.enums.MaterialType;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
