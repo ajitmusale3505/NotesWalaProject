@@ -11,15 +11,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LibraryOrderItemRepository extends JpaRepository<OrderItem, Long> {
 
-    @Query("""
-            select oi
+    @Query(value = """
+            select distinct oi
             from OrderItem oi
             join fetch oi.order o
             join fetch oi.resource r
-            left join fetch r.category
-            left join fetch r.subject
-            left join fetch r.branch
-            left join fetch r.semester
+            join UserResourceEntitlement e
+              on e.user.id = :userId
+             and e.resource.id = r.id
+             and e.source = :source
+             and e.active = true
+             and e.startsAt <= :now
+             and (e.expiresAt is null or e.expiresAt > :now)
             where o.user.id = :userId
               and o.status = :status
               and (
@@ -29,10 +32,33 @@ public interface LibraryOrderItemRepository extends JpaRepository<OrderItem, Lon
                   )
               and (:materialType is null or r.materialType = :materialType)
             order by o.paidAt desc, oi.id desc
+            """,
+            countQuery = """
+            select count(oi)
+            from OrderItem oi
+            join oi.order o
+            join oi.resource r
+            join UserResourceEntitlement e
+              on e.user.id = :userId
+             and e.resource.id = r.id
+             and e.source = :source
+             and e.active = true
+             and e.startsAt <= :now
+             and (e.expiresAt is null or e.expiresAt > :now)
+            where o.user.id = :userId
+              and o.status = :status
+              and (
+                    :keyword is null
+                    or lower(oi.resourceTitleSnapshot) like lower(concat('%', :keyword, '%'))
+                    or lower(r.title) like lower(concat('%', :keyword, '%'))
+                  )
+              and (:materialType is null or r.materialType = :materialType)
             """)
     Page<OrderItem> findPurchasedResources(
             @Param("userId") Long userId,
             @Param("status") OrderStatus status,
+            @Param("source") com.edunest.backend.modules.resourceentitlement.entity.EntitlementSource source,
+            @Param("now") java.time.LocalDateTime now,
             @Param("keyword") String keyword,
             @Param("materialType") com.edunest.backend.common.enums.MaterialType materialType,
             Pageable pageable);
