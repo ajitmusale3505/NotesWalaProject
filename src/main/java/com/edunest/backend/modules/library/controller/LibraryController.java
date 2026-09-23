@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/library")
@@ -63,11 +62,11 @@ public class LibraryController {
     }
 
     @GetMapping("/subscription")
-    public ResponseEntity<ApiResponse<Optional<LibrarySubscriptionResponse>>> activeSubscription() {
-        return ResponseEntity.ok(ApiResponse.<Optional<LibrarySubscriptionResponse>>builder()
+    public ResponseEntity<ApiResponse<LibrarySubscriptionResponse>> activeSubscription() {
+        return ResponseEntity.ok(ApiResponse.<LibrarySubscriptionResponse>builder()
                 .success(true)
                 .message("Active subscription fetched successfully")
-                .data(libraryService.getActiveSubscription(SecurityUtils.getCurrentUserId()))
+                .data(libraryService.getActiveSubscription(SecurityUtils.getCurrentUserId()).orElse(null))
                 .build());
     }
 
