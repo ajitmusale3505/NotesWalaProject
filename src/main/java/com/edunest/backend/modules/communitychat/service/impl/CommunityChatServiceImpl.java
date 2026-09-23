@@ -31,7 +31,7 @@ import com.edunest.backend.modules.communitychat.event.CommunityMessageCreatedEv
 @Service @RequiredArgsConstructor @Transactional(readOnly=true)
 public class CommunityChatServiceImpl implements CommunityChatService {
  private static final int MAX_PAGE=50, MAX_MESSAGES_PER_MINUTE=20;
- private static final Pattern URL=Pattern.compile("(?i)\b(?:https?://|www\.)\S+");
+ 
  private final CommunityChannelRepository channelRepository;
  private final CommunityMessageRepository messageRepository;
  private final CommunityReportRepository reportRepository;
@@ -50,7 +50,7 @@ public class CommunityChatServiceImpl implements CommunityChatService {
   if(muteRepository.existsByChannel_IdAndUser_IdAndExpiresAtAfter(cid,uid,LocalDateTime.now())) throw new AccessDeniedException("You are muted in this channel");
   if(messageRepository.countByAuthor_IdAndCreatedAtAfter(uid,LocalDateTime.now().minusMinutes(1))>=MAX_MESSAGES_PER_MINUTE) throw new BadRequestException("Message rate limit exceeded");
   String content=r.getContent().trim();
-  if(URL.matcher(content).find()) throw new BadRequestException("External links are not allowed in community chat");
+  if(hasExternalLink(content)) throw new BadRequestException("External links are not allowed in community chat");
   CommunityMessage parent=null;
   if(r.getParentMessageId()!=null){parent=getMessage(r.getParentMessageId(),cid); if(parent.getStatus()!=CommunityMessageStatus.ACTIVE) throw new BadRequestException("Parent message is unavailable");}
   CommunityMessage m=CommunityMessage.builder().channel(channel).author(user).parentMessage(parent).content(content).status(CommunityMessageStatus.ACTIVE).pinned(false).build();
@@ -73,6 +73,7 @@ public class CommunityChatServiceImpl implements CommunityChatService {
  @Override @Transactional public void report(Long uid,Long cid,Long mid,ReportMessageRequest r){authorize(uid,cid);CommunityMessage m=getMessage(mid,cid);if(reportRepository.existsByMessage_IdAndReporter_Id(mid,uid))throw new BadRequestException("You already reported this message");reportRepository.save(CommunityMessageReport.builder().message(m).reporter(user(uid)).reason(r.getReason().trim()).createdAt(LocalDateTime.now()).resolved(false).build());}
  @Override @Transactional public void mute(Long aid,Long cid,Long uid,long minutes){if(!isAdmin(user(aid)))throw new AccessDeniedException("Only moderators can mute users");if(minutes<1||minutes>10080)throw new BadRequestException("Mute duration must be between 1 minute and 7 days");CommunityChannel c=channel(cid);User target=user(uid);CommunityUserMute m=muteRepository.findByChannel_IdAndUser_Id(cid,uid).orElse(CommunityUserMute.builder().channel(c).user(target).mutedBy(user(aid)).build());m.setMutedBy(user(aid));m.setExpiresAt(LocalDateTime.now().plusMinutes(minutes));muteRepository.save(m);}
  @Override @Transactional public void unmute(Long aid,Long cid,Long uid){if(!isAdmin(user(aid)))throw new AccessDeniedException("Only moderators can unmute users");muteRepository.findByChannel_IdAndUser_Id(cid,uid).ifPresent(muteRepository::delete);}
+ private boolean hasExternalLink(String content){String value=content.toLowerCase();return value.contains("http://")||value.contains("https://")||value.contains("www.");}
  private CommunityChannel authorize(Long uid,Long cid){UserAcademicProfile p=profileRepository.findByUserIdAndActiveTrue(uid).orElseThrow(()->new AccessDeniedException("Active academic profile required"));CommunityChannel c=channel(cid);if(!c.isActive())throw new BadRequestException("Channel is inactive");if(!c.getCollege().getId().equals(p.getCollege().getId()))throw new AccessDeniedException("You do not have access to this college channel");if(c.getChannelType()==CommunityChannelType.BRANCH&& (c.getBranch()==null||!c.getBranch().getId().equals(p.getBranch().getId())))throw new AccessDeniedException("You do not have access to this branch channel");if(c.getChannelType()==CommunityChannelType.BRANCH&&!collegeBranchRepository.existsByCollege_IdAndBranch_IdAndActiveTrue(p.getCollege().getId(),p.getBranch().getId()))throw new AccessDeniedException("Branch is not active for this college");return c;}
  private CommunityChannel channel(Long id){return channelRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("Community channel not found"));}
  private CommunityMessage getMessage(Long id,Long cid){return messageRepository.findByIdAndChannel_Id(id,cid).orElseThrow(()->new ResourceNotFoundException("Message not found"));}
