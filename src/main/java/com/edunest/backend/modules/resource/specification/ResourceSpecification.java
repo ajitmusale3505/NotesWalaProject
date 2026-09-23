@@ -68,6 +68,33 @@ public final class ResourceSpecification {
         };
     }
 
+    public static Specification<Resource> recommendationFilter(
+            Long universityId,
+            Long branchId,
+            Long academicYearId,
+            Long semesterId,
+            Long subjectId,
+            MaterialType materialType) {
+
+        return publicFilter(
+                null,
+                null,
+                null,
+                universityId,
+                null,
+                branchId,
+                academicYearId,
+                semesterId,
+                subjectId,
+                materialType,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+    }
+
     public static Specification<Resource> filter(
             String keyword, Long branchId, Long semesterId, Long subjectId, MaterialType materialType) {
         return publicFilter(keyword, null, null, null, null, branchId, null, semesterId, subjectId,
