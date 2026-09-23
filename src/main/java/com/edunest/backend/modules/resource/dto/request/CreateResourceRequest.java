@@ -31,6 +31,7 @@ public class CreateResourceRequest {
     @NotNull private Long semesterId;
     @NotNull private Long subjectId;
 
+    @NotNull private DocumentType documentType;
     @NotNull private MaterialType materialType;
     @NotNull private AccessType accessType;
 
@@ -55,6 +56,8 @@ public class CreateResourceRequest {
 
     private boolean downloadable;
     private boolean watermarkEnabled;
+    @Builder.Default
     private boolean active = true;
+    @Builder.Default
     private boolean published = false;
 }
