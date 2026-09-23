@@ -1,13 +1,12 @@
 package com.edunest.backend.modules.storage.service;
 
-import java.io.InputStream;
 import java.time.Duration;
-
 
 import org.springframework.web.multipart.MultipartFile;
 
-import com.edunest.backend.modules.storage.dto.UploadResponse;
 import com.edunest.backend.modules.storage.dto.FileStreamResponse;
+import com.edunest.backend.modules.storage.dto.PdfUploadResponse;
+import com.edunest.backend.modules.storage.dto.UploadResponse;
 
 public interface StorageService {
 
@@ -15,10 +14,10 @@ public interface StorageService {
 
     UploadResponse uploadFile(MultipartFile file, String folder);
 
-    // Keep this because thumbnails are working correctly
+    PdfUploadResponse uploadPdfWithPreview(MultipartFile file, String mainFolder, String previewFolder);
+
     String generateImageUrl(String key);
 
-    // Keep this temporarily for thumbnail URLs
     String generatePublicUrl(String key);
 
     String generatePresignedUrl(String key, Duration duration);
