@@ -1,0 +1,1 @@
+package com.edunest.backend.modules.topic.service; import com.edunest.backend.modules.topic.dto.TopicResponse; import java.util.List; public interface TopicService { List<TopicResponse> getTopicsByUnitId(Long id); TopicResponse getTopicById(Long id); }
