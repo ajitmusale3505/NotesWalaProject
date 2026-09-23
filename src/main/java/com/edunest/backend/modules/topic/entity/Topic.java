@@ -1,0 +1,5 @@
+package com.edunest.backend.modules.topic.entity;
+import com.edunest.backend.common.entity.BaseEntity; import com.edunest.backend.modules.unit.entity.Unit; import jakarta.persistence.*; import lombok.*;
+@Entity @Table(name="syllabus_topics",uniqueConstraints=@UniqueConstraint(name="uk_syllabus_topics_unit_number",columnNames={"unit_id","topic_number"}))
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+public class Topic extends BaseEntity { @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id; @Column(name="topic_number",nullable=false) private Integer topicNumber; @Column(nullable=false,length=300) private String name; @Column(columnDefinition="TEXT") private String description; @Column(nullable=false) private boolean active; @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="unit_id",nullable=false) private Unit unit; }
