@@ -13,6 +13,8 @@ public class CollegeResponse {
     private String name;
     private String code;
     private boolean active;
+    private String city;
+    private String state;
 
     private String universityId;
     private String universityName;
