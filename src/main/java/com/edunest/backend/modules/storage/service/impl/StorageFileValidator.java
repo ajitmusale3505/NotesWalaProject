@@ -17,6 +17,12 @@ public final class StorageFileValidator {
     public static void validateImage(MultipartFile file,long maxBytes){
         validateRequired(file,maxBytes); String type=normalize(file.getContentType());
         if(!isImage(type)) throw new BadRequestException("Only JPEG, PNG and WebP images are allowed");
+        String ext=extension(file.getOriginalFilename());
+        if (("image/jpeg".equals(type) && !(".jpg".equals(ext) || ".jpeg".equals(ext)))
+                || ("image/png".equals(type) && !".png".equals(ext))
+                || ("image/webp".equals(type) && !".webp".equals(ext))) {
+            throw new BadRequestException("Image extension does not match the declared content type");
+        }
         byte[] h=readHeader(file,16); boolean valid=switch(type){
             case "image/jpeg" -> h.length>=3&&(h[0]&255)==0xff&&(h[1]&255)==0xd8&&(h[2]&255)==0xff;
             case "image/png" -> h.length>=8&&h[0]==(byte)0x89&&h[1]==0x50&&h[2]==0x4e&&h[3]==0x47&&h[4]==0x0d&&h[5]==0x0a&&h[6]==0x1a&&h[7]==0x0a;
