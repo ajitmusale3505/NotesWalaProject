@@ -1208,9 +1208,90 @@ public class ResourceServiceImpl implements ResourceService {
             String keyword, int page, int size) {
         int safePage = Math.max(page, 0);
         int safeSize = Math.min(Math.max(size, 1), 50);
-        String safeKeyword = keyword == null ? "" : keyword.trim();
-        return resourceRepository.findByTitleContainingIgnoreCaseAndActiveTrueAndPublishedTrue(
-                        safeKeyword, org.springframework.data.domain.PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt")))
+        String safeKeyword = keyword == null ? null : keyword.trim();
+
+        return resourceRepository.findAll(
+                ResourceSpecification.publicFilter(
+                        safeKeyword, null, null, null, null, null, null, null, null,
+                        null, null, null, null, null, null, null),
+                PageRequest.of(
+                        safePage,
+                        safeSize,
+                        Sort.by(Sort.Direction.DESC, "createdAt")))
+                .map(this::mapToResponse);
+    }
+
+    @Override
+    public org.springframework.data.domain.Page<ResourceResponse> getRecentPublicResourcesPage(
+            int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+
+        return resourceRepository.findAll(
+                ResourceSpecification.publicFilter(
+                        null, null, null, null, null, null, null, null, null,
+                        null, null, null, null, null, null, null),
+                PageRequest.of(
+                        safePage,
+                        safeSize,
+                        Sort.by(
+                                Sort.Order.desc("createdAt"),
+                                Sort.Order.desc("id"))))
+                .map(this::mapToResponse);
+    }
+
+    @Override
+    public org.springframework.data.domain.Page<ResourceResponse> getPopularPublicResourcesPage(
+            int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+
+        return resourceRepository.findAll(
+                ResourceSpecification.publicFilter(
+                        null, null, null, null, null, null, null, null, null,
+                        null, null, null, null, null, null, null),
+                PageRequest.of(
+                        safePage,
+                        safeSize,
+                        Sort.by(
+                                Sort.Order.desc("popularityScore"),
+                                Sort.Order.desc("downloadsCount"),
+                                Sort.Order.desc("ratingAverage"),
+                                Sort.Order.desc("createdAt"),
+                                Sort.Order.desc("id"))))
+                .map(this::mapToResponse);
+    }
+
+    @Override
+    public org.springframework.data.domain.Page<ResourceResponse> getRecommendedPublicResourcesPage(
+            Long universityId,
+            Long branchId,
+            Long academicYearId,
+            Long semesterId,
+            Long subjectId,
+            MaterialType materialType,
+            int page,
+            int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+
+        return resourceRepository.findAll(
+                ResourceSpecification.recommendationFilter(
+                        universityId,
+                        branchId,
+                        academicYearId,
+                        semesterId,
+                        subjectId,
+                        materialType),
+                PageRequest.of(
+                        safePage,
+                        safeSize,
+                        Sort.by(
+                                Sort.Order.desc("popularityScore"),
+                                Sort.Order.desc("downloadsCount"),
+                                Sort.Order.desc("ratingAverage"),
+                                Sort.Order.desc("createdAt"),
+                                Sort.Order.desc("id"))))
                 .map(this::mapToResponse);
     }
 
@@ -1246,10 +1327,15 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public List<ResourceResponse> searchPublicResources(String keyword) {
-        return resourceRepository
-                .findByTitleContainingIgnoreCaseAndActiveTrueAndPublishedTrue(
-                        keyword, PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "createdAt")))
-                .getContent()
+        String safeKeyword = keyword == null ? null : keyword.trim();
+
+        return resourceRepository.findAll(
+                        ResourceSpecification.publicFilter(
+                                safeKeyword, null, null, null, null, null, null, null, null,
+                                null, null, null, null, null, null, null),
+                        Sort.by(
+                                Sort.Order.desc("createdAt"),
+                                Sort.Order.desc("id")))
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
