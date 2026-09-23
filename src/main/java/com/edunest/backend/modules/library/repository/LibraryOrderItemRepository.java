@@ -72,6 +72,9 @@ public interface LibraryOrderItemRepository extends JpaRepository<OrderItem, Lon
               and o.status = :status
             order by o.paidAt desc, oi.id desc
             """)
+    
+    java.util.List<OrderItem> findByOrder_IdIn(java.util.Collection<Long> orderIds);
+
     java.util.List<OrderItem> findPurchasedResources(
             @Param("userId") Long userId,
             @Param("status") OrderStatus status);
