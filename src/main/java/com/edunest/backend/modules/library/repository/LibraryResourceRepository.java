@@ -2,7 +2,6 @@ package com.edunest.backend.modules.library.repository;
 
 import com.edunest.backend.modules.resourceentitlement.entity.EntitlementSource;
 import com.edunest.backend.modules.resourceentitlement.entity.UserResourceEntitlement;
-import com.edunest.backend.modules.resourceentitlement.entity.EntitlementSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
