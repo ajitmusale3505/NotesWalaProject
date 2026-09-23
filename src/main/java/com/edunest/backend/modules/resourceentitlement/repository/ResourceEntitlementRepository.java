@@ -17,4 +17,9 @@ public interface ResourceEntitlementRepository
             Long resourceId,
             Long subscriptionPlanId
     );
+
+    boolean existsByResource_IdAndSubscriptionPlan_IdAndActiveTrue(
+            Long resourceId,
+            Long subscriptionPlanId
+    );
 }
