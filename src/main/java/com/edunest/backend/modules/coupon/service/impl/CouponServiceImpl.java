@@ -29,7 +29,7 @@ public class CouponServiceImpl implements CouponService {
 
     @Override @Transactional
     public CouponResponse create(AdminCreateCouponRequest r) {
-        validateDefinition(r);
+        validateDefinition(r, null);
         Coupon c = new Coupon();
         apply(c,r);
         c.setUsedCount(0);
@@ -38,7 +38,7 @@ public class CouponServiceImpl implements CouponService {
 
     @Override @Transactional
     public CouponResponse update(Long id, AdminCreateCouponRequest r) {
-        Coupon c=get(id); validateDefinition(r);
+        Coupon c=get(id); validateDefinition(r, id);
         if (!c.getCode().equalsIgnoreCase(r.getCode().trim()) && couponRepository.existsByCodeIgnoreCase(r.getCode().trim()))
             throw new BadRequestException("Coupon code already exists");
         apply(c,r);
@@ -65,7 +65,7 @@ public class CouponServiceImpl implements CouponService {
     public void consumeByCode(String code, Long userId) {
         User u=userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("User not found"));
         Coupon c=findCode(code);
-        calculate(c,userId,BigDecimal.ZERO,null,null);
+        validateForConsumption(c, userId);
         if (c.getUsedCount() >= c.getMaxUses()) throw new BadRequestException("Coupon usage limit reached");
         CouponUsage usage=usageRepository.findByCoupon_IdAndUser_Id(c.getId(),userId).orElse(null);
         if (usage!=null && usage.getUsageCount() >= c.getMaxUsesPerUser()) throw new BadRequestException("Coupon per-user usage limit reached");
@@ -93,14 +93,24 @@ public class CouponServiceImpl implements CouponService {
         return d.min(amount).max(BigDecimal.ZERO);
     }
 
-    private void validateDefinition(AdminCreateCouponRequest r) {
+    private void validateDefinition(AdminCreateCouponRequest r, Long id) {
         if(r.getDiscountValue()==null || r.getMinimumOrderAmount()==null || r.getMaxUses()==null || r.getMaxUsesPerUser()==null) throw new BadRequestException("Coupon limits and discount are required");
         if(r.getCouponType()==CouponType.PERCENTAGE && r.getDiscountValue().compareTo(BigDecimal.valueOf(100))>0) throw new BadRequestException("Percentage discount cannot exceed 100");
         if(r.getExpiryDate()!=null && r.getStartDate()!=null && !r.getExpiryDate().isAfter(r.getStartDate())) throw new BadRequestException("Expiry date must be after start date");
         if(r.getScope()==CouponScope.RESOURCE && r.getResourceId()==null) throw new BadRequestException("Resource is required for a resource coupon");
         if(r.getScope()==CouponScope.SUBSCRIPTION && r.getSubscriptionPlanId()==null) throw new BadRequestException("Subscription plan is required for a subscription coupon");
         if(r.getScope()==CouponScope.GENERAL && (r.getResourceId()!=null || r.getSubscriptionPlanId()!=null)) throw new BadRequestException("General coupon cannot have a target");
-        if(couponRepository.existsByCodeIgnoreCase(r.getCode().trim())) throw new BadRequestException("Coupon code already exists");
+        if (id == null && couponRepository.existsByCodeIgnoreCase(r.getCode().trim())) throw new BadRequestException("Coupon code already exists");
+    }
+
+    private void validateForConsumption(Coupon c, Long userId) {
+        LocalDateTime now=LocalDateTime.now();
+        if(!c.isActive()) throw new BadRequestException("Coupon is inactive");
+        if(c.getStartDate()!=null && now.isBefore(c.getStartDate())) throw new BadRequestException("Coupon is not active yet");
+        if(c.getExpiryDate()!=null && !now.isBefore(c.getExpiryDate())) throw new BadRequestException("Coupon has expired");
+        if(c.getUsedCount() >= c.getMaxUses()) throw new BadRequestException("Coupon usage limit reached");
+        int used=usageRepository.findByCoupon_IdAndUser_Id(c.getId(),userId).map(CouponUsage::getUsageCount).orElse(0);
+        if(used>=c.getMaxUsesPerUser()) throw new BadRequestException("Coupon per-user usage limit reached");
     }
 
     private void apply(Coupon c, AdminCreateCouponRequest r) {
