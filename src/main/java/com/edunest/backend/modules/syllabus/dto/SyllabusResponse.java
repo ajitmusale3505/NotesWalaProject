@@ -1,0 +1,2 @@
+package com.edunest.backend.modules.syllabus.dto; import com.edunest.backend.modules.subject.dto.SubjectResponseDto; import lombok.*; import java.util.*;
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder public class SyllabusResponse { private SubjectResponseDto subject; private List<SyllabusUnitResponse> units; }
