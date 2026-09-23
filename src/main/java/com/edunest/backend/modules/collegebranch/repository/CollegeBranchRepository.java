@@ -21,4 +21,6 @@ public interface CollegeBranchRepository extends JpaRepository<CollegeBranch, Lo
     boolean existsByCollegeIdAndBranchId(Long collegeId, Long branchId);
 
     boolean existsByCollegeIdAndBranchIdAndActiveTrue(Long collegeId, Long branchId);
+
+    boolean existsByCollege_IdAndBranch_IdAndActiveTrue(Long collegeId, Long branchId);
 }
