@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.edunest.backend.common.enums.CouponType;
+import com.edunest.backend.common.enums.CouponScope;
+import com.edunest.backend.modules.resource.entity.Resource;
+import com.edunest.backend.modules.subscription.entity.SubscriptionPlan;
 import com.edunest.backend.modules.resource.entity.Resource;
 import com.edunest.backend.modules.subscription.entity.SubscriptionPlan;
 import jakarta.persistence.*;
@@ -37,6 +40,21 @@ public class Coupon {
     @Column(nullable = false, length = 20)
     private CouponType couponType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private CouponScope scope;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "resource_id")
+    private Resource resource;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subscription_plan_id")
+    private SubscriptionPlan subscriptionPlan;
+
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal minimumOrderAmount;
+
     @Column(precision = 12, scale = 2)
     private BigDecimal minimumOrderAmount;
 
@@ -47,7 +65,13 @@ public class Coupon {
     private Integer maxUses;
 
     @Column(nullable = false)
+    @Column(nullable = false)
     private Integer usedCount;
+
+    @Column(nullable = false)
+    private Integer maxUsesPerUser;
+
+    private LocalDateTime startDate;
 
     @Column(nullable = false)
     private Integer maxUsesPerUser;
