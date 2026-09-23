@@ -15,4 +15,6 @@ public class AcademicYearResponse {
     private Integer startYear;
     private Integer endYear;
     private boolean active;
+    private String universityId;
+    private String universityName;
 }
