@@ -5,6 +5,7 @@ import com.edunest.backend.common.enums.OrderStatus;
 import com.edunest.backend.common.enums.PaymentStatus;
 import com.edunest.backend.modules.order.entity.Order;
 import com.edunest.backend.modules.order.repository.OrderRepository;
+import com.edunest.backend.modules.coupon.service.CouponService;
 import com.edunest.backend.modules.payment.dto.request.VerifyPaymentRequest;
 import com.edunest.backend.modules.payment.entity.Payment;
 import com.edunest.backend.modules.payment.repository.PaymentRepository;
@@ -27,6 +28,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final CouponService couponService;
 
     @Value("${payment.razorpay.webhook-secret:}")
     private String razorpaySecret;
@@ -79,6 +81,10 @@ public class PaymentServiceImpl implements PaymentService {
         order.setStatus(OrderStatus.PAID);
         order.setPaidAt(LocalDateTime.now());
         order.setPaymentReference(request.getProviderPaymentId());
+
+        if (order.getCouponCode() != null && !order.getCouponCode().isBlank()) {
+            couponService.consumeByCode(order.getCouponCode(), order.getUser().getId());
+        }
 
         paymentRepository.save(payment);
         orderRepository.save(order);
