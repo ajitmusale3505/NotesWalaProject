@@ -98,10 +98,16 @@ public class R2StorageServiceImpl implements StorageService {
                     .mainFile(UploadResponse.builder()
                             .fileName(mainKey)
                             .fileUrl("r2://" + bucketName + "/" + mainKey)
+                            .originalFileName(file.getOriginalFilename())
+                            .contentType("application/pdf")
+                            .fileSizeBytes(pdfBytes.length)
                             .build())
                     .previewFile(UploadResponse.builder()
                             .fileName(previewKey)
                             .fileUrl("r2://" + bucketName + "/" + previewKey)
+                            .originalFileName("preview.png")
+                            .contentType("image/png")
+                            .fileSizeBytes(generated.getContent().length)
                             .build())
                     .pageCount(generated.getPageCount())
                     .previewPages(generated.getPreviewPages())
@@ -209,6 +215,9 @@ public class R2StorageServiceImpl implements StorageService {
             return UploadResponse.builder()
                     .fileName(key)
                     .fileUrl("r2://" + bucketName + "/" + key)
+                    .originalFileName(file.getOriginalFilename())
+                    .contentType(normalizeContentType(file.getContentType()))
+                    .fileSizeBytes(file.getSize())
                     .build();
         } catch (IOException | S3Exception ex) {
             throw new IllegalStateException("File upload failed", ex);
