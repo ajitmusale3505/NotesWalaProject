@@ -13,7 +13,7 @@ public interface LibraryOrderRepository extends JpaRepository<Order, Long> {
     @Query("""
             select distinct o
             from Order o
-            left join fetch o.items i
+            left join fetch OrderItem i on i.order = o
             left join fetch i.resource r
             where o.user.id = :userId
             order by o.createdAt desc, o.id desc
