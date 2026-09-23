@@ -14,6 +14,8 @@ public interface StorageService {
 
     UploadResponse uploadFile(MultipartFile file, String folder);
 
+    UploadResponse uploadImage(MultipartFile file, String folder);
+
     PdfUploadResponse uploadPdfWithPreview(MultipartFile file, String mainFolder, String previewFolder);
 
     String generateImageUrl(String key);
