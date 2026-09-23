@@ -9,6 +9,7 @@ import com.edunest.backend.modules.review.dto.request.CreateReviewRequest;
 import com.edunest.backend.modules.review.dto.request.UpdateReviewRequest;
 import com.edunest.backend.modules.review.dto.response.ReviewResponse;
 import com.edunest.backend.modules.review.dto.response.ReviewSummaryResponse;
+import com.edunest.backend.modules.review.service.ReviewService;
 import com.edunest.backend.modules.review.entity.Review;
 import com.edunest.backend.modules.review.repository.ReviewRepository;
 import com.edunest.backend.modules.user.entity.User;
