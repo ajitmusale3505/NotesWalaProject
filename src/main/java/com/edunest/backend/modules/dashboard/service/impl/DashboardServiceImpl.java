@@ -72,7 +72,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     private SubjectResponseDto mapSubject(Subject s) {
         return SubjectResponseDto.builder()
-                .id(s.getId())
+                .id(com.edunest.backend.common.util.PublicIdUtils.subjectId(s.getId()))
                 .name(s.getName())
                 .code(s.getCode())
                 .active(s.isActive())
