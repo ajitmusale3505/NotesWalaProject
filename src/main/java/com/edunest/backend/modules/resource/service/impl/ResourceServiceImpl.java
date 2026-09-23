@@ -371,6 +371,7 @@ public class ResourceServiceImpl implements ResourceService {
                     .discountPrice(request.getDiscountPrice())
                     .fileKey(mainFileKey)
                     .previewKey(previewKey)
+                    .fileSizeBytes(pdfUpload.getMainFile().getFileSizeBytes())
                     .thumbnailUrl(thumbnailUrl)
                     .coverImageUrl(coverImageUrl)
                     .pageCount(pdfUpload.getPageCount())
