@@ -11,4 +11,8 @@ import com.edunest.backend.modules.coupon.entity.Coupon;
 public interface CouponRepository extends JpaRepository<Coupon, Long> {
 
     Optional<Coupon> findByCode(String code);
+
+    Optional<Coupon> findByCodeIgnoreCase(String code);
+
+    boolean existsByCodeIgnoreCase(String code);
 }
