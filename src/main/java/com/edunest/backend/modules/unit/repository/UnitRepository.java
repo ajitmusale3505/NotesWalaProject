@@ -19,4 +19,6 @@ public interface UnitRepository extends JpaRepository<Unit, Long> {
 
     @EntityGraph(attributePaths = {"subject"})
     List<Unit> findBySubjectIdAndActiveTrueOrderByUnitNumberAsc(Long subjectId);
+    boolean existsBySubjectIdAndUnitNumber(Long subjectId, Integer unitNumber);
+    boolean existsBySubjectIdAndUnitNumberAndIdNot(Long subjectId, Integer unitNumber, Long id);
 }
