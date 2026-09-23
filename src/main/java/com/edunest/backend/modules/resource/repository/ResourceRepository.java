@@ -95,6 +95,18 @@ public interface ResourceRepository extends JpaRepository<Resource, Long>, JpaSp
     @Modifying
     @Query("""
             update Resource r
+               set r.ratingAverage = :ratingAverage,
+                   r.ratingCount = :ratingCount
+             where r.id = :resourceId
+            """)
+    int updateRatingSummary(
+            @Param("resourceId") Long resourceId,
+            @Param("ratingAverage") Double ratingAverage,
+            @Param("ratingCount") Integer ratingCount);
+
+    @Modifying
+    @Query("""
+            update Resource r
                set r.downloadsCount = coalesce(r.downloadsCount, 0) + 1,
                    r.popularityScore = coalesce(r.popularityScore, 0) + 1
              where r.id = :resourceId
