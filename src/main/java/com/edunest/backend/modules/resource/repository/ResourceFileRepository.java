@@ -11,4 +11,6 @@ public interface ResourceFileRepository
         extends JpaRepository<ResourceFile, Long> {
 
     List<ResourceFile> findByResourceId(Long resourceId);
+
+    void deleteByResourceId(Long resourceId);
 }
