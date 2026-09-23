@@ -15,7 +15,7 @@ import com.edunest.backend.modules.resourceanalytics.repository.ResourceAnalytic
 import com.edunest.backend.modules.review.repository.ReviewRepository;
 import com.edunest.backend.modules.role.entity.Role;
 import com.edunest.backend.modules.role.repository.RoleRepository;
-import com.edunest.backend.modulessubject.repository.SubjectRepository;
+import com.edunest.backend.modules.subject.repository.SubjectRepository;
 import com.edunest.backend.modules.subscription.repository.SubscriptionPlanRepository;
 import com.edunest.backend.modules.subscription.repository.SubscriptionRepository;
 import com.edunest.backend.modules.topic.repository.TopicRepository;
