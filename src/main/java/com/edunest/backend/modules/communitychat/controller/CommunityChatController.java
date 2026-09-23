@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.edunest.backend.modules.communitychat.dto.response.CommunityAttachmentResponse;
 
 @RestController
 @RequestMapping("/community/channels")
@@ -19,6 +21,7 @@ public class CommunityChatController {
  @GetMapping("/{channelId}/messages") public ResponseEntity<ApiResponse<Page<CommunityMessageResponse>>> history(@PathVariable Long channelId,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size){return ok("Messages fetched successfully",service.history(SecurityUtils.getCurrentUserId(),channelId,page,size));}
  @GetMapping("/{channelId}/messages/{messageId}/thread") public ResponseEntity<ApiResponse<Page<CommunityMessageResponse>>> thread(@PathVariable Long channelId,@PathVariable Long messageId,@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size){return ok("Thread fetched successfully",service.thread(SecurityUtils.getCurrentUserId(),channelId,messageId,page,size));}
  @PostMapping("/{channelId}/messages") public ResponseEntity<ApiResponse<CommunityMessageResponse>> send(@PathVariable Long channelId,@Valid @RequestBody SendMessageRequest request){return ok("Message sent successfully",service.send(SecurityUtils.getCurrentUserId(),channelId,request));}
+ @PostMapping("/{channelId}/messages/{messageId}/attachments") public ResponseEntity<ApiResponse<CommunityAttachmentResponse>> attach(@PathVariable Long channelId,@PathVariable Long messageId,@RequestParam("file") MultipartFile file){return ok("Attachment added successfully",service.attach(SecurityUtils.getCurrentUserId(),channelId,messageId,file));}
  @DeleteMapping("/{channelId}/messages/{messageId}") public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long channelId,@PathVariable Long messageId){service.delete(SecurityUtils.getCurrentUserId(),channelId,messageId);return empty("Message deleted successfully");}
  @PostMapping("/{channelId}/messages/{messageId}/pin") public ResponseEntity<ApiResponse<Void>> pin(@PathVariable Long channelId,@PathVariable Long messageId,@RequestParam(defaultValue="true") boolean pinned){service.pin(SecurityUtils.getCurrentUserId(),channelId,messageId,pinned);return empty("Message pin state updated");}
  @PostMapping("/{channelId}/messages/{messageId}/report") public ResponseEntity<ApiResponse<Void>> report(@PathVariable Long channelId,@PathVariable Long messageId,@Valid @RequestBody ReportMessageRequest request){service.report(SecurityUtils.getCurrentUserId(),channelId,messageId,request);return empty("Message reported successfully");}
