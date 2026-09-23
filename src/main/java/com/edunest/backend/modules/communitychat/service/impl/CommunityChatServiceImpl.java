@@ -27,6 +27,7 @@ import com.edunest.backend.modules.communitychat.dto.response.CommunityAttachmen
 import com.edunest.backend.modules.communitychat.repository.CommunityAttachmentRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import com.edunest.backend.modules.communitychat.event.CommunityMessageCreatedEvent;
+import com.edunest.backend.modules.communitychat.service.CommunityChatService;
 
 @Service @RequiredArgsConstructor @Transactional(readOnly=true)
 public class CommunityChatServiceImpl implements CommunityChatService {
