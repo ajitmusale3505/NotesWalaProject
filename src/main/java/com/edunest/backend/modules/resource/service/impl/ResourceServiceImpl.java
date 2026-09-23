@@ -5,6 +5,7 @@ import com.edunest.backend.common.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,6 +82,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public ResourceResponse createResource(CreateResourceRequest request) {
 
         Category category = categoryRepository.findById(request.getCategoryId())
@@ -152,6 +154,7 @@ public class ResourceServiceImpl implements ResourceService {
     
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public ResourceResponse patchResource(
             Long resourceId,
             AdminPatchResourceRequest request) {
@@ -295,6 +298,7 @@ public class ResourceServiceImpl implements ResourceService {
     
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public ResourceResponse adminUploadResource(
             MultipartFile pdfFile,
             MultipartFile previewFile,
@@ -681,6 +685,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public ResourceResponse publishResource(Long resourceId) {
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
@@ -698,6 +703,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public ResourceResponse unpublishResource(Long resourceId) {
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
@@ -707,6 +713,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteResource(Long resourceId) {
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
@@ -903,6 +910,7 @@ public class ResourceServiceImpl implements ResourceService {
     
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public ResourceResponse replaceResource(
             Long resourceId,
             AdminPutResourceRequest request) {
