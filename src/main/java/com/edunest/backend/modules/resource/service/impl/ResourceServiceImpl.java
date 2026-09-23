@@ -35,13 +35,10 @@ import com.edunest.backend.modules.storage.service.StorageService;
 import com.edunest.backend.modules.subject.entity.Subject;
 import com.edunest.backend.modules.subject.repository.SubjectRepository;
 
-import com.edunest.backend.common.enums.SubscriptionStatus;
 import com.edunest.backend.common.exception.AccessDeniedException;
 import com.edunest.backend.modules.order.service.OrderService;
 import com.edunest.backend.modules.resource.dto.response.ResourceAccessResponse;
-import com.edunest.backend.modules.resourceentitlement.service.ResourceEntitlementService;
-import com.edunest.backend.modules.subscription.entity.Subscription;
-import com.edunest.backend.modules.subscription.repository.SubscriptionRepository;
+import com.edunest.backend.modules.resourceentitlement.service.UserResourceEntitlementService;
 import com.edunest.backend.modules.university.entity.University;
 import com.edunest.backend.modules.university.repository.UniversityRepository;
 import com.edunest.backend.modules.user.entity.User;
@@ -76,8 +73,7 @@ public class ResourceServiceImpl implements ResourceService {
     
     private final OrderService orderService;
     private final UserRepository userRepository;
-    private final SubscriptionRepository subscriptionRepository;
-    private final ResourceEntitlementService resourceEntitlementService;
+    private final UserResourceEntitlementService userResourceEntitlementService;
     private final StorageService storageService;
     private final UniversityRepository universityRepository;
     private final CollegeRepository collegeRepository;
@@ -524,6 +520,10 @@ public class ResourceServiceImpl implements ResourceService {
             Long userId,
             Long resourceId) {
 
+        if (userId == null) {
+            throw new AccessDeniedException("Authenticated user required");
+        }
+
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 
@@ -533,118 +533,30 @@ public class ResourceServiceImpl implements ResourceService {
 
         AccessType accessType = resource.getAccessType();
 
-        // ================= FREE =================
         if (accessType == AccessType.FREE) {
-            return ResourceAccessResponse.builder()
-                    .allowed(true)
-                    .message("Free resource")
-                    .canPreview(true)
-                    .canViewFull(true)
-                    .canDownload(resource.isDownloadable())
-                    .requiresPurchase(false)
-                    .viewUrl(generateSignedUrl(resource.getFileKey(), 30))
-                    .downloadUrl(
-                            resource.isDownloadable()
-                                    ? generateSignedUrl(resource.getFileKey(), 10)
-                                    : null
-                    )
-                    .build();
+            return grantedAccess(resource, "Free resource");
         }
 
-        // ================= DIRECT PURCHASE =================
         if (accessType == AccessType.DIRECT_PURCHASE) {
-
-            if (orderService.hasPurchased(userId, resourceId)) {
-                return ResourceAccessResponse.builder()
-                		.allowed(true)
-                		.message("Purchased resource")
-                		.canPreview(true)
-                		.canViewFull(true)
-                		.canDownload(resource.isDownloadable())
-                		.requiresPurchase(false)
-                		.viewUrl(generateSignedUrl(resource.getFileKey(), 30))
-                		.downloadUrl(
-                		        resource.isDownloadable()
-                		                ? generateSignedUrl(resource.getFileKey(), 10)
-                		                : null
-                		)
-                        .build();
+            if (userResourceEntitlementService.hasActiveEntitlement(
+                    userId, resourceId, "PURCHASE")) {
+                return grantedAccess(resource, "Purchase entitlement active");
             }
 
-            return ResourceAccessResponse.builder()
-            		.allowed(false)
-            		.message("Purchase required")
-            		.canPreview(true)
-            		.canViewFull(false)
-            		.canDownload(false)
-            		.requiresPurchase(true)
-            		.viewUrl(null)
-            		.downloadUrl(null)
-                    .build();
+            return previewOnlyAccess("Purchase required");
         }
 
-        // ================= SUBSCRIPTION =================
         if (accessType == AccessType.SUBSCRIPTION) {
-
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("User not found"));
-
-            Subscription subscription = subscriptionRepository
-                    .findByUserAndStatus(user, SubscriptionStatus.ACTIVE)
-                    .orElse(null);
-
-            if (subscription != null
-                    && subscription.getEndDate() != null
-                    && subscription.getEndDate().isAfter(java.time.LocalDateTime.now())) {
-
-                boolean entitled =
-                        resourceEntitlementService.hasEntitlement(
-                                resourceId,
-                                subscription.getPlan().getId());
-
-                if (entitled) {
-                    return ResourceAccessResponse.builder()
-                    		.allowed(true)
-                    		.message("Subscription access granted")
-                    		.canPreview(true)
-                    		.canViewFull(true)
-                    		.canDownload(resource.isDownloadable())
-                    		.requiresPurchase(false)
-                    		.viewUrl(generateSignedUrl(resource.getFileKey(), 30))
-                    		.downloadUrl(
-                    		        resource.isDownloadable()
-                    		                ? generateSignedUrl(resource.getFileKey(), 10)
-                    		                : null
-                    		)
-                            .build();
-                }
+            if (userResourceEntitlementService.hasActiveEntitlement(
+                    userId, resourceId, "SUBSCRIPTION")) {
+                return grantedAccess(resource, "Subscription entitlement active");
             }
 
-            return ResourceAccessResponse.builder()
-            		.allowed(false)
-            		.message("Active subscription required")
-            		.canPreview(true)
-            		.canViewFull(false)
-            		.canDownload(false)
-            		.requiresPurchase(true)
-            		.viewUrl(null)
-            		.downloadUrl(null)
-                    .build();
+            return previewOnlyAccess("Active subscription entitlement required");
         }
 
-        // ================= BUNDLE ONLY =================
         if (accessType == AccessType.BUNDLE_ONLY) {
-            return ResourceAccessResponse.builder()
-            		.allowed(false)
-            		.message("Bundle access not implemented yet")
-            		.canPreview(true)
-            		.canViewFull(false)
-            		.canDownload(false)
-            		.requiresPurchase(true)
-            		.viewUrl(null)
-            		.downloadUrl(null)
-                    .build();
+            return previewOnlyAccess("Bundle entitlement required");
         }
 
         return ResourceAccessResponse.builder()
@@ -654,12 +566,35 @@ public class ResourceServiceImpl implements ResourceService {
                 .canViewFull(false)
                 .canDownload(false)
                 .requiresPurchase(false)
-                .viewUrl(null)
-                .downloadUrl(null)
                 .build();
     }
-    
-    
+
+    private ResourceAccessResponse grantedAccess(Resource resource, String message) {
+        return ResourceAccessResponse.builder()
+                .allowed(true)
+                .message(message)
+                .canPreview(true)
+                .canViewFull(true)
+                .canDownload(resource.isDownloadable())
+                .requiresPurchase(false)
+                .viewUrl(generateSignedUrl(resource.getFileKey(), 30))
+                .downloadUrl(resource.isDownloadable()
+                        ? generateSignedUrl(resource.getFileKey(), 10)
+                        : null)
+                .build();
+    }
+
+    private ResourceAccessResponse previewOnlyAccess(String message) {
+        return ResourceAccessResponse.builder()
+                .allowed(false)
+                .message(message)
+                .canPreview(true)
+                .canViewFull(false)
+                .canDownload(false)
+                .requiresPurchase(true)
+                .build();
+    }
+
     @Override
     public List<ResourceResponse> filterResources(
             String keyword,
