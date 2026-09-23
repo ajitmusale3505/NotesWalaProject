@@ -88,7 +88,7 @@ public class UserResourceEntitlementServiceImpl implements UserResourceEntitleme
             throw new BadRequestException("Subscription plan is inactive");
         }
 
-        if (!resourceEntitlementRepository.existsByResource_IdAndSubscriptionPlan_Id(
+        if (!resourceEntitlementRepository.existsByResource_IdAndSubscriptionPlan_IdAndActiveTrue(
                 resource.getId(), plan.getId())) {
             throw new BadRequestException("Subscription plan does not include this resource");
         }
