@@ -42,6 +42,9 @@ public interface ResourceRepository extends JpaRepository<Resource, Long>, JpaSp
 
     List<Resource> findByActiveTrue();
 
+    long countByActiveTrue();
+    long countByPublishedTrue();
+
     // Feed API
     List<Resource> findByBranch_IdAndSemester_IdAndActiveTrueAndPublishedTrue(
             Long branchId,
