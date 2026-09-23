@@ -66,7 +66,7 @@ public class ResourceEntitlementServiceImpl implements ResourceEntitlementServic
 
     @Override
     public boolean hasEntitlement(Long resourceId, Long subscriptionPlanId) {
-        return entitlementRepository.existsByResource_IdAndSubscriptionPlan_Id(
+        return entitlementRepository.existsByResource_IdAndSubscriptionPlan_IdAndActiveTrue(
                 resourceId,
                 subscriptionPlanId
         );
