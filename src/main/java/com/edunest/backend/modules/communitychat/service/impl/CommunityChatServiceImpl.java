@@ -20,6 +20,11 @@ import org.springframework.data.domain.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import com.edunest.backend.modules.storage.service.StorageService;
+import com.edunest.backend.modules.storage.dto.UploadResponse;
+import com.edunest.backend.modules.communitychat.dto.response.CommunityAttachmentResponse;
+import com.edunest.backend.modules.communitychat.repository.CommunityAttachmentRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import com.edunest.backend.modules.communitychat.event.CommunityMessageCreatedEvent;
 
@@ -35,6 +40,8 @@ public class CommunityChatServiceImpl implements CommunityChatService {
  private final UserAcademicProfileRepository profileRepository;
  private final CollegeBranchRepository collegeBranchRepository;
  private final ApplicationEventPublisher eventPublisher;
+ private final StorageService storageService;
+ private final CommunityAttachmentRepository attachmentRepository;
 
  @Override public Page<CommunityMessageResponse> history(Long uid,Long cid,int page,int size){authorize(uid,cid); return messageRepository.findByChannel_IdAndStatusOrderByCreatedAtDesc(cid,CommunityMessageStatus.ACTIVE,PageRequest.of(Math.max(0,page),Math.min(Math.max(1,size),MAX_PAGE))).map(this::response);}
  @Override public Page<CommunityMessageResponse> thread(Long uid,Long cid,Long mid,int page,int size){authorize(uid,cid); CommunityMessage root=getMessage(mid,cid); return messageRepository.findThread(cid,root.getId(),PageRequest.of(Math.max(0,page),Math.min(Math.max(1,size),MAX_PAGE))).map(this::response);}
@@ -50,6 +57,16 @@ public class CommunityChatServiceImpl implements CommunityChatService {
   CommunityMessage saved=messageRepository.save(m);
   eventPublisher.publishEvent(new CommunityMessageCreatedEvent(saved));
   return response(saved);
+ }
+ @Override @Transactional public CommunityAttachmentResponse attach(Long uid,Long cid,Long mid,MultipartFile file){
+  authorize(uid,cid); CommunityMessage message=getMessage(mid,cid);
+  if(!message.getAuthor().getId().equals(uid)&&!isAdmin(user(uid))) throw new AccessDeniedException("You cannot modify this message");
+  if(message.getStatus()!=CommunityMessageStatus.ACTIVE) throw new BadRequestException("Message is unavailable");
+  if(file==null||file.isEmpty()) throw new BadRequestException("Attachment is required");
+  UploadResponse uploaded=storageService.uploadFile(file,"community-chat");
+  CommunityMessageAttachment attachment=CommunityMessageAttachment.builder().message(message).storageKey(uploaded.getFileUrl()).fileName(uploaded.getOriginalFileName()).contentType(uploaded.getContentType()).sizeBytes(uploaded.getFileSizeBytes()).build();
+  CommunityMessageAttachment saved=attachmentRepository.save(attachment);
+  return CommunityAttachmentResponse.builder().id(saved.getId()).fileName(saved.getFileName()).contentType(saved.getContentType()).fileUrl(saved.getStorageKey()).sizeBytes(saved.getSizeBytes()).build();
  }
  @Override @Transactional public void delete(Long uid,Long cid,Long mid){CommunityChannel c=authorize(uid,cid); CommunityMessage m=getMessage(mid,cid); User u=user(uid); if(!m.getAuthor().getId().equals(uid)&&!isAdmin(u))throw new AccessDeniedException("You cannot delete this message"); m.setStatus(CommunityMessageStatus.DELETED);m.setContent("");m.setDeletedAt(LocalDateTime.now());m.setDeletedBy(u);}
  @Override @Transactional public void pin(Long uid,Long cid,Long mid,boolean pinned){CommunityChannel c=authorize(uid,cid);if(!isAdmin(user(uid)))throw new AccessDeniedException("Only moderators can pin messages");getMessage(mid,cid).setPinned(pinned);}
