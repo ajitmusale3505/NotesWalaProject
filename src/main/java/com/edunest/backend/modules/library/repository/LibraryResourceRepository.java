@@ -1,6 +1,7 @@
 package com.edunest.backend.modules.library.repository;
 
-import com.edunest.backend.modules.resource.entity.Resource;
+import com.edunest.backend.modules.resourceentitlement.entity.EntitlementSource;
+import com.edunest.backend.modules.resourceentitlement.entity.UserResourceEntitlement;
 import com.edunest.backend.modules.resourceentitlement.entity.EntitlementSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,10 +10,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface LibraryResourceRepository extends JpaRepository<Resource, Long> {
+public interface LibraryResourceRepository extends JpaRepository<UserResourceEntitlement, Long> {
 
     @Query("""
-            select r
+            select e
             from UserResourceEntitlement e
             join e.resource r
             where e.user.id = :userId
@@ -30,7 +31,7 @@ public interface LibraryResourceRepository extends JpaRepository<Resource, Long>
               and (:materialType is null or r.materialType = :materialType)
             order by r.publishedAt desc, r.id desc
             """)
-    Page<Resource> findSubscriptionResources(
+    Page<UserResourceEntitlement> findSubscriptionResources(
             @Param("userId") Long userId,
             @Param("source") com.edunest.backend.modules.resourceentitlement.entity.EntitlementSource source,
             @Param("now") java.time.LocalDateTime now,
