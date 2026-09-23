@@ -13,6 +13,7 @@ public class AdminCreateCouponRequest {
     private Long resourceId;
     private Long subscriptionPlanId;
     @NotNull @DecimalMin("0.00") private BigDecimal discountValue;
+    private BigDecimal maximumDiscountAmount;
     @NotNull @DecimalMin("0.00") private BigDecimal minimumOrderAmount;
     @NotNull @Min(1) private Integer maxUses;
     @NotNull @Min(1) private Integer maxUsesPerUser;
