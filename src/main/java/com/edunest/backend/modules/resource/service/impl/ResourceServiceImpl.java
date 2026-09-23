@@ -23,6 +23,9 @@ import com.edunest.backend.modules.college.repository.CollegeRepository;
 import com.edunest.backend.modules.resource.dto.request.CreateResourceRequest;
 import com.edunest.backend.modules.resource.dto.response.ResourceResponse;
 import com.edunest.backend.modules.resource.entity.Resource;
+import com.edunest.backend.modules.resource.entity.ResourceFile;
+import com.edunest.backend.modules.resource.repository.ResourceFileRepository;
+import com.edunest.backend.common.enums.FileType;
 import com.edunest.backend.modules.resource.repository.ResourceRepository;
 import com.edunest.backend.modules.resource.service.ResourceService;
 import com.edunest.backend.modules.resource.specification.ResourceSpecification;
@@ -65,6 +68,7 @@ import com.edunest.backend.modules.storage.dto.FileStreamResponse;
 public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceRepository resourceRepository;
+    private final ResourceFileRepository resourceFileRepository;
     private final CategoryRepository categoryRepository;
     private final BranchRepository branchRepository;
     private final SemesterRepository semesterRepository;
@@ -335,11 +339,11 @@ public class ResourceServiceImpl implements ResourceService {
         String coverImageUrl = null;
 
         try {
-            mainFileKey = storageService.uploadFile(pdfFile, "resources/main").getFileName();
+            com.edunest.backend.modules.storage.dto.PdfUploadResponse pdfUpload =
+                    storageService.uploadPdfWithPreview(pdfFile, "resources/main", "resources/preview");
+            mainFileKey = pdfUpload.getMainFile().getFileName();
+            previewKey = pdfUpload.getPreviewFile().getFileName();
 
-            if (previewFile != null && !previewFile.isEmpty()) {
-                previewKey = storageService.uploadFile(previewFile, "resources/preview").getFileName();
-            }
             if (thumbnail != null && !thumbnail.isEmpty()) {
                 thumbnailUrl = storageService.uploadFile(thumbnail, "resources/thumb").getFileName();
             }
@@ -369,8 +373,8 @@ public class ResourceServiceImpl implements ResourceService {
                     .previewKey(previewKey)
                     .thumbnailUrl(thumbnailUrl)
                     .coverImageUrl(coverImageUrl)
-                    .pageCount(request.getPageCount())
-                    .previewPages(request.getPreviewPages())
+                    .pageCount(pdfUpload.getPageCount())
+                    .previewPages(pdfUpload.getPreviewPages())
                     .version(request.getVersion())
                     .language(request.getLanguage())
                     .tags(normalizeTags(request.getTags()))
@@ -388,6 +392,29 @@ public class ResourceServiceImpl implements ResourceService {
                     .build();
 
             Resource saved = resourceRepository.save(resource);
+
+            resourceFileRepository.save(ResourceFile.builder()
+                    .resource(saved)
+                    .fileUrl(pdfUpload.getMainFile().getFileUrl())
+                    .originalFileName(pdfUpload.getMainFile().getOriginalFileName())
+                    .storageKey(pdfUpload.getMainFile().getFileName())
+                    .mimeType(pdfUpload.getMainFile().getContentType())
+                    .fileType(FileType.PDF)
+                    .fileSizeBytes(pdfUpload.getMainFile().getFileSizeBytes())
+                    .previewAllowed(false)
+                    .build());
+
+            resourceFileRepository.save(ResourceFile.builder()
+                    .resource(saved)
+                    .fileUrl(pdfUpload.getPreviewFile().getFileUrl())
+                    .originalFileName(pdfUpload.getPreviewFile().getOriginalFileName())
+                    .storageKey(pdfUpload.getPreviewFile().getFileName())
+                    .mimeType(pdfUpload.getPreviewFile().getContentType())
+                    .fileType(FileType.IMAGE)
+                    .fileSizeBytes(pdfUpload.getPreviewFile().getFileSizeBytes())
+                    .previewAllowed(true)
+                    .build());
+
             return mapToResponse(saved);
         } catch (RuntimeException ex) {
             // DB failure after a successful object upload must not leave orphaned files.
@@ -670,7 +697,7 @@ public class ResourceServiceImpl implements ResourceService {
             throw new BadRequestException("Preview not available");
         }
 
-        return storageService.generatePublicUrl(previewKey);
+        return storageService.generatePresignedUrl(previewKey, java.time.Duration.ofMinutes(60));
     }
     
     
@@ -713,7 +740,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 
         trackView(resourceId);
-        return generateSignedUrl(resource.getFileKey(), 30);
+        return generateSignedUrl(resource.getFileKey(), 60);
     }
 
     @Override
