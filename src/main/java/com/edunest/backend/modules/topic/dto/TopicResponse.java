@@ -1,0 +1,2 @@
+package com.edunest.backend.modules.topic.dto; import lombok.*;
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder public class TopicResponse { private String id; private Integer topicNumber; private String name; private String description; private boolean active; private String unitId; private Integer unitNumber; private String subjectId; private String subjectName; }
