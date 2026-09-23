@@ -345,10 +345,10 @@ public class ResourceServiceImpl implements ResourceService {
             previewKey = pdfUpload.getPreviewFile().getFileName();
 
             if (thumbnail != null && !thumbnail.isEmpty()) {
-                thumbnailUrl = storageService.uploadFile(thumbnail, "resources/thumb").getFileName();
+                thumbnailUrl = storageService.uploadImage(thumbnail, "resources/thumb").getFileName();
             }
             if (coverImage != null && !coverImage.isEmpty()) {
-                coverImageUrl = storageService.uploadFile(coverImage, "resources/cover").getFileName();
+                coverImageUrl = storageService.uploadImage(coverImage, "resources/cover").getFileName();
             }
 
             Resource resource = Resource.builder()
