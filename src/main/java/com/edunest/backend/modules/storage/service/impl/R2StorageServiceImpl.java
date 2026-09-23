@@ -62,6 +62,7 @@ public class R2StorageServiceImpl implements StorageService {
     @Override
     public UploadResponse uploadImage(MultipartFile file, String folder) {
         StorageFileValidator.validateImage(file, maxImageBytes);
+        scanMultipartFile(file);
         return putObject(file, sanitizeFolder(folder));
     }
 
@@ -254,16 +255,17 @@ public class R2StorageServiceImpl implements StorageService {
         if (!"application/pdf".equals(type) && file.getSize() > maxImageBytes) {
             throw new BadRequestException("Image exceeds the maximum allowed size");
         }
-        if ("application/pdf".equals(type)) {
-            try {
-                byte[] bytes = file.getBytes();
-                MalwareScanner.ScanResult scan = malwareScanner.scan(bytes);
-                if (!scan.clean()) {
-                    throw new BadRequestException("Uploaded file failed malware scanning");
-                }
-            } catch (IOException ex) {
-                throw new BadRequestException("Unable to read uploaded file");
+        scanMultipartFile(file);
+    }
+
+    private void scanMultipartFile(MultipartFile file) {
+        try {
+            MalwareScanner.ScanResult scan = malwareScanner.scan(file.getBytes());
+            if (!scan.clean()) {
+                throw new BadRequestException("Uploaded file failed malware scanning");
             }
+        } catch (IOException ex) {
+            throw new BadRequestException("Unable to read uploaded file");
         }
     }
 
