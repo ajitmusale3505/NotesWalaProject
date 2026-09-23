@@ -1,0 +1,2 @@
+package com.edunest.backend.modules.syllabus.dto; import jakarta.validation.constraints.*; import lombok.*;
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder public class TopicRequest { @NotBlank private String unitId; @NotNull @Positive private Integer topicNumber; @NotBlank @Size(max=300) private String name; @Size(max=5000) private String description; }
