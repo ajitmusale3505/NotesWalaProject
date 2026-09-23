@@ -788,6 +788,100 @@ public class ResourceServiceImpl implements ResourceService {
         resourceRepository.save(resource);
     }
 
+    private void validatePricing(AccessType accessType, java.math.BigDecimal price, java.math.BigDecimal discountPrice) {
+        if (price == null || price.signum() < 0) {
+            throw new BadRequestException("Price must be zero or positive");
+        }
+        if (accessType == AccessType.FREE && price.signum() != 0) {
+            throw new BadRequestException("Free resources must have a zero price");
+        }
+        if (discountPrice != null) {
+            if (discountPrice.signum() < 0) {
+                throw new BadRequestException("Discount price cannot be negative");
+            }
+            if (discountPrice.compareTo(price) >= 0) {
+                throw new BadRequestException("Discount price must be lower than the original price");
+            }
+        }
+    }
+
+    private void normalizePublicationState(Resource resource) {
+        if (resource.isPublished()) {
+            if (!resource.isActive()) {
+                throw new BadRequestException("Inactive resource cannot be published");
+            }
+            if (resource.getFileKey() == null || resource.getFileKey().isBlank()) {
+                throw new BadRequestException("Resource file is required before publishing");
+            }
+            resource.setStatus(ResourceStatus.APPROVED);
+            if (resource.getPublishedAt() == null) {
+                resource.setPublishedAt(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC));
+            }
+        } else if (resource.getStatus() == null) {
+            resource.setStatus(ResourceStatus.DRAFT);
+            resource.setPublishedAt(null);
+        }
+    }
+
+    private void validateAcademicHierarchy(
+            University university,
+            College college,
+            Branch branch,
+            AcademicYear academicYear,
+            Semester semester,
+            Subject subject) {
+
+        if (university == null || !university.isActive()) {
+            throw new BadRequestException("Selected university is inactive or missing");
+        }
+        if (branch == null || !branch.isActive()) {
+            throw new BadRequestException("Selected branch is inactive or missing");
+        }
+        if (academicYear == null || !academicYear.isActive()) {
+            throw new BadRequestException("Selected academic year is inactive or missing");
+        }
+        if (semester == null || !semester.isActive()) {
+            throw new BadRequestException("Selected semester is inactive or missing");
+        }
+        if (subject == null || !subject.isActive()) {
+            throw new BadRequestException("Selected subject is inactive or missing");
+        }
+
+        if (branch.getUniversity() == null
+                || !branch.getUniversity().getId().equals(university.getId())) {
+            throw new BadRequestException("Branch does not belong to selected university");
+        }
+        if (branch.getAcademicYear() == null
+                || !branch.getAcademicYear().getId().equals(academicYear.getId())) {
+            throw new BadRequestException("Branch does not belong to selected academic year");
+        }
+        if (semester.getAcademicYear() == null
+                || !semester.getAcademicYear().getId().equals(academicYear.getId())) {
+            throw new BadRequestException("Semester does not belong to selected academic year");
+        }
+        if (subject.getBranch() == null
+                || !subject.getBranch().getId().equals(branch.getId())) {
+            throw new BadRequestException("Subject does not belong to selected branch");
+        }
+        if (subject.getSemester() == null
+                || !subject.getSemester().getId().equals(semester.getId())) {
+            throw new BadRequestException("Subject does not belong to selected semester");
+        }
+        if (subject.getAcademicYear() == null
+                || !subject.getAcademicYear().getId().equals(academicYear.getId())) {
+            throw new BadRequestException("Subject does not belong to selected academic year");
+        }
+        if (college != null) {
+            if (!college.isActive()) {
+                throw new BadRequestException("Selected college is inactive");
+            }
+            if (college.getUniversity() == null
+                    || !college.getUniversity().getId().equals(university.getId())) {
+                throw new BadRequestException("College does not belong to selected university");
+            }
+        }
+    }
+
     private String normalizeTags(String tags) {
         if (tags == null || tags.isBlank()) return null;
         return java.util.Arrays.stream(tags.split(","))
