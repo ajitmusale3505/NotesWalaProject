@@ -3,6 +3,7 @@ import com.edunest.backend.security.jwt.JwtService;
 import com.edunest.backend.security.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.*;
+import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
