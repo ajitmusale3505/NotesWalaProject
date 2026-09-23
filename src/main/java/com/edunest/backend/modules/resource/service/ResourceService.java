@@ -55,6 +55,20 @@ public interface ResourceService {
     Page<ResourceResponse> getPublicResourcesPage(int page, int size);
     Page<ResourceResponse> searchPublicResourcesPage(String keyword, int page, int size);
 
+    Page<ResourceResponse> getRecentPublicResourcesPage(int page, int size);
+
+    Page<ResourceResponse> getPopularPublicResourcesPage(int page, int size);
+
+    Page<ResourceResponse> getRecommendedPublicResourcesPage(
+            Long universityId,
+            Long branchId,
+            Long academicYearId,
+            Long semesterId,
+            Long subjectId,
+            MaterialType materialType,
+            int page,
+            int size);
+
     Page<ResourceResponse> filterPublicResources(
             String keyword,
             DocumentType documentType,
