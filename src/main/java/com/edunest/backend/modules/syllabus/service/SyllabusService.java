@@ -1,0 +1,1 @@
+package com.edunest.backend.modules.syllabus.service; import com.edunest.backend.modules.syllabus.dto.SyllabusResponse; public interface SyllabusService { SyllabusResponse getSubjectSyllabus(Long subjectId); }
