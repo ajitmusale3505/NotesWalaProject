@@ -9,6 +9,7 @@ import com.edunest.backend.modules.auth.dto.response.CurrentUserResponse;
 import com.edunest.backend.modules.auth.entity.RefreshToken;
 import com.edunest.backend.modules.auth.repository.RefreshTokenRepository;
 import com.edunest.backend.modules.auth.service.AuthService;
+import com.edunest.backend.modules.auth.service.EmailOtpService;
 import com.edunest.backend.modules.role.entity.Role;
 import com.edunest.backend.modules.role.repository.RoleRepository;
 import com.edunest.backend.modules.user.entity.User;
@@ -40,11 +41,15 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final UserAcademicProfileRepository profileRepository;
+    private final EmailOtpService emailOtpService;
 
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.getEmail());
+        if (!emailOtpService.isVerified(email, "REGISTER")) {
+            throw new BadRequestException("Email OTP verification is required");
+        }
         if (userRepository.existsByEmail(email)) {
             throw new BadRequestException("Email is already registered");
         }
@@ -61,6 +66,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         User saved = userRepository.save(user);
+        emailOtpService.consumeVerification(email, "REGISTER");
         return issueTokens(saved);
     }
 
@@ -84,6 +90,9 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         String email = normalizeEmail(request.getEmail());
+        if (!emailOtpService.isVerified(email, "LOGIN")) {
+            throw new BadRequestException("Email OTP verification is required");
+        }
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, request.getPassword()));
 
@@ -92,6 +101,7 @@ public class AuthServiceImpl implements AuthService {
 
         // Rotate all previous refresh tokens on login to reduce replay risk.
         refreshTokenRepository.deleteByUser(user);
+        emailOtpService.consumeVerification(email, "LOGIN");
         return issueTokens(user);
     }
 
