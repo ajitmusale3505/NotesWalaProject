@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.*;
 
 import com.edunest.backend.common.response.ApiResponse;
 import com.edunest.backend.modules.auth.dto.request.LoginRequest;
+import com.edunest.backend.modules.auth.dto.request.OtpRequest;
 import com.edunest.backend.modules.auth.dto.request.RefreshTokenRequest;
 import com.edunest.backend.modules.auth.dto.request.RegisterRequest;
 import com.edunest.backend.modules.auth.dto.response.AuthResponse;
 import com.edunest.backend.modules.auth.service.AuthService;
+import com.edunest.backend.modules.auth.service.EmailOtpService;
 
 import com.edunest.backend.modules.auth.dto.response.CurrentUserResponse;
 
@@ -21,9 +23,26 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final AuthService authService;
+    private final EmailOtpService emailOtpService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, EmailOtpService emailOtpService) {
         this.authService = authService;
+        this.emailOtpService = emailOtpService;
+    }
+
+    @PostMapping("/otp/send")
+    public ResponseEntity<ApiResponse<Void>> sendOtp(@Valid @RequestBody OtpRequest request) {
+        emailOtpService.sendOtp(request.getEmail(), request.getPurpose());
+        return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("OTP sent successfully").build());
+    }
+
+    @PostMapping("/otp/verify")
+    public ResponseEntity<ApiResponse<Void>> verifyOtp(@Valid @RequestBody OtpRequest request) {
+        if (request.getOtp() == null || request.getOtp().isBlank()) {
+            throw new com.edunest.backend.common.exception.BadRequestException("OTP is required");
+        }
+        emailOtpService.verifyOtp(request.getEmail(), request.getPurpose(), request.getOtp());
+        return ResponseEntity.ok(ApiResponse.<Void>builder().success(true).message("OTP verified successfully").build());
     }
 
     @PostMapping("/register")
