@@ -35,7 +35,9 @@ public class SecurityConfig {
                         "/auth/login",
                         "/auth/refresh-token",
                         "/auth/otp/send",
-                        "/auth/otp/verify"
+                        "/auth/otp/verify",
+                        "/auth/register/send-otp",
+                        "/auth/login/send-otp"
                 ).permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
