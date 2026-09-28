@@ -58,15 +58,13 @@ public class UserPersonalProfileServiceImpl implements UserPersonalProfileServic
         User user = findUser(userId);
         UserAcademicProfile profile = academicProfileRepository.findByUserId(userId).orElse(null);
 
-        if (hasText(request.getFullName())) {
-            user.setFullName(request.getFullName().trim());
-        }
-        if (request.getDateOfBirth() != null) {
-            user.setDateOfBirth(request.getDateOfBirth());
-        }
-        if (hasText(request.getAddress())) {
-            user.setAddress(request.getAddress().trim());
-        }
+        if (hasText(request.getFullName())) user.setFullName(request.getFullName().trim());
+        if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
+        if (hasText(request.getAddress())) user.setAddress(request.getAddress().trim());
+        if (hasText(request.getPhoneNumber())) user.setPhoneNumber(request.getPhoneNumber().trim());
+        if (request.getGender() != null) user.setGender(request.getGender());
+        if (hasText(request.getState())) user.setState(request.getState().trim());
+        if (hasText(request.getCity())) user.setCity(request.getCity().trim());
 
         if (profile != null) {
             if (hasText(request.getPhoneNumber())) profile.setPhoneNumber(request.getPhoneNumber().trim());
@@ -100,12 +98,12 @@ public class UserPersonalProfileServiceImpl implements UserPersonalProfileServic
                 .userId(user.getId())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
-                .phoneNumber(profile == null ? null : profile.getPhoneNumber())
+                .phoneNumber(user.getPhoneNumber() != null ? user.getPhoneNumber() : (profile == null ? null : profile.getPhoneNumber()))
                 .dateOfBirth(user.getDateOfBirth())
-                .gender(profile == null ? null : profile.getGender())
+                .gender(user.getGender() != null ? user.getGender() : (profile == null ? null : profile.getGender()))
                 .country("India")
-                .state(profile == null ? null : profile.getState())
-                .city(profile == null ? null : profile.getCity())
+                .state(user.getState() != null ? user.getState() : (profile == null ? null : profile.getState()))
+                .city(user.getCity() != null ? user.getCity() : (profile == null ? null : profile.getCity()))
                 .address(user.getAddress())
                 .build();
     }
