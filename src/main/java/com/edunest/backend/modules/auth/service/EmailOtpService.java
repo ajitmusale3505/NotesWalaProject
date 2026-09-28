@@ -55,7 +55,7 @@ public class EmailOtpService {
         String otp = String.format("%06d", new SecureRandom().nextInt(1_000_000));
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
-        repository.save(EmailVerificationCode.builder()
+        repository.saveAndFlush(EmailVerificationCode.builder()
                 .email(email)
                 .purpose(normalizedPurpose)
                 .codeHash(sha256(otp))
