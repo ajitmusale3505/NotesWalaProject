@@ -36,6 +36,31 @@ public class UserPersonalProfileController {
                 .build());
     }
 
+    /**
+     * Dedicated About Me update endpoint. The frontend sends the About Me value
+     * as a JSON string, keeping this small update independent from the larger
+     * personal-profile PATCH payload.
+     */
+    @PatchMapping("/about-me")
+    public ResponseEntity<ApiResponse<UserPersonalProfileResponse>> updateAboutMe(
+            @RequestBody String aboutMe) {
+        String value = aboutMe == null ? "" : aboutMe.trim();
+        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
+            value = value.substring(1, value.length() - 1)
+                    .replace("\\\"", "\"")
+                    .replace("\\\\", "\\");
+        }
+        if (value.length() > 500) {
+            throw new com.edunest.backend.common.exception.BadRequestException("About Me cannot exceed 500 characters");
+        }
+        return ResponseEntity.ok(ApiResponse.<UserPersonalProfileResponse>builder()
+                .success(true)
+                .message("About Me updated successfully")
+                .data(personalProfileService.patchCurrent(
+                        UserPersonalProfilePatchRequest.builder().aboutMe(value).build()))
+                .build());
+    }
+
     @PatchMapping
     public ResponseEntity<ApiResponse<UserPersonalProfileResponse>> patchCurrent(
             @Valid @RequestBody UserPersonalProfilePatchRequest request) {
