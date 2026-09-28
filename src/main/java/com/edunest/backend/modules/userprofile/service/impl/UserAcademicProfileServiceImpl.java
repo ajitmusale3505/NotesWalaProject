@@ -126,36 +126,46 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         UserAcademicProfile profile = profileRepository.findByUserIdAndActiveTrue(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Academic profile not found"));
 
-        University university = request.getUniversityId() == null ? profile.getUniversity() : findUniversity(request.getUniversityId());
-        College college = request.getCollegeId() == null ? profile.getCollege() : findCollege(request.getCollegeId());
-        Branch branch = request.getBranchId() == null ? profile.getBranch() : findBranch(request.getBranchId());
-        AcademicYear academicYear = request.getAcademicYearId() == null ? profile.getAcademicYear() : findAcademicYear(request.getAcademicYearId());
-        Semester semester = request.getSemesterId() == null ? profile.getCurrentSemester() : findSemester(request.getSemesterId());
+        boolean hierarchyChanged = hasText(request.getUniversityId())
+                || hasText(request.getCollegeId())
+                || hasText(request.getBranchId())
+                || hasText(request.getAcademicYearId())
+                || hasText(request.getSemesterId());
 
-        validateAcademicHierarchy(university, college, branch, academicYear, semester);
+        University university = hasText(request.getUniversityId()) ? findUniversity(request.getUniversityId()) : profile.getUniversity();
+        College college = hasText(request.getCollegeId()) ? findCollege(request.getCollegeId()) : profile.getCollege();
+        Branch branch = hasText(request.getBranchId()) ? findBranch(request.getBranchId()) : profile.getBranch();
+        AcademicYear academicYear = hasText(request.getAcademicYearId()) ? findAcademicYear(request.getAcademicYearId()) : profile.getAcademicYear();
+        Semester semester = hasText(request.getSemesterId()) ? findSemester(request.getSemesterId()) : profile.getCurrentSemester();
 
-        applyProfileData(
-                profile,
-                new AcademicReferences(university, college, branch, academicYear, semester),
-                request.getRollNumber() == null ? profile.getRollNumber() : request.getRollNumber(),
-                request.getDivision() == null ? profile.getDivision() : request.getDivision(),
-                request.getGraduationYear() == null ? profile.getGraduationYear() : request.getGraduationYear(),
-                request.getCgpa() == null ? profile.getCgpa() : request.getCgpa(),
-                request.getBacklogCount() == null ? profile.getBacklogCount() : request.getBacklogCount(),
-                request.getPhoneNumber() == null ? profile.getPhoneNumber() : request.getPhoneNumber(),
-                request.getGender() == null ? profile.getGender() : request.getGender(),
-                request.getCurrentYear() == null ? profile.getCurrentYear() : request.getCurrentYear(),
-                request.getState() == null ? profile.getState() : request.getState(),
-                request.getCity() == null ? profile.getCity() : request.getCity());
+        if (hierarchyChanged) {
+            validateAcademicHierarchy(university, college, branch, academicYear, semester);
+            profile.setUniversity(university);
+            profile.setCollege(college);
+            profile.setBranch(branch);
+            profile.setAcademicYear(academicYear);
+            profile.setCurrentSemester(semester);
+        }
 
-        profile.setDegree(request.getDegree() == null ? profile.getDegree() : normalize(request.getDegree()));
-        profile.setMode(request.getMode() == null ? profile.getMode() : normalize(request.getMode()));
-        profile.setCurrentStatus(request.getCurrentStatus() == null ? profile.getCurrentStatus() : normalize(request.getCurrentStatus()));
-        profile.setLastYearSgpa(request.getLastYearSgpa() == null ? profile.getLastYearSgpa() : request.getLastYearSgpa());
-        profile.setTenthPercentage(request.getTenthPercentage() == null ? profile.getTenthPercentage() : request.getTenthPercentage());
-        profile.setTwelfthPercentage(request.getTwelfthPercentage() == null ? profile.getTwelfthPercentage() : request.getTwelfthPercentage());
-        profile.setDiplomaDetails(request.getDiplomaDetails() == null ? profile.getDiplomaDetails() : normalize(request.getDiplomaDetails()));
-        profile.setAdditionalInformation(request.getAdditionalInformation() == null ? profile.getAdditionalInformation() : normalize(request.getAdditionalInformation()));
+        if (hasText(request.getRollNumber())) profile.setRollNumber(request.getRollNumber().trim());
+        if (hasText(request.getDivision())) profile.setDivision(request.getDivision().trim());
+        if (request.getGraduationYear() != null) profile.setGraduationYear(request.getGraduationYear());
+        if (request.getCgpa() != null) profile.setCgpa(request.getCgpa());
+        if (request.getBacklogCount() != null) profile.setBacklogCount(request.getBacklogCount());
+        if (hasText(request.getPhoneNumber())) profile.setPhoneNumber(request.getPhoneNumber().trim());
+        if (request.getGender() != null) profile.setGender(request.getGender());
+        if (request.getCurrentYear() != null) profile.setCurrentYear(request.getCurrentYear());
+        if (hasText(request.getState())) profile.setState(request.getState().trim());
+        if (hasText(request.getCity())) profile.setCity(request.getCity().trim());
+
+        if (hasText(request.getDegree())) profile.setDegree(request.getDegree().trim());
+        if (hasText(request.getMode())) profile.setMode(request.getMode().trim());
+        if (hasText(request.getCurrentStatus())) profile.setCurrentStatus(request.getCurrentStatus().trim());
+        if (request.getLastYearSgpa() != null) profile.setLastYearSgpa(request.getLastYearSgpa());
+        if (request.getTenthPercentage() != null) profile.setTenthPercentage(request.getTenthPercentage());
+        if (request.getTwelfthPercentage() != null) profile.setTwelfthPercentage(request.getTwelfthPercentage());
+        if (hasText(request.getDiplomaDetails())) profile.setDiplomaDetails(request.getDiplomaDetails().trim());
+        if (hasText(request.getAdditionalInformation())) profile.setAdditionalInformation(request.getAdditionalInformation().trim());
 
         return map(profileRepository.save(profile));
     }
