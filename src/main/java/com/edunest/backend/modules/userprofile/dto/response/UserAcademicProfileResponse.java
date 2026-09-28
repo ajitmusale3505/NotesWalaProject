@@ -32,6 +32,14 @@ public class UserAcademicProfileResponse {
     private String phoneNumber;
     private Gender gender;
     private Integer currentYear;
+    private String degree;
+    private String mode;
+    private String currentStatus;
+    private BigDecimal lastYearSgpa;
+    private BigDecimal tenthPercentage;
+    private BigDecimal twelfthPercentage;
+    private String diplomaDetails;
+    private String additionalInformation;
     private String country;
     private String state;
     private String city;
