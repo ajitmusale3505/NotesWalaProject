@@ -14,12 +14,16 @@ public class UserAcademicProfilePatchRequest {
 
     @Size(max = 20, message = "University ID too long")
     private String universityId;
+
     @Size(max = 20, message = "College ID too long")
     private String collegeId;
+
     @Size(max = 20, message = "Branch ID too long")
     private String branchId;
+
     @Size(max = 20, message = "Academic year ID too long")
     private String academicYearId;
+
     @Size(max = 20, message = "Semester ID too long")
     private String semesterId;
 
@@ -52,4 +56,10 @@ public class UserAcademicProfilePatchRequest {
     @Min(value = 1, message = "Current year must be at least 1")
     @Max(value = 10, message = "Current year cannot be greater than 10")
     private Integer currentYear;
+
+    @Size(max = 100, message = "State name too long")
+    private String state;
+
+    @Size(max = 100, message = "City name too long")
+    private String city;
 }
