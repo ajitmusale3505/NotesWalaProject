@@ -57,6 +57,33 @@ public class UserAcademicProfilePatchRequest {
     @Max(value = 10, message = "Current year cannot be greater than 10")
     private Integer currentYear;
 
+    @Size(max = 100, message = "Degree too long")
+    private String degree;
+
+    @Size(max = 30, message = "Mode too long")
+    private String mode;
+
+    @Size(max = 50, message = "Current status too long")
+    private String currentStatus;
+
+    @DecimalMin(value = "0.0", message = "Last year SGPA cannot be negative")
+    @DecimalMax(value = "10.0", message = "Last year SGPA cannot exceed 10")
+    private BigDecimal lastYearSgpa;
+
+    @DecimalMin(value = "0.0", message = "10th percentage cannot be negative")
+    @DecimalMax(value = "100.0", message = "10th percentage cannot exceed 100")
+    private BigDecimal tenthPercentage;
+
+    @DecimalMin(value = "0.0", message = "12th percentage cannot be negative")
+    @DecimalMax(value = "100.0", message = "12th percentage cannot exceed 100")
+    private BigDecimal twelfthPercentage;
+
+    @Size(max = 100, message = "Diploma details too long")
+    private String diplomaDetails;
+
+    @Size(max = 300, message = "Additional information too long")
+    private String additionalInformation;
+
     @Size(max = 100, message = "State name too long")
     private String state;
 
