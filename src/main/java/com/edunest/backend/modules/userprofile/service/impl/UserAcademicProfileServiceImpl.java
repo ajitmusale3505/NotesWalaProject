@@ -108,7 +108,8 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
 
         applyProfileData(profile, references, request.getRollNumber(), request.getDivision(),
                 request.getGraduationYear(), request.getCgpa(), request.getBacklogCount(),
-                request.getPhoneNumber(), request.getGender(), request.getCurrentYear());
+                request.getPhoneNumber(), request.getGender(), request.getCurrentYear(),
+                request.getState(), request.getCity());
 
         return map(profileRepository.save(profile));
     }
