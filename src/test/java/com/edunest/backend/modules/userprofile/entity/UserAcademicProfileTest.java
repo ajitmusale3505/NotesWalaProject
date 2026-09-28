@@ -28,7 +28,7 @@ class UserAcademicProfileTest {
         profile.setBacklogCount(0);
 
         assertFalse(profile.isProfileCompleted());
-        assertEquals(75, profile.getProfileCompletionPercentage());
+        assertEquals(50, profile.getProfileCompletionPercentage());
     }
 
     @Test
@@ -46,6 +46,8 @@ class UserAcademicProfileTest {
         profile.setPhoneNumber("9876543210");
         profile.setGender(Gender.MALE);
         profile.setCurrentYear(4);
+        profile.setState("Maharashtra");
+        profile.setCity("Pune");
 
         assertTrue(profile.isProfileCompleted());
         assertEquals(100, profile.getProfileCompletionPercentage());
