@@ -1,5 +1,6 @@
 package com.edunest.backend.modules.auth.service.impl;
 
+import com.edunest.backend.common.enums.RoleType;
 import com.edunest.backend.common.exception.BadRequestException;
 import com.edunest.backend.modules.auth.dto.request.LoginRequest;
 import com.edunest.backend.modules.auth.dto.request.RefreshTokenRequest;
@@ -10,12 +11,12 @@ import com.edunest.backend.modules.auth.entity.RefreshToken;
 import com.edunest.backend.modules.auth.repository.RefreshTokenRepository;
 import com.edunest.backend.modules.auth.service.AuthService;
 import com.edunest.backend.modules.auth.service.EmailOtpService;
+import com.edunest.backend.modules.auth.repository.EmailVerificationCodeRepository;
 import com.edunest.backend.modules.role.entity.Role;
 import com.edunest.backend.modules.role.repository.RoleRepository;
 import com.edunest.backend.modules.user.entity.User;
 import com.edunest.backend.modules.user.repository.UserRepository;
 import com.edunest.backend.modules.userprofile.repository.UserAcademicProfileRepository;
-import com.edunest.backend.common.enums.RoleType;
 import com.edunest.backend.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,6 +48,11 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.getEmail());
+
+        if (request.getOtp() != null && !request.getOtp().isBlank()) {
+            emailOtpService.verifyOtp(email, "REGISTER", request.getOtp());
+        }
+
         if (!emailOtpService.isVerified(email, "REGISTER")) {
             throw new BadRequestException("Email OTP verification is required");
         }
@@ -90,9 +96,15 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         String email = normalizeEmail(request.getEmail());
+
+        if (request.getOtp() != null && !request.getOtp().isBlank()) {
+            emailOtpService.verifyOtp(email, "LOGIN", request.getOtp());
+        }
+
         if (!emailOtpService.isVerified(email, "LOGIN")) {
             throw new BadRequestException("Email OTP verification is required");
         }
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(email, request.getPassword()));
 
@@ -122,7 +134,6 @@ public class AuthServiceImpl implements AuthService {
 
         User user = stored.getUser();
 
-        // Rotate refresh token: one-time use.
         refreshTokenRepository.delete(stored);
         return issueTokens(user);
     }
