@@ -11,6 +11,8 @@ import com.edunest.backend.modules.userprofile.repository.UserAcademicProfileRep
 import com.edunest.backend.modules.userprofile.service.UserPersonalProfileService;
 import com.edunest.backend.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+
+import java.util.LinkedHashSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +43,13 @@ public class UserPersonalProfileServiceImpl implements UserPersonalProfileServic
         user.setGender(request.getGender());
         user.setState(request.getState().trim());
         user.setCity(request.getCity().trim());
+        user.setAboutMe(normalize(request.getAboutMe()));
+        replaceCollection(user.getSkills(), request.getSkills());
+        replaceCollection(user.getInterests(), request.getInterests());
+        user.setPreferredRole(normalize(request.getPreferredRole()));
+        user.setPreferredLocation(normalize(request.getPreferredLocation()));
+        user.setEmploymentType(normalize(request.getEmploymentType()));
+        user.setAvailability(normalize(request.getAvailability()));
 
         UserAcademicProfile profile = academicProfileRepository.findByUserId(userId).orElse(null);
         if (profile != null) {
@@ -70,6 +79,12 @@ public class UserPersonalProfileServiceImpl implements UserPersonalProfileServic
         if (hasText(request.getState())) user.setState(request.getState().trim());
         if (hasText(request.getCity())) user.setCity(request.getCity().trim());
         if (hasText(request.getAboutMe())) user.setAboutMe(request.getAboutMe().trim());
+        if (request.getSkills() != null) replaceCollection(user.getSkills(), request.getSkills());
+        if (request.getInterests() != null) replaceCollection(user.getInterests(), request.getInterests());
+        if (hasText(request.getPreferredRole())) user.setPreferredRole(request.getPreferredRole().trim());
+        if (hasText(request.getPreferredLocation())) user.setPreferredLocation(request.getPreferredLocation().trim());
+        if (hasText(request.getEmploymentType())) user.setEmploymentType(request.getEmploymentType().trim());
+        if (hasText(request.getAvailability())) user.setAvailability(request.getAvailability().trim());
 
         if (profile != null) {
             if (hasText(request.getPhoneNumber())) profile.setPhoneNumber(request.getPhoneNumber().trim());
@@ -92,6 +107,17 @@ public class UserPersonalProfileServiceImpl implements UserPersonalProfileServic
         return value != null && !value.trim().isEmpty();
     }
 
+    private void replaceCollection(java.util.Set<String> target, java.util.List<String> values) {
+        target.clear();
+        if (values != null) {
+            values.stream()
+                    .filter(this::hasText)
+                    .map(String::trim)
+                    .distinct()
+                    .forEach(target::add);
+        }
+    }
+
     private String normalize(String value) {
         if (value == null) return null;
         String v = value.trim();
@@ -111,6 +137,12 @@ public class UserPersonalProfileServiceImpl implements UserPersonalProfileServic
                 .city(user.getCity() != null ? user.getCity() : (profile == null ? null : profile.getCity()))
                 .address(user.getAddress())
                 .aboutMe(user.getAboutMe())
+                .skills(user.getSkills() == null ? new LinkedHashSet<>() : new LinkedHashSet<>(user.getSkills()))
+                .interests(user.getInterests() == null ? new LinkedHashSet<>() : new LinkedHashSet<>(user.getInterests()))
+                .preferredRole(user.getPreferredRole())
+                .preferredLocation(user.getPreferredLocation())
+                .employmentType(user.getEmploymentType())
+                .availability(user.getAvailability())
                 .build();
     }
 }
