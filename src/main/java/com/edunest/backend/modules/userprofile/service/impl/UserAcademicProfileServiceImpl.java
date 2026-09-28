@@ -90,7 +90,8 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
 
         applyProfileData(profile, references, request.getRollNumber(), request.getDivision(),
                 request.getGraduationYear(), request.getCgpa(), request.getBacklogCount(),
-                request.getPhoneNumber(), request.getGender(), request.getCurrentYear());
+                request.getPhoneNumber(), request.getGender(), request.getCurrentYear(),
+                request.getState(), request.getCity());
 
         return map(profileRepository.save(profile));
     }
@@ -136,7 +137,9 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 request.getBacklogCount() == null ? profile.getBacklogCount() : request.getBacklogCount(),
                 request.getPhoneNumber() == null ? profile.getPhoneNumber() : request.getPhoneNumber(),
                 request.getGender() == null ? profile.getGender() : request.getGender(),
-                request.getCurrentYear() == null ? profile.getCurrentYear() : request.getCurrentYear());
+                request.getCurrentYear() == null ? profile.getCurrentYear() : request.getCurrentYear(),
+                request.getState() == null ? profile.getState() : request.getState(),
+                request.getCity() == null ? profile.getCity() : request.getCity());
 
         return map(profileRepository.save(profile));
     }
@@ -232,6 +235,9 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         profile.setPhoneNumber(normalizePhoneNumber(phoneNumber));
         profile.setGender(gender);
         profile.setCurrentYear(currentYear);
+        profile.setCountry("India");
+        profile.setState(normalizeLocation(state));
+        profile.setCity(normalizeLocation(city));
     }
 
     private String normalize(String value) {
@@ -243,6 +249,12 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
     private String normalizePhoneNumber(String phoneNumber) {
         if (phoneNumber == null) return null;
         String normalized = phoneNumber.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private String normalizeLocation(String value) {
+        if (value == null) return null;
+        String normalized = value.trim();
         return normalized.isEmpty() ? null : normalized;
     }
 
@@ -269,6 +281,9 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 .phoneNumber(profile.getPhoneNumber())
                 .gender(profile.getGender())
                 .currentYear(profile.getCurrentYear())
+                .country(profile.getCountry() == null || profile.getCountry().isBlank() ? "India" : profile.getCountry())
+                .state(profile.getState())
+                .city(profile.getCity())
                 .profileCompletionPercentage(profile.getProfileCompletionPercentage())
                 .profileCompleted(profile.isProfileCompleted())
                 .build();
