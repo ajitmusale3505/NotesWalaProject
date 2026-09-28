@@ -221,7 +221,7 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                                   String rollNumber, String division, Integer graduationYear,
                                   BigDecimal cgpa, Integer backlogCount, String phoneNumber,
                                   com.edunest.backend.modules.userprofile.enums.Gender gender,
-                                  Integer currentYear) {
+                                  Integer currentYear, String state, String city) {
         profile.setUniversity(references.university());
         profile.setCollege(references.college());
         profile.setBranch(references.branch());
