@@ -2,6 +2,7 @@ package com.edunest.backend.modules.userprofile.controller;
 
 import com.edunest.backend.common.response.ApiResponse;
 import com.edunest.backend.modules.userprofile.dto.request.UserPersonalProfileRequest;
+import com.edunest.backend.modules.userprofile.dto.request.UserPersonalProfilePatchRequest;
 import com.edunest.backend.modules.userprofile.dto.response.UserPersonalProfileResponse;
 import com.edunest.backend.modules.userprofile.service.UserPersonalProfileService;
 import jakarta.validation.Valid;
@@ -32,6 +33,16 @@ public class UserPersonalProfileController {
                 .success(true)
                 .message("Personal profile updated successfully")
                 .data(personalProfileService.updateCurrent(request))
+                .build());
+    }
+
+    @PatchMapping
+    public ResponseEntity<ApiResponse<UserPersonalProfileResponse>> patchCurrent(
+            @Valid @RequestBody UserPersonalProfilePatchRequest request) {
+        return ResponseEntity.ok(ApiResponse.<UserPersonalProfileResponse>builder()
+                .success(true)
+                .message("Personal profile patched successfully")
+                .data(personalProfileService.patchCurrent(request))
                 .build());
     }
 }
