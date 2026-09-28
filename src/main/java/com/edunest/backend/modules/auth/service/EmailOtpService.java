@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
@@ -30,7 +31,7 @@ public class EmailOtpService {
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendOtp(String rawEmail, String purpose) {
         String email = normalizeEmail(rawEmail);
         String normalizedPurpose = normalizePurpose(purpose);
@@ -126,9 +127,10 @@ public class EmailOtpService {
                 Your EduHub verification code is: %s
 
                 Use this code to %s.
+                OTP purpose: %s
                 This code expires in %d minutes.
                 If you did not request this code, you can safely ignore this email.
-                """.formatted(otp, action, OTP_EXPIRY_MINUTES));
+                """.formatted(otp, action, purpose, OTP_EXPIRY_MINUTES));
         mailSender.send(message);
     }
 
