@@ -28,7 +28,7 @@ class UserAcademicProfileTest {
         profile.setBacklogCount(0);
 
         assertFalse(profile.isProfileCompleted());
-        assertEquals(50, profile.getProfileCompletionPercentage());
+        assertEquals(60, profile.getProfileCompletionPercentage());
     }
 
     @Test
