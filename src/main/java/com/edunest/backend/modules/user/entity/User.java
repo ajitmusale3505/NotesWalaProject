@@ -2,6 +2,7 @@ package com.edunest.backend.modules.user.entity;
 
 import com.edunest.backend.common.entity.BaseEntity;
 import com.edunest.backend.modules.role.entity.Role;
+import com.edunest.backend.modules.userprofile.enums.Gender;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import lombok.*;
@@ -34,6 +35,19 @@ public class User extends BaseEntity {
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
+
+    @Column(name = "phone_number", length = 10)
+    private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private Gender gender;
+
+    @Column(length = 100)
+    private String state;
+
+    @Column(length = 100)
+    private String city;
 
     @Column(length = 200)
     private String address;
