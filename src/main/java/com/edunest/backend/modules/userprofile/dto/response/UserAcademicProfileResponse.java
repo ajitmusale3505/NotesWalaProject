@@ -32,6 +32,9 @@ public class UserAcademicProfileResponse {
     private String phoneNumber;
     private Gender gender;
     private Integer currentYear;
+    private String country;
+    private String state;
+    private String city;
     private int profileCompletionPercentage;
     private boolean profileCompleted;
 }
