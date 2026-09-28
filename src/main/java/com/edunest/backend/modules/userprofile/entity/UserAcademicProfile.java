@@ -84,6 +84,30 @@ public class UserAcademicProfile extends BaseEntity {
     @Column(name = "current_year")
     private Integer currentYear;
 
+    @Column(length = 100)
+    private String degree;
+
+    @Column(length = 30)
+    private String mode;
+
+    @Column(name = "current_status", length = 50)
+    private String currentStatus;
+
+    @Column(name = "last_year_sgpa", precision = 5, scale = 2)
+    private BigDecimal lastYearSgpa;
+
+    @Column(name = "tenth_percentage", precision = 5, scale = 2)
+    private BigDecimal tenthPercentage;
+
+    @Column(name = "twelfth_percentage", precision = 5, scale = 2)
+    private BigDecimal twelfthPercentage;
+
+    @Column(name = "diploma_details", length = 100)
+    private String diplomaDetails;
+
+    @Column(name = "additional_information", length = 300)
+    private String additionalInformation;
+
     @Column(name = "country", length = 50, nullable = false, columnDefinition = "varchar(50) default 'India'")
     @Builder.Default
     private String country = "India";
