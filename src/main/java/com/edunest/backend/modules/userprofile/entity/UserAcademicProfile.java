@@ -8,6 +8,7 @@ import com.edunest.backend.modules.college.entity.College;
 import com.edunest.backend.modules.semester.entity.Semester;
 import com.edunest.backend.modules.university.entity.University;
 import com.edunest.backend.modules.user.entity.User;
+import com.edunest.backend.modules.userprofile.enums.Gender;
 import com.edunest.backend.modules.year.entity.AcademicYear;
 import jakarta.persistence.*;
 import lombok.*;
@@ -73,6 +74,16 @@ public class UserAcademicProfile extends BaseEntity {
     @Column(name = "backlog_count")
     private Integer backlogCount;
 
+    @Column(name = "phone_number", length = 10)
+    private String phoneNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private Gender gender;
+
+    @Column(name = "current_year")
+    private Integer currentYear;
+
     @Version
     @Column(name = "profile_version", nullable = false)
     private Integer profileVersion;
@@ -84,12 +95,13 @@ public class UserAcademicProfile extends BaseEntity {
         return university != null && college != null && branch != null
                 && academicYear != null && currentSemester != null
                 && hasText(rollNumber) && hasText(division)
-                && graduationYear != null && backlogCount != null;
+                && graduationYear != null && backlogCount != null
+                && hasText(phoneNumber) && gender != null && currentYear != null;
     }
 
     public int getProfileCompletionPercentage() {
         int completed = 0;
-        int total = 9;
+        int total = 12;
         if (university != null) completed++;
         if (college != null) completed++;
         if (branch != null) completed++;
@@ -99,6 +111,9 @@ public class UserAcademicProfile extends BaseEntity {
         if (hasText(division)) completed++;
         if (graduationYear != null) completed++;
         if (backlogCount != null) completed++;
+        if (hasText(phoneNumber)) completed++;
+        if (gender != null) completed++;
+        if (currentYear != null) completed++;
         return Math.round((completed * 100.0f) / total);
     }
 
