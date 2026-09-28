@@ -52,6 +52,9 @@ public class User extends BaseEntity {
     @Column(length = 200)
     private String address;
 
+    @Column(name = "about_me", length = 500)
+    private String aboutMe;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
