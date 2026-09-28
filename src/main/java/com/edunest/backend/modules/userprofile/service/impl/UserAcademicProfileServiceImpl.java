@@ -92,6 +92,9 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 request.getGraduationYear(), request.getCgpa(), request.getBacklogCount(),
                 request.getPhoneNumber(), request.getGender(), request.getCurrentYear(),
                 request.getState(), request.getCity());
+        applyExtendedAcademicData(profile, request.getDegree(), request.getMode(), request.getCurrentStatus(),
+                request.getLastYearSgpa(), request.getTenthPercentage(), request.getTwelfthPercentage(),
+                request.getDiplomaDetails(), request.getAdditionalInformation());
 
         return map(profileRepository.save(profile));
     }
@@ -110,6 +113,9 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 request.getGraduationYear(), request.getCgpa(), request.getBacklogCount(),
                 request.getPhoneNumber(), request.getGender(), request.getCurrentYear(),
                 request.getState(), request.getCity());
+        applyExtendedAcademicData(profile, request.getDegree(), request.getMode(), request.getCurrentStatus(),
+                request.getLastYearSgpa(), request.getTenthPercentage(), request.getTwelfthPercentage(),
+                request.getDiplomaDetails(), request.getAdditionalInformation());
 
         return map(profileRepository.save(profile));
     }
@@ -248,6 +254,20 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         profile.setCountry("India");
         profile.setState(normalizeLocation(state));
         profile.setCity(normalizeLocation(city));
+    }
+
+    private void applyExtendedAcademicData(UserAcademicProfile profile, String degree, String mode,
+                                            String currentStatus, BigDecimal lastYearSgpa,
+                                            BigDecimal tenthPercentage, BigDecimal twelfthPercentage,
+                                            String diplomaDetails, String additionalInformation) {
+        profile.setDegree(normalize(degree));
+        profile.setMode(normalize(mode));
+        profile.setCurrentStatus(normalize(currentStatus));
+        profile.setLastYearSgpa(lastYearSgpa);
+        profile.setTenthPercentage(tenthPercentage);
+        profile.setTwelfthPercentage(twelfthPercentage);
+        profile.setDiplomaDetails(normalize(diplomaDetails));
+        profile.setAdditionalInformation(normalize(additionalInformation));
     }
 
     private String normalize(String value) {
