@@ -89,7 +89,8 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         }
 
         applyProfileData(profile, references, request.getRollNumber(), request.getDivision(),
-                request.getGraduationYear(), request.getCgpa(), request.getBacklogCount());
+                request.getGraduationYear(), request.getCgpa(), request.getBacklogCount(),
+                request.getPhoneNumber(), request.getGender(), request.getCurrentYear());
 
         return map(profileRepository.save(profile));
     }
@@ -105,7 +106,8 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 request.getAcademicYearId(), request.getSemesterId());
 
         applyProfileData(profile, references, request.getRollNumber(), request.getDivision(),
-                request.getGraduationYear(), request.getCgpa(), request.getBacklogCount());
+                request.getGraduationYear(), request.getCgpa(), request.getBacklogCount(),
+                request.getPhoneNumber(), request.getGender(), request.getCurrentYear());
 
         return map(profileRepository.save(profile));
     }
@@ -131,7 +133,10 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 request.getDivision() == null ? profile.getDivision() : request.getDivision(),
                 request.getGraduationYear() == null ? profile.getGraduationYear() : request.getGraduationYear(),
                 request.getCgpa() == null ? profile.getCgpa() : request.getCgpa(),
-                request.getBacklogCount() == null ? profile.getBacklogCount() : request.getBacklogCount());
+                request.getBacklogCount() == null ? profile.getBacklogCount() : request.getBacklogCount(),
+                request.getPhoneNumber() == null ? profile.getPhoneNumber() : request.getPhoneNumber(),
+                request.getGender() == null ? profile.getGender() : request.getGender(),
+                request.getCurrentYear() == null ? profile.getCurrentYear() : request.getCurrentYear());
 
         return map(profileRepository.save(profile));
     }
@@ -211,7 +216,9 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
 
     private void applyProfileData(UserAcademicProfile profile, AcademicReferences references,
                                   String rollNumber, String division, Integer graduationYear,
-                                  BigDecimal cgpa, Integer backlogCount) {
+                                  BigDecimal cgpa, Integer backlogCount, String phoneNumber,
+                                  com.edunest.backend.modules.userprofile.enums.Gender gender,
+                                  Integer currentYear) {
         profile.setUniversity(references.university());
         profile.setCollege(references.college());
         profile.setBranch(references.branch());
@@ -222,12 +229,21 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         profile.setGraduationYear(graduationYear);
         profile.setCgpa(cgpa);
         profile.setBacklogCount(backlogCount);
+        profile.setPhoneNumber(normalizePhoneNumber(phoneNumber));
+        profile.setGender(gender);
+        profile.setCurrentYear(currentYear);
     }
 
     private String normalize(String value) {
         if (value == null) return null;
         String normalized = value.trim();
         return normalized.isEmpty() ? null : normalized.toUpperCase(Locale.ROOT);
+    }
+
+    private String normalizePhoneNumber(String phoneNumber) {
+        if (phoneNumber == null) return null;
+        String normalized = phoneNumber.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     private UserAcademicProfileResponse map(UserAcademicProfile profile) {
@@ -250,6 +266,9 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 .graduationYear(profile.getGraduationYear())
                 .cgpa(profile.getCgpa())
                 .backlogCount(profile.getBacklogCount())
+                .phoneNumber(profile.getPhoneNumber())
+                .gender(profile.getGender())
+                .currentYear(profile.getCurrentYear())
                 .profileCompletionPercentage(profile.getProfileCompletionPercentage())
                 .profileCompleted(profile.isProfileCompleted())
                 .build();
