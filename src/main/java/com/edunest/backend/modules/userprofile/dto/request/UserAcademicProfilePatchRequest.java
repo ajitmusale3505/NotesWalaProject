@@ -1,5 +1,6 @@
 package com.edunest.backend.modules.userprofile.dto.request;
 
+import com.edunest.backend.modules.userprofile.enums.Gender;
 import java.math.BigDecimal;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -42,4 +43,13 @@ public class UserAcademicProfilePatchRequest {
     @Min(value = 0, message = "Backlog count cannot be negative")
     @Max(value = 100, message = "Backlog count is too large")
     private Integer backlogCount;
+
+    @Pattern(regexp = "^[6-9]\\d{9}$", message = "Phone number must be a valid 10-digit Indian mobile number")
+    private String phoneNumber;
+
+    private Gender gender;
+
+    @Min(value = 1, message = "Current year must be at least 1")
+    @Max(value = 10, message = "Current year cannot be greater than 10")
+    private Integer currentYear;
 }
