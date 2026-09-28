@@ -37,6 +37,10 @@ public class UserPersonalProfileServiceImpl implements UserPersonalProfileServic
         user.setFullName(request.getFullName().trim());
         user.setDateOfBirth(request.getDateOfBirth());
         user.setAddress(normalize(request.getAddress()));
+        user.setPhoneNumber(request.getPhoneNumber().trim());
+        user.setGender(request.getGender());
+        user.setState(request.getState().trim());
+        user.setCity(request.getCity().trim());
 
         UserAcademicProfile profile = academicProfileRepository.findByUserId(userId).orElse(null);
         if (profile != null) {
