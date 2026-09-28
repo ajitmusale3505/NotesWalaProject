@@ -59,4 +59,12 @@ public class UserAcademicProfileRequest {
     @Min(value = 1, message = "Current year must be at least 1")
     @Max(value = 10, message = "Current year cannot be greater than 10")
     private Integer currentYear;
+
+    @NotBlank(message = "State is required")
+    @Size(max = 100, message = "State name too long")
+    private String state;
+
+    @NotBlank(message = "City is required")
+    @Size(max = 100, message = "City name too long")
+    private String city;
 }
