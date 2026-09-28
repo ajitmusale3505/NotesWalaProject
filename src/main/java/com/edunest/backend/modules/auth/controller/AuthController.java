@@ -1,8 +1,10 @@
 package com.edunest.backend.modules.auth.controller;
 
+import com.edunest.backend.common.exception.BadRequestException;
 import com.edunest.backend.common.response.ApiResponse;
 import com.edunest.backend.modules.auth.dto.request.LoginRequest;
 import com.edunest.backend.modules.auth.dto.request.OtpRequest;
+import com.edunest.backend.modules.auth.dto.request.OtpSendRequest;
 import com.edunest.backend.modules.auth.dto.request.RefreshTokenRequest;
 import com.edunest.backend.modules.auth.dto.request.RegisterRequest;
 import com.edunest.backend.modules.auth.dto.response.AuthResponse;
@@ -38,7 +40,7 @@ public class AuthController {
     @PostMapping("/otp/verify")
     public ResponseEntity<ApiResponse<Void>> verifyOtp(@Valid @RequestBody OtpRequest request) {
         if (request.getOtp() == null || request.getOtp().isBlank()) {
-            throw new com.edunest.backend.common.exception.BadRequestException("OTP is required");
+            throw new BadRequestException("OTP is required");
         }
         emailOtpService.verifyOtp(request.getEmail(), request.getPurpose(), request.getOtp());
         return ResponseEntity.ok(ApiResponse.<Void>builder()
@@ -48,13 +50,15 @@ public class AuthController {
     }
 
     /**
-     * Convenience endpoint for Swagger and API clients.
-     * The frontend can continue using /auth/otp/send with purpose=REGISTER.
+     * Swagger/API testing endpoint for registration OTP.
+     * The existing frontend OTP endpoint remains unchanged.
      */
     @PostMapping("/register/send-otp")
-    public ResponseEntity<ApiResponse<Void>> sendRegisterOtp(@Valid @RequestBody OtpRequest request) {
-        requirePurpose(request, "REGISTER");
+    public ResponseEntity<ApiResponse<Void>> sendRegisterOtp(
+            @Valid @RequestBody OtpSendRequest request) {
+
         emailOtpService.sendOtp(request.getEmail(), "REGISTER");
+
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .success(true)
                 .message("Registration OTP sent successfully")
@@ -62,13 +66,15 @@ public class AuthController {
     }
 
     /**
-     * Convenience endpoint for Swagger and API clients.
-     * The frontend can continue using /auth/otp/send with purpose=LOGIN.
+     * Swagger/API testing endpoint for login OTP.
+     * The existing frontend OTP endpoint remains unchanged.
      */
     @PostMapping("/login/send-otp")
-    public ResponseEntity<ApiResponse<Void>> sendLoginOtp(@Valid @RequestBody OtpRequest request) {
-        requirePurpose(request, "LOGIN");
+    public ResponseEntity<ApiResponse<Void>> sendLoginOtp(
+            @Valid @RequestBody OtpSendRequest request) {
+
         emailOtpService.sendOtp(request.getEmail(), "LOGIN");
+
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .success(true)
                 .message("Login OTP sent successfully")
@@ -147,12 +153,5 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.ok(response);
-    }
-
-    private void requirePurpose(OtpRequest request, String expectedPurpose) {
-        if (!expectedPurpose.equalsIgnoreCase(request.getPurpose())) {
-            throw new com.edunest.backend.common.exception.BadRequestException(
-                    "Purpose must be " + expectedPurpose);
-        }
     }
 }
