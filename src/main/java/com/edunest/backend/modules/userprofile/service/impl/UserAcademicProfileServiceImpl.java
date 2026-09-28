@@ -280,6 +280,10 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         profile.setAdditionalInformation(normalizeLocation(additionalInformation));
     }
 
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
+    }
+
     private String normalize(String value) {
         if (value == null) return null;
         String normalized = value.trim();
