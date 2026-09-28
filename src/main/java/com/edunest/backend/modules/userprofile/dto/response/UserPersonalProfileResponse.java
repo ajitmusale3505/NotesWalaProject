@@ -4,6 +4,7 @@ import com.edunest.backend.modules.userprofile.enums.Gender;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -22,4 +23,10 @@ public class UserPersonalProfileResponse {
     private String city;
     private String address;
     private String aboutMe;
+    private Set<String> skills;
+    private Set<String> interests;
+    private String preferredRole;
+    private String preferredLocation;
+    private String employmentType;
+    private String availability;
 }
