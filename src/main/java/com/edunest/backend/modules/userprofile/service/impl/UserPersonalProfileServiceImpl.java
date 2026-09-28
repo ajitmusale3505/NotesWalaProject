@@ -4,6 +4,7 @@ import com.edunest.backend.common.exception.ResourceNotFoundException;
 import com.edunest.backend.modules.user.entity.User;
 import com.edunest.backend.modules.user.repository.UserRepository;
 import com.edunest.backend.modules.userprofile.dto.request.UserPersonalProfileRequest;
+import com.edunest.backend.modules.userprofile.dto.request.UserPersonalProfilePatchRequest;
 import com.edunest.backend.modules.userprofile.dto.response.UserPersonalProfileResponse;
 import com.edunest.backend.modules.userprofile.entity.UserAcademicProfile;
 import com.edunest.backend.modules.userprofile.repository.UserAcademicProfileRepository;
@@ -50,9 +51,42 @@ public class UserPersonalProfileServiceImpl implements UserPersonalProfileServic
         return map(userRepository.save(user), profile);
     }
 
+    @Override
+    @Transactional
+    public UserPersonalProfileResponse patchCurrent(UserPersonalProfilePatchRequest request) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        User user = findUser(userId);
+        UserAcademicProfile profile = academicProfileRepository.findByUserId(userId).orElse(null);
+
+        if (hasText(request.getFullName())) {
+            user.setFullName(request.getFullName().trim());
+        }
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+        }
+        if (hasText(request.getAddress())) {
+            user.setAddress(request.getAddress().trim());
+        }
+
+        if (profile != null) {
+            if (hasText(request.getPhoneNumber())) profile.setPhoneNumber(request.getPhoneNumber().trim());
+            if (request.getGender() != null) profile.setGender(request.getGender());
+            if (hasText(request.getState())) profile.setState(request.getState().trim());
+            if (hasText(request.getCity())) profile.setCity(request.getCity().trim());
+            profile.setCountry("India");
+            academicProfileRepository.save(profile);
+        }
+
+        return map(userRepository.save(user), profile);
+    }
+
     private User findUser(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     private String normalize(String value) {
