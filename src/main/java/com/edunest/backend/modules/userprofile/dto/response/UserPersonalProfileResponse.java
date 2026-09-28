@@ -21,4 +21,5 @@ public class UserPersonalProfileResponse {
     private String state;
     private String city;
     private String address;
+    private String aboutMe;
 }
