@@ -3,6 +3,7 @@ package com.edunest.backend.modules.user.entity;
 import com.edunest.backend.common.entity.BaseEntity;
 import com.edunest.backend.modules.role.entity.Role;
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import lombok.*;
 
 @Entity
@@ -30,6 +31,12 @@ public class User extends BaseEntity {
 
     @Column(nullable = false)
     private boolean enabled;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(length = 200)
+    private String address;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_id", nullable = false)
