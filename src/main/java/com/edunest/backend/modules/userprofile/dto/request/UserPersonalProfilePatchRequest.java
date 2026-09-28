@@ -19,7 +19,7 @@ public class UserPersonalProfilePatchRequest {
     @Size(max = 100, message = "Full name cannot exceed 100 characters")
     private String fullName;
 
-    @Pattern(regexp = "^$|^[6-9]\d{9}$", message = "Phone number must be a valid 10-digit Indian mobile number")
+    @Pattern(regexp = "^$|^[6-9]\\d{9}$", message = "Phone number must be a valid 10-digit Indian mobile number")
     private String phoneNumber;
 
     @Past(message = "Date of birth must be in the past")
