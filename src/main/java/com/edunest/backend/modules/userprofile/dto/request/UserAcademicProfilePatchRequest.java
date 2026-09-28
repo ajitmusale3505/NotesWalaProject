@@ -64,6 +64,7 @@ public class UserAcademicProfilePatchRequest {
     private String mode;
 
     @Size(max = 50, message = "Current status too long")
+    @Pattern(regexp = "(?i)Pursuing|Completed", message = "Current status must be Pursuing or Completed")
     private String currentStatus;
 
     @DecimalMin(value = "0.0", message = "Last year SGPA cannot be negative")
