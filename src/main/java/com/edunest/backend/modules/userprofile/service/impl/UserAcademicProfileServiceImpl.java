@@ -260,14 +260,14 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                                             String currentStatus, BigDecimal lastYearSgpa,
                                             BigDecimal tenthPercentage, BigDecimal twelfthPercentage,
                                             String diplomaDetails, String additionalInformation) {
-        profile.setDegree(normalize(degree));
-        profile.setMode(normalize(mode));
-        profile.setCurrentStatus(normalize(currentStatus));
+        profile.setDegree(normalizeLocation(degree));
+        profile.setMode(normalizeLocation(mode));
+        profile.setCurrentStatus(normalizeLocation(currentStatus));
         profile.setLastYearSgpa(lastYearSgpa);
         profile.setTenthPercentage(tenthPercentage);
         profile.setTwelfthPercentage(twelfthPercentage);
-        profile.setDiplomaDetails(normalize(diplomaDetails));
-        profile.setAdditionalInformation(normalize(additionalInformation));
+        profile.setDiplomaDetails(normalizeLocation(diplomaDetails));
+        profile.setAdditionalInformation(normalizeLocation(additionalInformation));
     }
 
     private String normalize(String value) {
