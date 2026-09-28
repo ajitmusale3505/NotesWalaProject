@@ -78,13 +78,13 @@ public class UserPersonalProfileServiceImpl implements UserPersonalProfileServic
         if (request.getGender() != null) user.setGender(request.getGender());
         if (hasText(request.getState())) user.setState(request.getState().trim());
         if (hasText(request.getCity())) user.setCity(request.getCity().trim());
-        if (hasText(request.getAboutMe())) user.setAboutMe(request.getAboutMe().trim());
+        if (request.getAboutMe() != null) user.setAboutMe(normalize(request.getAboutMe()));
         if (request.getSkills() != null) replaceCollection(user.getSkills(), request.getSkills());
         if (request.getInterests() != null) replaceCollection(user.getInterests(), request.getInterests());
-        if (hasText(request.getPreferredRole())) user.setPreferredRole(request.getPreferredRole().trim());
-        if (hasText(request.getPreferredLocation())) user.setPreferredLocation(request.getPreferredLocation().trim());
-        if (hasText(request.getEmploymentType())) user.setEmploymentType(request.getEmploymentType().trim());
-        if (hasText(request.getAvailability())) user.setAvailability(request.getAvailability().trim());
+        if (request.getPreferredRole() != null) user.setPreferredRole(normalize(request.getPreferredRole()));
+        if (request.getPreferredLocation() != null) user.setPreferredLocation(normalize(request.getPreferredLocation()));
+        if (request.getEmploymentType() != null) user.setEmploymentType(normalize(request.getEmploymentType()));
+        if (request.getAvailability() != null) user.setAvailability(normalize(request.getAvailability()));
 
         if (profile != null) {
             if (hasText(request.getPhoneNumber())) profile.setPhoneNumber(request.getPhoneNumber().trim());
