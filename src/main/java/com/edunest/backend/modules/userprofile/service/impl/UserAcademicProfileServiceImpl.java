@@ -142,6 +142,15 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 request.getState() == null ? profile.getState() : request.getState(),
                 request.getCity() == null ? profile.getCity() : request.getCity());
 
+        profile.setDegree(request.getDegree() == null ? profile.getDegree() : normalize(request.getDegree()));
+        profile.setMode(request.getMode() == null ? profile.getMode() : normalize(request.getMode()));
+        profile.setCurrentStatus(request.getCurrentStatus() == null ? profile.getCurrentStatus() : normalize(request.getCurrentStatus()));
+        profile.setLastYearSgpa(request.getLastYearSgpa() == null ? profile.getLastYearSgpa() : request.getLastYearSgpa());
+        profile.setTenthPercentage(request.getTenthPercentage() == null ? profile.getTenthPercentage() : request.getTenthPercentage());
+        profile.setTwelfthPercentage(request.getTwelfthPercentage() == null ? profile.getTwelfthPercentage() : request.getTwelfthPercentage());
+        profile.setDiplomaDetails(request.getDiplomaDetails() == null ? profile.getDiplomaDetails() : normalize(request.getDiplomaDetails()));
+        profile.setAdditionalInformation(request.getAdditionalInformation() == null ? profile.getAdditionalInformation() : normalize(request.getAdditionalInformation()));
+
         return map(profileRepository.save(profile));
     }
 
@@ -282,6 +291,14 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 .phoneNumber(profile.getPhoneNumber())
                 .gender(profile.getGender())
                 .currentYear(profile.getCurrentYear())
+                .degree(profile.getDegree())
+                .mode(profile.getMode())
+                .currentStatus(profile.getCurrentStatus())
+                .lastYearSgpa(profile.getLastYearSgpa())
+                .tenthPercentage(profile.getTenthPercentage())
+                .twelfthPercentage(profile.getTwelfthPercentage())
+                .diplomaDetails(profile.getDiplomaDetails())
+                .additionalInformation(profile.getAdditionalInformation())
                 .country(profile.getCountry() == null || profile.getCountry().isBlank() ? "India" : profile.getCountry())
                 .state(profile.getState())
                 .city(profile.getCity())
