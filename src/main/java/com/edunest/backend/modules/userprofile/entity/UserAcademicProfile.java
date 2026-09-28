@@ -84,6 +84,16 @@ public class UserAcademicProfile extends BaseEntity {
     @Column(name = "current_year")
     private Integer currentYear;
 
+    @Column(name = "country", length = 50, nullable = false, columnDefinition = "varchar(50) default 'India'")
+    @Builder.Default
+    private String country = "India";
+
+    @Column(name = "state", length = 100)
+    private String state;
+
+    @Column(name = "city", length = 100)
+    private String city;
+
     @Version
     @Column(name = "profile_version", nullable = false)
     private Integer profileVersion;
@@ -91,29 +101,36 @@ public class UserAcademicProfile extends BaseEntity {
     @Column(nullable = false)
     private boolean active;
 
+    /**
+     * The profile gate uses only the mandatory onboarding fields.
+     * Roll number, division, CGPA and backlog count remain optional profile data.
+     */
     public boolean isProfileCompleted() {
         return university != null && college != null && branch != null
                 && academicYear != null && currentSemester != null
-                && hasText(rollNumber) && hasText(division)
-                && graduationYear != null && backlogCount != null
-                && hasText(phoneNumber) && gender != null && currentYear != null;
+                && graduationYear != null
+                && hasText(phoneNumber)
+                && gender != null
+                && currentYear != null
+                && hasText(state)
+                && hasText(city);
     }
 
     public int getProfileCompletionPercentage() {
         int completed = 0;
-        int total = 12;
+        int total = 10;
+
         if (university != null) completed++;
         if (college != null) completed++;
         if (branch != null) completed++;
         if (academicYear != null) completed++;
         if (currentSemester != null) completed++;
-        if (hasText(rollNumber)) completed++;
-        if (hasText(division)) completed++;
-        if (graduationYear != null) completed++;
-        if (backlogCount != null) completed++;
         if (hasText(phoneNumber)) completed++;
         if (gender != null) completed++;
         if (currentYear != null) completed++;
+        if (graduationYear != null) completed++;
+        if (hasText(state) && hasText(city)) completed++;
+
         return Math.round((completed * 100.0f) / total);
     }
 
