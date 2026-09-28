@@ -1,5 +1,6 @@
 package com.edunest.backend.modules.userprofile.dto.response;
 
+import com.edunest.backend.modules.userprofile.enums.Gender;
 import java.math.BigDecimal;
 import lombok.*;
 
@@ -28,6 +29,9 @@ public class UserAcademicProfileResponse {
     private Integer graduationYear;
     private BigDecimal cgpa;
     private Integer backlogCount;
+    private String phoneNumber;
+    private Gender gender;
+    private Integer currentYear;
     private int profileCompletionPercentage;
     private boolean profileCompleted;
 }
