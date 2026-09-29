@@ -10,6 +10,8 @@ import com.edunest.backend.modules.university.entity.University;
 import com.edunest.backend.modules.user.entity.User;
 import com.edunest.backend.modules.userprofile.enums.Gender;
 import com.edunest.backend.modules.year.entity.AcademicYear;
+import com.edunest.backend.modules.exampattern.entity.ExamPattern;
+import com.edunest.backend.modules.program.entity.Program;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -50,6 +52,14 @@ public class UserAcademicProfile extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "branch_id", nullable = false)
     private Branch branch;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "program_id")
+    private Program program;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "exam_pattern_id")
+    private ExamPattern examPattern;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "academic_year_id", nullable = false)
