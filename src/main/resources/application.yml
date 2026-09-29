@@ -17,6 +17,12 @@ spring:
           starttls:
             enable: true
 
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: true
+
   datasource: 
     url: ${DB_URL:jdbc:postgresql://localhost:5432/noteswala}
     username: ${DB_USERNAME:postgres}
