@@ -10,7 +10,7 @@ import java.util.*;
 public interface UserAcademicProfileRepository extends JpaRepository<UserAcademicProfile, Long> {
 
     @EntityGraph(attributePaths = {
-            "user", "university", "college", "branch", "academicYear", "currentSemester"
+            "user", "university", "college", "branch", "program", "examPattern", "academicYear", "currentSemester"
     })
     Optional<UserAcademicProfile> findByUserIdAndActiveTrue(Long userId);
 
