@@ -20,7 +20,7 @@ ALTER TABLE curriculum_semesters
 
 ALTER TABLE syllabus_units
     ADD CONSTRAINT ck_syllabus_unit_name_not_blank
-    CHECK (length(trim(name)) > 0);
+    CHECK (length(trim(chapter_name)) > 0);
 
 ALTER TABLE syllabus_topics
     ADD CONSTRAINT ck_syllabus_topic_name_not_blank
