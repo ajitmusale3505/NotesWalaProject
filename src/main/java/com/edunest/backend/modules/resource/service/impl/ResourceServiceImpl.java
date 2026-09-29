@@ -326,6 +326,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Semester not found"));
         Subject subject = subjectRepository.findById(request.getSubjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Subject not found"));
+        SubjectOffering subjectOffering = resolveSubjectOffering(request.getSubjectOfferingId(), subject, request.getSemesterId());
 
         College college = null;
         if (request.getCollegeId() != null) {
@@ -369,6 +370,7 @@ public class ResourceServiceImpl implements ResourceService {
                     .college(college)
                     .semester(semester)
                     .subject(subject)
+                    .subjectOffering(subjectOffering)
                     .documentType(request.getDocumentType())
                     .materialType(request.getMaterialType())
                     .accessType(request.getAccessType())
