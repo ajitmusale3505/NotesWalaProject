@@ -17,7 +17,7 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, String> 
     Optional<Curriculum> findByIdAndActiveTrue(String id);
 
     @EntityGraph(attributePaths = {"university", "program", "branch", "examPattern"})
-    List<Curriculum> findByBranchIdAndActiveTrueOrderByStartYearDesc(String branchId);
+    List<Curriculum> findByBranchIdAndActiveTrueOrderByStartYearDesc(Long branchId);
 
     @EntityGraph(attributePaths = {"university", "program", "branch", "examPattern"})
     List<Curriculum> findByExamPatternIdAndActiveTrueOrderByStartYearDesc(String examPatternId);
