@@ -9,6 +9,7 @@ DO $$
 DECLARE
     r RECORD;
     v_subject_offering_id VARCHAR(20);
+    v_subject_id BIGINT;
     v_existing_count INTEGER;
     v_unit_business_number INTEGER := 11001;
 BEGIN
@@ -46,7 +47,8 @@ BEGIN
             ('SOF50012',5,'Counting Principles and Algebraic Structures')
         ) AS x(offering_id,unit_number,unit_name)
     LOOP
-        SELECT id INTO v_subject_offering_id
+        SELECT id, subject_id
+          INTO v_subject_offering_id, v_subject_id
         FROM subject_offerings
         WHERE id = r.offering_id
           AND active = TRUE;
@@ -62,8 +64,8 @@ BEGIN
 
         IF v_existing_count = 0 THEN
             INSERT INTO syllabus_units
-                (business_id, unit_number, name, description, active,
-                 subject_offering_id, coverage)
+                (business_id, unit_number, chapter_name, description, active,
+                 subject_id, subject_offering_id, coverage)
             VALUES
                 (
                     'UNT' || LPAD(v_unit_business_number::TEXT, 5, '0'),
@@ -71,12 +73,13 @@ BEGIN
                     r.unit_name,
                     'SPPU revised 2024 Pattern syllabus unit; effective AY 2026-27.',
                     TRUE,
+                    v_subject_id,
                     v_subject_offering_id,
                     'BOTH'
                 );
         ELSE
             UPDATE syllabus_units
-               SET name = r.unit_name,
+               SET chapter_name = r.unit_name,
                    active = TRUE,
                    coverage = 'BOTH'
              WHERE subject_offering_id = r.offering_id
