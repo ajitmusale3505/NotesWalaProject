@@ -26,12 +26,57 @@ BEGIN
     IF v_branch_id IS NULL THEN RAISE EXCEPTION 'Computer Engineering branch master record is required before seed'; END IF;
 
     SELECT id INTO v_program_id FROM programs
-      WHERE university_id = v_university_id AND upper(code) IN ('BE','B.E.','BE-COMPUTER') LIMIT 1;
-    IF v_program_id IS NULL THEN RAISE EXCEPTION 'BE program master record is required before seed'; END IF;
+      WHERE university_id = v_university_id
+        AND (upper(code) IN ('BE','B.E.','BE-COMPUTER')
+             OR lower(name) LIKE '%b.e.%'
+             OR lower(name) LIKE '%bachelor of engineering%')
+      ORDER BY CASE WHEN upper(code) = 'BE' THEN 0 ELSE 1 END, id
+      LIMIT 1;
+
+    IF v_program_id IS NULL THEN
+        UPDATE business_id_sequences
+           SET next_value = next_value + 1
+         WHERE prefix = 'PRG'
+        RETURNING 'PRG' || (next_value - 1)::TEXT INTO v_program_id;
+
+        INSERT INTO programs(id,name,code,degree_level,active,university_id)
+        VALUES (
+            v_program_id,
+            'Bachelor of Engineering',
+            'BE',
+            'UNDERGRADUATE',
+            TRUE,
+            v_university_id
+        );
+    END IF;
 
     SELECT id INTO v_pattern_id FROM exam_patterns
-      WHERE university_id = v_university_id AND upper(code) IN ('2024','SPPU-2024','2024-PATTERN') LIMIT 1;
-    IF v_pattern_id IS NULL THEN RAISE EXCEPTION 'SPPU 2024 exam pattern master record is required before seed'; END IF;
+      WHERE university_id = v_university_id
+        AND (upper(code) IN ('2024','SPPU-2024','2024-PATTERN')
+             OR lower(name) LIKE '%2024%')
+      ORDER BY CASE WHEN upper(code) = '2024' THEN 0 ELSE 1 END, id
+      LIMIT 1;
+
+    IF v_pattern_id IS NULL THEN
+        UPDATE business_id_sequences
+           SET next_value = next_value + 1
+         WHERE prefix = 'PAT'
+        RETURNING 'PAT' || (next_value - 1)::TEXT INTO v_pattern_id;
+
+        INSERT INTO exam_patterns(
+            id,name,code,description,effective_from_year,effective_to_year,active,university_id
+        )
+        VALUES (
+            v_pattern_id,
+            'SPPU 2024 Pattern',
+            'SPPU-2024',
+            'Savitribai Phule Pune University 2024 Pattern.',
+            2024,
+            NULL,
+            TRUE,
+            v_university_id
+        );
+    END IF;
 
     SELECT id INTO v_academic_year_id FROM academic_years
       WHERE university_id = v_university_id AND (code ILIKE '%2024%' OR name ILIKE '%2024%')
