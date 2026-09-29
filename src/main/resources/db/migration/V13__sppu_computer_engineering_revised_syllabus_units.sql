@@ -10,39 +10,40 @@ DECLARE
     r RECORD;
     v_subject_offering_id VARCHAR(20);
     v_existing_count INTEGER;
+    v_unit_business_number INTEGER := 11001;
 BEGIN
     FOR r IN
         SELECT *
         FROM (VALUES
-            ('SOF10001',1,'Introduction to Data Structures and Algorithms'),
-            ('SOF10001',2,'Linear Data Structures, Searching and Sorting'),
-            ('SOF10001',3,'Stacks, Queues and Linked Lists'),
-            ('SOF10001',4,'Hashing'),
-            ('SOF10001',5,'Graphs and Trees'),
+            ('SOF50001',1,'Introduction to Data Structures and Algorithms'),
+            ('SOF50001',2,'Linear Data Structures, Searching and Sorting'),
+            ('SOF50001',3,'Stacks, Queues and Linked Lists'),
+            ('SOF50001',4,'Hashing'),
+            ('SOF50001',5,'Graphs and Trees'),
 
-            ('SOF10002',1,'Introduction to OOP Concepts and Control Structure'),
-            ('SOF10002',2,'Introduction to Classes and Objects and Arrays'),
-            ('SOF10002',3,'Inheritance and Polymorphism, Exception Handling and Multithreading'),
-            ('SOF10002',4,'Graphics Primitives, Scan Conversion, Windowing and Clipping'),
-            ('SOF10002',5,'2D, 3D Transformations and Projections'),
+            ('SOF50002',1,'Introduction to OOP Concepts and Control Structure'),
+            ('SOF50002',2,'Introduction to Classes and Objects and Arrays'),
+            ('SOF50002',3,'Inheritance and Polymorphism, Exception Handling and Multithreading'),
+            ('SOF50002',4,'Graphics Primitives, Scan Conversion, Windowing and Clipping'),
+            ('SOF50002',5,'2D, 3D Transformations and Projections'),
 
-            ('SOF10003',1,'Introduction to Operating System'),
-            ('SOF10003',2,'Process and Thread Management'),
-            ('SOF10003',3,'Interprocess Communication and Deadlock'),
-            ('SOF10003',4,'Memory Management'),
-            ('SOF10003',5,'File and Disk Management'),
+            ('SOF50003',1,'Introduction to Operating System'),
+            ('SOF50003',2,'Process and Thread Management'),
+            ('SOF50003',3,'Interprocess Communication and Deadlock'),
+            ('SOF50003',4,'Memory Management'),
+            ('SOF50003',5,'File and Disk Management'),
 
-            ('SOF10011',1,'Introduction to Database Management System'),
-            ('SOF10011',2,'SQL and PL/SQL'),
-            ('SOF10011',3,'Relational Database Design'),
-            ('SOF10011',4,'Database Transactions'),
-            ('SOF10011',5,'NoSQL Database'),
+            ('SOF50011',1,'Introduction to Database Management System'),
+            ('SOF50011',2,'SQL and PL/SQL'),
+            ('SOF50011',3,'Relational Database Design'),
+            ('SOF50011',4,'Database Transactions'),
+            ('SOF50011',5,'NoSQL Database'),
 
-            ('SOF10012',1,'Set and Propositions'),
-            ('SOF10012',2,'Relations and Functions'),
-            ('SOF10012',3,'Trees and Network Flow'),
-            ('SOF10012',4,'Graph Theory'),
-            ('SOF10012',5,'Counting Principles and Algebraic Structures')
+            ('SOF50012',1,'Set and Propositions'),
+            ('SOF50012',2,'Relations and Functions'),
+            ('SOF50012',3,'Trees and Network Flow'),
+            ('SOF50012',4,'Graph Theory'),
+            ('SOF50012',5,'Counting Principles and Algebraic Structures')
         ) AS x(offering_id,unit_number,unit_name)
     LOOP
         SELECT id INTO v_subject_offering_id
@@ -65,11 +66,7 @@ BEGIN
                  subject_offering_id, coverage)
             VALUES
                 (
-                    'UNT' || LPAD((11000 + (
-                        ROW_NUMBER() OVER (
-                            ORDER BY r.offering_id, r.unit_number
-                        )
-                    ))::TEXT, 5, '0'),
+                    'UNT' || LPAD(v_unit_business_number::TEXT, 5, '0'),
                     r.unit_number,
                     r.unit_name,
                     'SPPU revised 2024 Pattern syllabus unit; effective AY 2026-27.',
@@ -85,6 +82,8 @@ BEGIN
              WHERE subject_offering_id = r.offering_id
                AND unit_number = r.unit_number;
         END IF;
+
+        v_unit_business_number := v_unit_business_number + 1;
     END LOOP;
 END $$;
 
@@ -97,8 +96,8 @@ BEGIN
     FOR r IN
         SELECT offering_id
         FROM (VALUES
-            ('SOF10001'),('SOF10002'),('SOF10003'),
-            ('SOF10011'),('SOF10012')
+            ('SOF50001'),('SOF50002'),('SOF50003'),
+            ('SOF50011'),('SOF50012')
         ) AS x(offering_id)
     LOOP
         SELECT COUNT(*)
