@@ -27,6 +27,7 @@ public class AdminPatchResourceRequest {
     private Long academicYearId;
     private Long semesterId;
     private Long subjectId;
+    private String subjectOfferingId;
 
     private DocumentType documentType;
     private MaterialType materialType;
