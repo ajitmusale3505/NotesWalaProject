@@ -375,6 +375,6 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
 
     private record AcademicReferences(
             University university, College college, Branch branch,
-            AcademicYear academicYear, Semester semester) {
+            Program program, ExamPattern examPattern, AcademicYear academicYear, Semester semester) {
     }
 }
