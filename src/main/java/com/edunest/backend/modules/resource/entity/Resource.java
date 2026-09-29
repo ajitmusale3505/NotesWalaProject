@@ -14,6 +14,7 @@ import com.edunest.backend.modules.branch.entity.Branch;
 import com.edunest.backend.modules.category.entity.Category;
 import com.edunest.backend.modules.semester.entity.Semester;
 import com.edunest.backend.modules.subject.entity.Subject;
+import com.edunest.backend.modules.subject.entity.SubjectOffering;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -88,6 +89,10 @@ public class Resource extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id")
     private Subject subject;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_offering_id")
+    private SubjectOffering subjectOffering;
 
     // Resource Type
     @Enumerated(EnumType.STRING)
