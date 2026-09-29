@@ -9,9 +9,8 @@ DO $$
 DECLARE
     r RECORD;
     v_type_id VARCHAR(20);
+    v_component_number INTEGER := 10010;
 BEGIN
-    -- Resolve the assessment type from the canonical master table.
-    -- IDs are stable from V4; lookup by code keeps this migration readable.
     FOR r IN
         SELECT *
         FROM (VALUES
@@ -53,11 +52,7 @@ BEGIN
              counts_toward_final_total, active)
         VALUES
             (
-                'ASM' || LPAD((
-                    9 + ROW_NUMBER() OVER (
-                        ORDER BY r.offering_id, r.display_order, r.type_code
-                    )
-                )::TEXT, 5, '0'),
+                'ASM' || v_component_number::TEXT,
                 r.offering_id,
                 v_type_id,
                 r.type_code,
@@ -76,10 +71,11 @@ BEGIN
             counts_toward_final_total = TRUE,
             active = TRUE,
             updated_at = CURRENT_TIMESTAMP;
+
+        v_component_number := v_component_number + 1;
     END LOOP;
 END $$;
 
--- Hard validation: every seeded offering must have assessment components.
 DO $$
 DECLARE
     v_missing_count INTEGER;
