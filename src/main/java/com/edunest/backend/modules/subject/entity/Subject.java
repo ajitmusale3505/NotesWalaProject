@@ -22,6 +22,10 @@ public class Subject {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Stable application/business identifier. The legacy numeric PK remains temporarily during migration. */
+    @Column(name = "business_id", length = 20, unique = true)
+    private String businessId;
+
     // Core
     @Column(nullable = false)
     private String name;
