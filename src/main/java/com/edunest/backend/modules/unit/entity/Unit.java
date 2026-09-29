@@ -2,6 +2,8 @@ package com.edunest.backend.modules.unit.entity;
 
 import com.edunest.backend.common.entity.BaseEntity;
 import com.edunest.backend.modules.subject.entity.Subject;
+import com.edunest.backend.modules.subject.entity.SubjectOffering;
+import com.edunest.backend.modules.unit.enums.UnitCoverage;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +26,9 @@ public class Unit extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "business_id", length = 20, unique = true)
+    private String businessId;
+
     @Column(name = "unit_number", nullable = false)
     private Integer unitNumber;
 
@@ -36,7 +41,15 @@ public class Unit extends BaseEntity {
     @Column(nullable = false)
     private boolean active;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private UnitCoverage coverage;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_offering_id")
+    private SubjectOffering subjectOffering;
 }
