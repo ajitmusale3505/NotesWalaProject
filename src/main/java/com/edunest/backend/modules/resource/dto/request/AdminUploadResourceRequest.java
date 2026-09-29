@@ -26,6 +26,7 @@ public class AdminUploadResourceRequest {
     private Long academicYearId;
     private Long semesterId;
     private Long subjectId;
+    private String subjectOfferingId;
 
     @NotNull private DocumentType documentType;
     private MaterialType materialType;
