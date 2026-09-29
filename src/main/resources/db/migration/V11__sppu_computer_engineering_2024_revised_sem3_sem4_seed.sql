@@ -71,7 +71,7 @@ BEGIN
     -- Existing subjects with the same university/branch/code are reused.
     INSERT INTO subjects(business_id,name,code,active,subject_category,exam_type,credits,elective,honors,minor,branch_id,semester_id,academic_year_id)
     SELECT x.business_id,x.name,x.code,TRUE,x.category,x.exam_type,x.credits,x.elective,FALSE,FALSE,
-           v_branch_id,v_semester_id,v_academic_year_id
+           v_branch_id,x.v_semester_id,v_academic_year_id
     FROM (VALUES
       ('SUB11001','Data Structures','PCC-201-COM','CORE','THEORY_ONLY',3,FALSE,v_sem3_id),
       ('SUB11002','Object Oriented Programming and Computer Graphics','PCC-202-COM','CORE','THEORY_ONLY',3,FALSE,v_sem3_id),
