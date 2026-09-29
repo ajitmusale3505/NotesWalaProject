@@ -44,6 +44,7 @@ public class AdminPutResourceRequest {
 
     @NotNull
     private Long subjectId;
+    private String subjectOfferingId;
 
     @NotNull private DocumentType documentType;
     private MaterialType materialType;
