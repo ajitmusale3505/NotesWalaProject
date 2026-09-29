@@ -46,6 +46,10 @@ public class SubjectOffering extends BaseEntity {
     @Column(nullable = false)
     private Integer credits;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private SubjectCategory category;
+
     @Column(nullable = false)
     private boolean mandatory;
 
