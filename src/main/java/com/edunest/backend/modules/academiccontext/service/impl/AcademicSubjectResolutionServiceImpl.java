@@ -33,13 +33,17 @@ public class AcademicSubjectResolutionServiceImpl implements AcademicSubjectReso
         if (p.getExamPattern() == null) {
             throw new BadRequestException("Exam pattern is required before resolving subjects");
         }
+        if (p.getCurrentYear() == null || p.getCurrentYear() < 1 || p.getCurrentYear() > 4) {
+            throw new BadRequestException("Current academic year must be between 1 and 4 before resolving subjects");
+        }
 
         return subjectRepository.findSubjectsForContext(
                         p.getUniversity().getId(),
                         p.getBranch().getId(),
                         p.getProgram().getId(),
                         p.getExamPattern().getId(),
-                        p.getCurrentSemester().getId())
+                        p.getCurrentSemester().getId(),
+                        p.getCurrentYear())
                 .stream()
                 .map(so -> AcademicSubjectResponse.builder()
                         .subjectOfferingId(so.getId())
