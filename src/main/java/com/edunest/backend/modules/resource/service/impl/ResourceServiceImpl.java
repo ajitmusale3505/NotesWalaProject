@@ -35,6 +35,8 @@ import com.edunest.backend.modules.semester.repository.SemesterRepository;
 import com.edunest.backend.modules.storage.service.StorageService;
 import com.edunest.backend.modules.subject.entity.Subject;
 import com.edunest.backend.modules.subject.repository.SubjectRepository;
+import com.edunest.backend.modules.subject.entity.SubjectOffering;
+import com.edunest.backend.modules.subject.repository.SubjectOfferingRepository;
 
 import com.edunest.backend.common.exception.AccessDeniedException;
 import com.edunest.backend.modules.order.service.OrderService;
@@ -71,6 +73,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final BranchRepository branchRepository;
     private final SemesterRepository semesterRepository;
     private final SubjectRepository subjectRepository;
+    private final SubjectOfferingRepository subjectOfferingRepository;
     
     private final OrderService orderService;
     private final UserRepository userRepository;
@@ -96,6 +99,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         Subject subject = subjectRepository.findById(request.getSubjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Subject not found"));
+        SubjectOffering subjectOffering = resolveSubjectOffering(request.getSubjectOfferingId(), subject, request.getSemesterId());
 
         validateAcademicHierarchy(branch.getUniversity(), null, branch, branch.getAcademicYear(), semester, subject);
 
@@ -111,6 +115,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .branch(branch)
                 .semester(semester)
                 .subject(subject)
+                .subjectOffering(subjectOffering)
                 
                 .documentType(request.getDocumentType())
                 .materialType(request.getMaterialType())
@@ -425,6 +430,21 @@ public class ResourceServiceImpl implements ResourceService {
             deleteQuietly(coverImageUrl);
             throw ex;
         }
+    }
+
+    private SubjectOffering resolveSubjectOffering(String offeringId, Subject subject, Long semesterId) {
+        if (offeringId == null || offeringId.isBlank()) {
+            throw new BadRequestException("Subject offering ID is required for academic resource integration");
+        }
+        SubjectOffering offering = subjectOfferingRepository.findByIdAndActiveTrue(offeringId)
+                .orElseThrow(() -> new ResourceNotFoundException("Subject offering not found"));
+        if (!offering.getSubject().getId().equals(subject.getId())) {
+            throw new BadRequestException("Subject offering does not belong to selected subject");
+        }
+        if (!offering.getCurriculumSemester().getSemester().getId().equals(semesterId)) {
+            throw new BadRequestException("Subject offering does not belong to selected semester");
+        }
+        return offering;
     }
 
     private void deleteQuietly(String key) {
