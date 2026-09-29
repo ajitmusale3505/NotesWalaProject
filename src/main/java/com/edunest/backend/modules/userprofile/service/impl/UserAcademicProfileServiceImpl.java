@@ -137,6 +137,7 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 .orElseThrow(() -> new ResourceNotFoundException("Academic profile not found"));
 
         boolean hierarchyChanged = hasText(request.getUniversityId())
+                || hasText(request.getProgramId()) || hasText(request.getExamPatternId())
                 || hasText(request.getCollegeId())
                 || hasText(request.getBranchId())
                 || hasText(request.getAcademicYearId())
@@ -146,13 +147,17 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         College college = hasText(request.getCollegeId()) ? findCollege(request.getCollegeId()) : profile.getCollege();
         Branch branch = hasText(request.getBranchId()) ? findBranch(request.getBranchId()) : profile.getBranch();
         AcademicYear academicYear = hasText(request.getAcademicYearId()) ? findAcademicYear(request.getAcademicYearId()) : profile.getAcademicYear();
+        Program program = hasText(request.getProgramId()) ? findProgram(request.getProgramId()) : profile.getProgram();
+        ExamPattern examPattern = hasText(request.getExamPatternId()) ? findExamPattern(request.getExamPatternId()) : profile.getExamPattern();
         Semester semester = hasText(request.getSemesterId()) ? findSemester(request.getSemesterId()) : profile.getCurrentSemester();
 
         if (hierarchyChanged) {
-            validateAcademicHierarchy(university, college, branch, academicYear, semester);
+            validateAcademicHierarchy(university, college, branch, program, examPattern, academicYear, semester);
             profile.setUniversity(university);
             profile.setCollege(college);
             profile.setBranch(branch);
+            profile.setProgram(program);
+            profile.setExamPattern(examPattern);
             profile.setAcademicYear(academicYear);
             profile.setCurrentSemester(semester);
         }
