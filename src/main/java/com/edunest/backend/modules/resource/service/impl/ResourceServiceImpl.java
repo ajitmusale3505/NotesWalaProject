@@ -231,11 +231,18 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         if (request.getSubjectId() != null) {
-            Subject subject = subjectRepository
-                    .findById(request.getSubjectId())
-                    .orElseThrow(() ->
-                            new ResourceNotFoundException("Subject not found"));
+            Subject subject = subjectRepository.findById(request.getSubjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Subject not found"));
             resource.setSubject(subject);
+        }
+        if (request.getSubjectOfferingId() != null) {
+            if (resource.getSubject() == null || resource.getSemester() == null) {
+                throw new BadRequestException("Subject and semester are required before setting subject offering");
+            }
+            resource.setSubjectOffering(resolveSubjectOffering(
+                    request.getSubjectOfferingId(),
+                    resource.getSubject(),
+                    resource.getSemester().getId()));
         }
 
         if (request.getDocumentType() != null) {
