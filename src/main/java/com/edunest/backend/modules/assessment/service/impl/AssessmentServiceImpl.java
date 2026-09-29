@@ -49,6 +49,7 @@ public class AssessmentServiceImpl implements AssessmentService {
                         .displayOrder(c.getDisplayOrder())
                         .includedInTotal(c.isIncludedInTotal())
                         .active(c.isActive())
+                        .countsTowardFinalTotal(c.isCountsTowardFinalTotal())
                         .build())
                 .toList();
     }
