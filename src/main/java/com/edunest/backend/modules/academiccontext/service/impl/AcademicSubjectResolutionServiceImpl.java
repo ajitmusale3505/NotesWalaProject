@@ -1,6 +1,7 @@
 package com.edunest.backend.modules.academiccontext.service.impl;
 
 import com.edunest.backend.common.exception.BadRequestException;
+import com.edunest.backend.common.util.PublicIdUtils;
 import com.edunest.backend.common.exception.ResourceNotFoundException;
 import com.edunest.backend.modules.academiccontext.dto.AcademicSubjectResponse;
 import com.edunest.backend.modules.academiccontext.repository.AcademicSubjectResolutionRepository;
@@ -50,8 +51,8 @@ public class AcademicSubjectResolutionServiceImpl implements AcademicSubjectReso
                         .categoryName(so.getCategory().getName())
                         .credits(so.getCredits())
                         .mandatory(so.isMandatory())
-                        .universityId("UNI" + so.getCurriculumSemester().getCurriculum().getUniversity().getId())
-                        .branchId("BR" + so.getCurriculumSemester().getCurriculum().getBranch().getId())
+                        .universityId(PublicIdUtils.universityId(so.getCurriculumSemester().getCurriculum().getUniversity().getId()))
+                        .branchId(PublicIdUtils.branchId(so.getCurriculumSemester().getCurriculum().getBranch().getId()))
                         .examPatternId(so.getCurriculumSemester().getCurriculum().getExamPattern().getId())
                         .curriculumId(so.getCurriculumSemester().getCurriculum().getId())
                         .curriculumSemesterId(so.getCurriculumSemester().getId())
