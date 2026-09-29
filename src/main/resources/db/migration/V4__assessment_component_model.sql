@@ -43,6 +43,7 @@ CREATE TABLE assessment_components (
     passing_marks INTEGER,
     display_order INTEGER NOT NULL,
     included_in_total BOOLEAN NOT NULL DEFAULT TRUE,
+    counts_toward_final_total BOOLEAN NOT NULL DEFAULT TRUE,
     active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL,
