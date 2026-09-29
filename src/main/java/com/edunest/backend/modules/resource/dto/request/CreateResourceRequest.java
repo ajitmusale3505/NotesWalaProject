@@ -31,6 +31,8 @@ public class CreateResourceRequest {
     @NotNull private Long semesterId;
     @NotNull private Long subjectId;
 
+    private String subjectOfferingId;
+
     @NotNull private DocumentType documentType;
     @NotNull private MaterialType materialType;
     @NotNull private AccessType accessType;
