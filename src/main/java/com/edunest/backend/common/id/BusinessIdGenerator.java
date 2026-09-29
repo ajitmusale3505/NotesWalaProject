@@ -4,19 +4,20 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * Generates immutable, human-readable application identifiers.
+ * Allocates immutable, human-readable application identifiers.
  *
- * <p>The numeric portion is allocated by PostgreSQL under a transaction-safe
- * row lock. The frontend never participates in identifier generation.</p>
+ * <p>Allocation is serialized per prefix by a database row lock. The
+ * frontend never participates in identifier generation.</p>
  */
 @Component
 public class BusinessIdGenerator {
 
-    private static final Pattern PREFIX_PATTERN = Pattern.compile("[A-Z][A-Z0-9_]{1,15}");
+    private static final long FIRST_VALUE = 10001L;
+    private static final Pattern PREFIX_PATTERN =
+            Pattern.compile("[A-Z][A-Z0-9_]{1,15}");
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -30,22 +31,31 @@ public class BusinessIdGenerator {
 
         jdbcTemplate.update("""
                 INSERT INTO business_id_sequences (prefix, next_value)
-                VALUES (?, 10001)
-                ON CONFLICT (prefix) DO NOTHING
-                """, prefix);
+                SELECT ?, ?
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM business_id_sequences WHERE prefix = ?
+                )
+                """, prefix, FIRST_VALUE, prefix);
 
-        Long value = jdbcTemplate.queryForObject("""
-                UPDATE business_id_sequences
-                   SET next_value = next_value + 1
+        Long currentValue = jdbcTemplate.queryForObject("""
+                SELECT next_value
+                  FROM business_id_sequences
                  WHERE prefix = ?
-                 RETURNING next_value - 1
+                 FOR UPDATE
                 """, Long.class, prefix);
 
-        if (value == null || value < 10001) {
-            throw new IllegalStateException("Unable to allocate business identifier for prefix: " + prefix);
+        if (currentValue == null || currentValue < FIRST_VALUE) {
+            throw new IllegalStateException(
+                    "Unable to allocate business identifier for prefix: " + prefix);
         }
 
-        return prefix + value;
+        jdbcTemplate.update("""
+                UPDATE business_id_sequences
+                   SET next_value = ?
+                 WHERE prefix = ?
+                """, currentValue + 1, prefix);
+
+        return prefix + currentValue;
     }
 
     private void validatePrefix(String prefix) {
