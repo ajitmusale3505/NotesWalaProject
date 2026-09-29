@@ -1,9 +1,10 @@
 ALTER TABLE subjects
     ADD COLUMN IF NOT EXISTS business_id VARCHAR(20);
 
+UPDATE subjects SET business_id = 'SUB' || (10000 + id) WHERE business_id IS NULL;
+
 CREATE UNIQUE INDEX IF NOT EXISTS uk_subjects_business_id
-    ON subjects(business_id)
-    WHERE business_id IS NOT NULL;
+    ON subjects(business_id);
 
 CREATE TABLE subject_offerings (
     id VARCHAR(20) PRIMARY KEY,
@@ -35,3 +36,10 @@ CREATE INDEX idx_subject_offering_curriculum_semester_active
 
 CREATE INDEX idx_subject_offering_subject_active
     ON subject_offerings(subject_id, active);
+
+UPDATE business_id_sequences
+   SET next_value = GREATEST(
+       next_value,
+       COALESCE((SELECT MAX(id) + 10001 FROM subjects), 10001)
+   )
+ WHERE prefix = 'SUB';
