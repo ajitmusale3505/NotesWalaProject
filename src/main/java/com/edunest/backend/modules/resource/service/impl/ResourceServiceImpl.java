@@ -977,6 +977,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .findById(request.getSubjectId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Subject not found"));
+        SubjectOffering subjectOffering = resolveSubjectOffering(request.getSubjectOfferingId(), subject, request.getSemesterId());
 
         College college = null;
 
@@ -998,6 +999,7 @@ public class ResourceServiceImpl implements ResourceService {
         resource.setAcademicYear(academicYear);
         resource.setSemester(semester);
         resource.setSubject(subject);
+        resource.setSubjectOffering(subjectOffering);
 
         resource.setMaterialType(request.getMaterialType());
         resource.setAccessType(request.getAccessType());
