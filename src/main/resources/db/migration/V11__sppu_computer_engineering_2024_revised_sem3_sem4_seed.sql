@@ -211,4 +211,5 @@ BEGIN
 
     UPDATE business_id_sequences
        SET next_value = GREATEST(next_value, 50005)
-     WHERE prefix = 'CSEM';END $$;
+     WHERE prefix = 'CSEM';
+END $;
