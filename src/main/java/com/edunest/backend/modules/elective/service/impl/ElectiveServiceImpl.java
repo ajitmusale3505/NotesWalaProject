@@ -39,6 +39,8 @@ public class ElectiveServiceImpl implements ElectiveService {
         List<ElectiveSubjectResponse> subjects = memberRepository
                 .findByElectiveGroupIdAndActiveTrueOrderByDisplayOrderAsc(group.getId())
                 .stream()
+                .filter(member -> member.getSubjectOffering().getCurriculumSemester().getId()
+                        .equals(group.getCurriculumSemester().getId()))
                 .map(member -> ElectiveSubjectResponse.builder()
                         .membershipId(member.getId())
                         .subjectOfferingId(member.getSubjectOffering().getId())
