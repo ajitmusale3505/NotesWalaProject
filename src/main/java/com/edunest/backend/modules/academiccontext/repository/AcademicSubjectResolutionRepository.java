@@ -1,6 +1,7 @@
 package com.edunest.backend.modules.academiccontext.repository;
 
 import com.edunest.backend.modules.subject.entity.SubjectOffering;
+import com.edunest.backend.modules.curriculum.entity.CurriculumSemester;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 import java.util.List;
@@ -28,6 +29,23 @@ public interface AcademicSubjectResolutionRepository extends JpaRepository<Subje
         order by so.code asc
         """)
     List<SubjectOffering> findSubjectsForContext(
+            Long universityId, Long branchId, String programId,
+            String examPatternId, Long semesterId, Integer currentYear);
+    @Query("""
+        select cs
+        from CurriculumSemester cs
+        join fetch cs.curriculum cur
+        join fetch cs.semester sem
+        where cs.active = true
+          and cur.active = true
+          and cur.university.id = :universityId
+          and cur.branch.id = :branchId
+          and cur.program.id = :programId
+          and cur.examPattern.id = :examPatternId
+          and cs.semester.id = :semesterId
+          and cs.studyYear = :currentYear
+        """)
+    CurriculumSemester findContext(
             Long universityId, Long branchId, String programId,
             String examPatternId, Long semesterId, Integer currentYear);
 }
