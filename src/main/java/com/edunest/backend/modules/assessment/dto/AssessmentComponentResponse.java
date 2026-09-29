@@ -17,4 +17,5 @@ public class AssessmentComponentResponse {
     Integer displayOrder;
     boolean includedInTotal;
     boolean active;
+    boolean countsTowardFinalTotal;
 }
