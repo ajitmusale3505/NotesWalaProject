@@ -14,28 +14,28 @@ BEGIN
     FOR r IN
         SELECT *
         FROM (VALUES
-            ('SOF10001','INSEM',40,1),('SOF10001','ENDSEM',60,2),
-            ('SOF10002','INSEM',40,1),('SOF10002','ENDSEM',60,2),
-            ('SOF10003','INSEM',40,1),('SOF10003','ENDSEM',60,2),
-            ('SOF10004','TERM_WORK',50,1),('SOF10004','PRACTICAL',25,2),
-            ('SOF10005','TERM_WORK',25,1),('SOF10005','VIVA',25,2),
-            ('SOF10006','INSEM',20,1),('SOF10006','ENDSEM',30,2),
-            ('SOF10007','INSEM',40,1),('SOF10007','ENDSEM',60,2),
-            ('SOF10008','TERM_WORK',25,1),
-            ('SOF10009','INSEM',20,1),('SOF10009','ENDSEM',30,2),
-            ('SOF10010','TERM_WORK',25,1),('SOF10010','PRACTICAL',25,2),
+            ('SOF50001','INSEM',40,1),('SOF50001','ENDSEM',60,2),
+            ('SOF50002','INSEM',40,1),('SOF50002','ENDSEM',60,2),
+            ('SOF50003','INSEM',40,1),('SOF50003','ENDSEM',60,2),
+            ('SOF50004','TERM_WORK',50,1),('SOF50004','PRACTICAL',25,2),
+            ('SOF50005','TERM_WORK',25,1),('SOF50005','VIVA',25,2),
+            ('SOF50006','INSEM',20,1),('SOF50006','ENDSEM',30,2),
+            ('SOF50007','INSEM',40,1),('SOF50007','ENDSEM',60,2),
+            ('SOF50008','TERM_WORK',25,1),
+            ('SOF50009','INSEM',20,1),('SOF50009','ENDSEM',30,2),
+            ('SOF50010','TERM_WORK',25,1),('SOF50010','PRACTICAL',25,2),
 
-            ('SOF10011','INSEM',40,1),('SOF10011','ENDSEM',60,2),
-            ('SOF10012','INSEM',40,1),('SOF10012','ENDSEM',60,2),
-            ('SOF10013','INSEM',40,1),('SOF10013','ENDSEM',60,2),
-            ('SOF10014','TERM_WORK',25,1),('SOF10014','PRACTICAL',25,2),
-            ('SOF10015','VIVA',25,1),
-            ('SOF10016','INSEM',20,1),('SOF10016','ENDSEM',30,2),
-            ('SOF10017','INSEM',40,1),('SOF10017','ENDSEM',60,2),
-            ('SOF10018','TERM_WORK',25,1),('SOF10018','PRACTICAL',25,2),
-            ('SOF10019','TERM_WORK',50,1),
-            ('SOF10020','TERM_WORK',25,1),('SOF10020','PRACTICAL',25,2),
-            ('SOF10021','INSEM',15,1),('SOF10021','ENDSEM',35,2)
+            ('SOF50011','INSEM',40,1),('SOF50011','ENDSEM',60,2),
+            ('SOF50012','INSEM',40,1),('SOF50012','ENDSEM',60,2),
+            ('SOF50013','INSEM',40,1),('SOF50013','ENDSEM',60,2),
+            ('SOF50014','TERM_WORK',25,1),('SOF50014','PRACTICAL',25,2),
+            ('SOF50015','VIVA',25,1),
+            ('SOF50016','INSEM',20,1),('SOF50016','ENDSEM',30,2),
+            ('SOF50017','INSEM',40,1),('SOF50017','ENDSEM',60,2),
+            ('SOF50018','TERM_WORK',25,1),('SOF50018','PRACTICAL',25,2),
+            ('SOF50019','TERM_WORK',50,1),
+            ('SOF50020','TERM_WORK',25,1),
+            ('SOF50021','INSEM',15,1),('SOF50021','ENDSEM',35,2)
         ) AS x(offering_id,type_code,max_marks,display_order)
     LOOP
         SELECT id INTO v_type_id
@@ -85,8 +85,12 @@ BEGIN
     SELECT COUNT(*)
     INTO v_missing_count
     FROM subject_offerings so
-    WHERE so.id BETWEEN 'SOF10001' AND 'SOF10021'
+    WHERE so.id BETWEEN 'SOF50001' AND 'SOF50021'
       AND so.active = TRUE
+      AND so.curriculum_semester_id IN (
+          SELECT id FROM curriculum_semesters
+          WHERE id IN ('CSEM50003','CSEM50004') AND active = TRUE
+      )
       AND NOT EXISTS (
           SELECT 1
           FROM assessment_components ac
@@ -102,14 +106,14 @@ BEGIN
     SELECT COALESCE(SUM(ac.max_marks), 0)
     INTO v_sem3_total
     FROM assessment_components ac
-    WHERE ac.subject_offering_id BETWEEN 'SOF10001' AND 'SOF10010'
+    WHERE ac.subject_offering_id BETWEEN 'SOF50001' AND 'SOF50010'
       AND ac.active = TRUE
       AND ac.counts_toward_final_total = TRUE;
 
     SELECT COALESCE(SUM(ac.max_marks), 0)
     INTO v_sem4_total
     FROM assessment_components ac
-    WHERE ac.subject_offering_id BETWEEN 'SOF10011' AND 'SOF10021'
+    WHERE ac.subject_offering_id BETWEEN 'SOF50011' AND 'SOF50021'
       AND ac.active = TRUE
       AND ac.counts_toward_final_total = TRUE;
 
