@@ -21,6 +21,10 @@ public class UserAcademicProfilePatchRequest {
     @Size(max = 20, message = "Branch ID too long")
     private String branchId;
 
+    private String programId;
+
+    private String examPatternId;
+
     @Size(max = 20, message = "Academic year ID too long")
     private String academicYearId;
 
