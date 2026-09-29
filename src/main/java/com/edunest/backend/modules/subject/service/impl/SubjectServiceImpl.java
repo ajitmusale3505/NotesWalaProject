@@ -49,7 +49,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     private SubjectResponseDto map(Subject s) {
         return SubjectResponseDto.builder()
-                .id(PublicIdUtils.subjectId(s.getId())).name(s.getName()).code(s.getCode()).active(s.isActive())
+                .id(s.getBusinessId()).name(s.getName()).code(s.getCode()).active(s.isActive())
                 .subjectCategory(s.getSubjectCategory()).examType(s.getExamType())
                 .lectureHours(s.getLectureHours()).tutorialHours(s.getTutorialHours()).practicalHours(s.getPracticalHours())
                 .inSemMarks(s.getInSemMarks()).endSemMarks(s.getEndSemMarks()).practicalMarks(s.getPracticalMarks())
