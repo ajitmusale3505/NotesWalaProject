@@ -6,12 +6,31 @@ UPDATE subjects SET business_id = 'SUB' || (10000 + id) WHERE business_id IS NUL
 CREATE UNIQUE INDEX IF NOT EXISTS uk_subjects_business_id
     ON subjects(business_id);
 
+CREATE TABLE subject_categories (
+    id VARCHAR(20) PRIMARY KEY,
+    code VARCHAR(40) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(300),
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL,
+    CONSTRAINT uk_subject_category_code UNIQUE (code)
+);
+
+INSERT INTO subject_categories (id, code, name, description, active)
+VALUES
+    ('CAT10001', 'REGULAR', 'Regular Subject', 'Mandatory/core academic subject', TRUE),
+    ('CAT10002', 'ELECTIVE', 'Elective Subject', 'Subject selected from an elective group', TRUE),
+    ('CAT10003', 'PRACTICAL', 'Practical Subject', 'Practical/laboratory subject', TRUE)
+ON CONFLICT (code) DO NOTHING;
+
 CREATE TABLE subject_offerings (
     id VARCHAR(20) PRIMARY KEY,
     subject_id BIGINT NOT NULL,
     curriculum_semester_id VARCHAR(20) NOT NULL,
     code VARCHAR(40) NOT NULL,
     credits INTEGER NOT NULL,
+    category_id VARCHAR(20) NOT NULL,
     mandatory BOOLEAN NOT NULL DEFAULT TRUE,
     active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -22,6 +41,9 @@ CREATE TABLE subject_offerings (
 
     CONSTRAINT ck_subject_offering_credits
         CHECK (credits >= 0),
+
+    CONSTRAINT fk_subject_offering_category
+        FOREIGN KEY (category_id) REFERENCES subject_categories(id),
 
     CONSTRAINT fk_subject_offering_subject
         FOREIGN KEY (subject_id) REFERENCES subjects(id),
