@@ -20,6 +20,10 @@ public class UserAcademicProfileResponse {
     private String collegeName;
     private String branchId;
     private String branchName;
+    private String programId;
+    private String programName;
+    private String examPatternId;
+    private String examPatternName;
     private String academicYearId;
     private String academicYearName;
     private String semesterId;
