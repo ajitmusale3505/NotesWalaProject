@@ -79,13 +79,45 @@ BEGIN
     END IF;
 
     SELECT id INTO v_academic_year_id FROM academic_years
-      WHERE university_id = v_university_id AND (code ILIKE '%2024%' OR name ILIKE '%2024%')
-      ORDER BY id DESC LIMIT 1;
-    IF v_academic_year_id IS NULL THEN RAISE EXCEPTION 'SPPU 2024 academic-year master record is required before seed'; END IF;
+      WHERE university_id = v_university_id
+        AND (code ILIKE '%2024%' OR name ILIKE '%2024%')
+      ORDER BY CASE WHEN upper(code) = 'SPPU-2024' THEN 0 ELSE 1 END, id DESC
+      LIMIT 1;
 
-    SELECT id INTO v_sem3_id FROM semesters WHERE number = 3 AND academic_year_id = v_academic_year_id LIMIT 1;
-    SELECT id INTO v_sem4_id FROM semesters WHERE number = 4 AND academic_year_id = v_academic_year_id LIMIT 1;
-    IF v_sem3_id IS NULL OR v_sem4_id IS NULL THEN RAISE EXCEPTION 'Semester 3 and 4 master records are required before seed'; END IF;
+    IF v_academic_year_id IS NULL THEN
+        INSERT INTO academic_years(name,code,start_year,end_year,active,university_id)
+        VALUES (
+            'SPPU 2024 Pattern',
+            'SPPU-2024',
+            2024,
+            NULL,
+            TRUE,
+            v_university_id
+        )
+        RETURNING id INTO v_academic_year_id;
+    END IF;
+
+    SELECT id INTO v_sem3_id
+    FROM semesters
+    WHERE number = 3 AND academic_year_id = v_academic_year_id
+    LIMIT 1;
+
+    IF v_sem3_id IS NULL THEN
+        INSERT INTO semesters(number,name,active,academic_year_id)
+        VALUES (3,'Semester 3',TRUE,v_academic_year_id)
+        RETURNING id INTO v_sem3_id;
+    END IF;
+
+    SELECT id INTO v_sem4_id
+    FROM semesters
+    WHERE number = 4 AND academic_year_id = v_academic_year_id
+    LIMIT 1;
+
+    IF v_sem4_id IS NULL THEN
+        INSERT INTO semesters(number,name,active,academic_year_id)
+        VALUES (4,'Semester 4',TRUE,v_academic_year_id)
+        RETURNING id INTO v_sem4_id;
+    END IF;
 
     SELECT id INTO v_cur_id FROM curriculums
       WHERE university_id=v_university_id AND program_id=v_program_id
