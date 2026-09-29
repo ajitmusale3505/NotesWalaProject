@@ -58,6 +58,9 @@ public class AssessmentComponent extends BaseEntity {
     @Column(nullable = false)
     private boolean active;
 
+    @Column(name = "counts_toward_final_total", nullable = false)
+    private boolean countsTowardFinalTotal;
+
     @PrePersist
     @PreUpdate
     private void validate() {
