@@ -24,9 +24,10 @@ public interface AcademicSubjectResolutionRepository extends JpaRepository<Subje
           and cur.program.id = :programId
           and cur.examPattern.id = :examPatternId
           and cs.semester.id = :semesterId
+          and cs.studyYear = :currentYear
         order by so.code asc
         """)
     List<SubjectOffering> findSubjectsForContext(
             Long universityId, Long branchId, String programId,
-            String examPatternId, Long semesterId);
+            String examPatternId, Long semesterId, Integer currentYear);
 }
