@@ -20,3 +20,4 @@ INSERT INTO business_id_sequences (prefix, next_value) VALUES ('TOP', 10001);
 INSERT INTO business_id_sequences (prefix, next_value) VALUES ('STP', 10001);
 INSERT INTO business_id_sequences (prefix, next_value) VALUES ('RES', 10001);
 INSERT INTO business_id_sequences (prefix, next_value) VALUES ('CSEM', 10001);
+INSERT INTO business_id_sequences (prefix, next_value) VALUES ('AUM', 10001);
