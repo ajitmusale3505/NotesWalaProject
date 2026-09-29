@@ -8,6 +8,10 @@ import com.edunest.backend.modules.branch.repository.BranchRepository;
 import com.edunest.backend.modules.college.entity.College;
 import com.edunest.backend.modules.college.repository.CollegeRepository;
 import com.edunest.backend.modules.collegebranch.repository.CollegeBranchRepository;
+import com.edunest.backend.modules.program.entity.Program;
+import com.edunest.backend.modules.program.repository.ProgramRepository;
+import com.edunest.backend.modules.exampattern.entity.ExamPattern;
+import com.edunest.backend.modules.exampattern.repository.ExamPatternRepository;
 import com.edunest.backend.modules.semester.entity.Semester;
 import com.edunest.backend.modules.semester.repository.SemesterRepository;
 import com.edunest.backend.modules.university.entity.University;
@@ -39,6 +43,8 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
     private final AcademicYearRepository academicYearRepository;
     private final SemesterRepository semesterRepository;
     private final CollegeBranchRepository collegeBranchRepository;
+    private final ProgramRepository programRepository;
+    private final ExamPatternRepository examPatternRepository;
 
     public UserAcademicProfileServiceImpl(
             UserAcademicProfileRepository profileRepository,
@@ -48,7 +54,9 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
             BranchRepository branchRepository,
             AcademicYearRepository academicYearRepository,
             SemesterRepository semesterRepository,
-            CollegeBranchRepository collegeBranchRepository) {
+            CollegeBranchRepository collegeBranchRepository,
+            ProgramRepository programRepository,
+            ExamPatternRepository examPatternRepository) {
         this.profileRepository = profileRepository;
         this.userRepository = userRepository;
         this.universityRepository = universityRepository;
@@ -57,6 +65,8 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         this.academicYearRepository = academicYearRepository;
         this.semesterRepository = semesterRepository;
         this.collegeBranchRepository = collegeBranchRepository;
+        this.programRepository = programRepository;
+        this.examPatternRepository = examPatternRepository;
     }
 
     @Override
@@ -75,7 +85,7 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
 
         AcademicReferences references = resolveReferences(
                 request.getUniversityId(), request.getCollegeId(), request.getBranchId(),
-                request.getAcademicYearId(), request.getSemesterId());
+                request.getProgramId(), request.getExamPatternId(), request.getAcademicYearId(), request.getSemesterId());
 
         UserAcademicProfile profile = profileRepository.findByUserId(userId).orElse(null);
 
@@ -107,7 +117,7 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
 
         AcademicReferences references = resolveReferences(
                 request.getUniversityId(), request.getCollegeId(), request.getBranchId(),
-                request.getAcademicYearId(), request.getSemesterId());
+                request.getProgramId(), request.getExamPatternId(), request.getAcademicYearId(), request.getSemesterId());
 
         applyProfileData(profile, references, request.getRollNumber(), request.getDivision(),
                 request.getGraduationYear(), request.getCgpa(), request.getBacklogCount(),
@@ -171,19 +181,21 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
     }
 
     private AcademicReferences resolveReferences(String universityId, String collegeId, String branchId,
-                                                  String academicYearId, String semesterId) {
+                                                  String programId, String examPatternId, String academicYearId, String semesterId) {
         University university = findUniversity(universityId);
         College college = findCollege(collegeId);
         Branch branch = findBranch(branchId);
+        Program program = programId == null || programId.isBlank() ? null : findProgram(programId);
+        ExamPattern examPattern = examPatternId == null || examPatternId.isBlank() ? null : findExamPattern(examPatternId);
         AcademicYear academicYear = findAcademicYear(academicYearId);
         Semester semester = findSemester(semesterId);
 
-        validateAcademicHierarchy(university, college, branch, academicYear, semester);
-        return new AcademicReferences(university, college, branch, academicYear, semester);
+        validateAcademicHierarchy(university, college, branch, program, examPattern, academicYear, semester);
+        return new AcademicReferences(university, college, branch, program, examPattern, academicYear, semester);
     }
 
     private void validateAcademicHierarchy(
-            University university, College college, Branch branch,
+            University university, College college, Branch branch, Program program, ExamPattern examPattern,
             AcademicYear academicYear, Semester semester) {
 
         if (!university.isActive()) throw new BadRequestException("Selected university is inactive");
@@ -191,7 +203,11 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         if (!branch.isActive()) throw new BadRequestException("Selected branch is inactive");
         if (!academicYear.isActive()) throw new BadRequestException("Selected academic year is inactive");
         if (!semester.isActive()) throw new BadRequestException("Selected semester is inactive");
+        if (program != null && !program.isActive()) throw new BadRequestException("Selected program is inactive");
+        if (examPattern != null && !examPattern.isActive()) throw new BadRequestException("Selected exam pattern is inactive");
 
+        if (program != null && !program.getUniversity().getId().equals(university.getId())) throw new BadRequestException("Selected program does not belong to selected university");
+        if (examPattern != null && !examPattern.getUniversity().getId().equals(university.getId())) throw new BadRequestException("Selected exam pattern does not belong to selected university");
         if (!college.getUniversity().getId().equals(university.getId())) {
             throw new BadRequestException("Selected college does not belong to selected university");
         }
@@ -211,6 +227,8 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 && !academicYear.getUniversity().getId().equals(university.getId())) {
             throw new BadRequestException("Selected academic year does not belong to selected university");
         }
+        if (examPattern != null && examPattern.getEffectiveFromYear() != null && academicYear.getStartYear() != null && academicYear.getStartYear() < examPattern.getEffectiveFromYear()) throw new BadRequestException("Exam pattern is not effective for selected academic year");
+        if (examPattern != null && examPattern.getEffectiveToYear() != null && academicYear.getStartYear() != null && academicYear.getStartYear() > examPattern.getEffectiveToYear()) throw new BadRequestException("Exam pattern is not effective for selected academic year");
         if (semester.getAcademicYear().getUniversity() != null
                 && academicYear.getUniversity() != null
                 && !semester.getAcademicYear().getUniversity().getId().equals(university.getId())) {
@@ -233,6 +251,9 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 .orElseThrow(() -> new ResourceNotFoundException("Branch not found"));
     }
 
+    private Program findProgram(String id) { return programRepository.findByIdAndActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Program not found")); }
+    private ExamPattern findExamPattern(String id) { return examPatternRepository.findByIdAndActiveTrue(id).orElseThrow(() -> new ResourceNotFoundException("Exam pattern not found")); }
+
     private AcademicYear findAcademicYear(String publicId) {
         return academicYearRepository.findByIdAndActiveTrue(PublicIdUtils.parseAcademicYearId(publicId))
                 .orElseThrow(() -> new ResourceNotFoundException("Academic year not found"));
@@ -251,6 +272,8 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         profile.setUniversity(references.university());
         profile.setCollege(references.college());
         profile.setBranch(references.branch());
+        profile.setProgram(references.program());
+        profile.setExamPattern(references.examPattern());
         profile.setAcademicYear(references.academicYear());
         profile.setCurrentSemester(references.semester());
         profile.setRollNumber(normalize(rollNumber));
@@ -313,6 +336,10 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 .collegeName(profile.getCollege().getName())
                 .branchId(PublicIdUtils.branchId(profile.getBranch().getId()))
                 .branchName(profile.getBranch().getName())
+                .programId(profile.getProgram() == null ? null : profile.getProgram().getId())
+                .programName(profile.getProgram() == null ? null : profile.getProgram().getName())
+                .examPatternId(profile.getExamPattern() == null ? null : profile.getExamPattern().getId())
+                .examPatternName(profile.getExamPattern() == null ? null : profile.getExamPattern().getName())
                 .academicYearId(PublicIdUtils.academicYearId(profile.getAcademicYear().getId()))
                 .academicYearName(profile.getAcademicYear().getName())
                 .semesterId(PublicIdUtils.semesterId(profile.getCurrentSemester().getId()))
