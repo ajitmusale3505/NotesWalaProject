@@ -15,6 +15,9 @@ public class SubjectOfferingResponse {
     String semesterId;
     Integer semesterNumber;
     String code;
+    String categoryId;
+    String categoryCode;
+    String categoryName;
     Integer credits;
     boolean mandatory;
     boolean active;
