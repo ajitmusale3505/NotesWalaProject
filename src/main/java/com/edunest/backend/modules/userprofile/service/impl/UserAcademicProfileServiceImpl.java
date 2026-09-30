@@ -222,9 +222,15 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         if (!collegeBranchRepository.existsByCollegeIdAndBranchIdAndActiveTrue(college.getId(), branch.getId())) {
             throw new BadRequestException("Selected college does not offer selected branch");
         }
-        if (!branch.getAcademicYear().getId().equals(academicYear.getId())) {
-            throw new BadRequestException("Branch does not belong to selected academic year");
-        }
+        /*
+         * A branch is a university-level academic structure and can be offered
+         * across multiple academic years/patterns. The legacy branches table
+         * contains an academic_year_id column, but that must not be used to
+         * reject a valid profile update.
+         *
+         * Academic-year validity is established through the selected semester
+         * and, for subject resolution, through the active curriculum.
+         */
         if (!semester.getAcademicYear().getId().equals(academicYear.getId())) {
             throw new BadRequestException("Semester does not belong to selected academic year");
         }
