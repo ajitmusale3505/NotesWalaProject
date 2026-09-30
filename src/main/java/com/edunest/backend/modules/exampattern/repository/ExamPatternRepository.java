@@ -17,5 +17,5 @@ public interface ExamPatternRepository extends JpaRepository<ExamPattern, String
     @EntityGraph(attributePaths = "university")
     Optional<ExamPattern> findByIdAndActiveTrue(String id);
 
-    boolean existsByUniversityIdAndCodeIgnoreCase(String universityId, String code);
+    boolean existsByUniversityIdAndCodeIgnoreCase(Long universityId, String code);
 }
