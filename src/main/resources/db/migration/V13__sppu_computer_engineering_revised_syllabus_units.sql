@@ -65,7 +65,7 @@ BEGIN
         IF v_existing_count = 0 THEN
             INSERT INTO syllabus_units
                 (business_id, unit_number, chapter_name, description, active,
-                 subject_id, subject_offering_id, coverage)
+                 subject_id, subject_offering_id, coverage, created_at, updated_at)
             VALUES
                 (
                     'UNT' || LPAD(v_unit_business_number::TEXT, 5, '0'),
@@ -75,7 +75,9 @@ BEGIN
                     TRUE,
                     v_subject_id,
                     v_subject_offering_id,
-                    'BOTH'
+                    'BOTH',
+                    CURRENT_TIMESTAMP,
+                    CURRENT_TIMESTAMP
                 );
         ELSE
             UPDATE syllabus_units
