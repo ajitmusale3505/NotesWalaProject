@@ -240,19 +240,15 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseThrow(() ->
                         new RuntimeException("SPPU not found"));
 
-        AcademicYear year2019 = academicYearRepository
-                .findByCode("SPPU-2019")
-                .orElseThrow(() ->
-                        new RuntimeException("SPPU-2019 not found"));
-
-        // SPPU 2019 Pattern Branches
+        // Branch is not tied to one academic-year record. Academic-year
+        // selection is resolved from the student's semester/curriculum.
         branchRepository.save(
                 Branch.builder()
                         .name("Computer Engineering")
                         .code("COMP")
                         .active(true)
                         .university(sppu)
-                        .academicYear(year2019)
+                        .academicYear(null)
                         .build()
         );
 
@@ -467,7 +463,7 @@ public class DataInitializer implements CommandLineRunner {
         if (semesterRepository.count() == 0) {
 
             AcademicYear year2019 = academicYearRepository
-                    .findByCode("SPPU-2019")
+                    .findByCode("SPPU-TE-2026-27")
                     .orElseThrow(() ->
                             new RuntimeException("SPPU-2019 not found"));
 
@@ -493,7 +489,7 @@ public class DataInitializer implements CommandLineRunner {
         Branch comp = branchRepository.findByCode("COMP")
                 .orElseThrow(() -> new IllegalStateException("COMP branch not found"));
 
-        Semester sem5 = semesterRepository.findByNumberAndAcademicYear_Code(5, "SPPU-2019")
+        Semester sem5 = semesterRepository.findByNumberAndAcademicYear_Code(5, "SPPU-TE-2026-27")
                 .orElseThrow(() -> new IllegalStateException("Semester 5 not found"));
 
         AcademicYear year = academicYearRepository
