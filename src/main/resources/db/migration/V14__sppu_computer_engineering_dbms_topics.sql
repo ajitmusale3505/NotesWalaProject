@@ -76,25 +76,27 @@ BEGIN
                 r.offering_id, r.unit_number;
         END IF;
 
-        INSERT INTO syllabus_topics
-            (business_id, topic_number, name, description, active, unit_id, created_at, updated_at)
-        VALUES
-            (
-                'TOP' || v_topic_business_number::TEXT,
-                r.topic_number,
-                r.topic_name,
-                'SPPU revised 2024 Pattern topic for PCC-251-COM; effective AY 2026-27.',
-                TRUE,
-                v_unit_id,
-                CURRENT_TIMESTAMP,
-                CURRENT_TIMESTAMP
-            )
-        WHERE NOT EXISTS (
+        IF NOT EXISTS (
             SELECT 1
             FROM syllabus_topics st
             WHERE st.unit_id = v_unit_id
               AND st.topic_number = r.topic_number
-        );
+        ) THEN
+            INSERT INTO syllabus_topics
+                (business_id, topic_number, name, description, active, unit_id, created_at, updated_at)
+            VALUES
+                (
+                    'TOP' || v_topic_business_number::TEXT,
+                    r.topic_number,
+                    r.topic_name,
+                    'SPPU revised 2024 Pattern topic for PCC-251-COM; effective AY 2026-27.',
+                    TRUE,
+                    v_unit_id,
+                    CURRENT_TIMESTAMP,
+                    CURRENT_TIMESTAMP
+                );
+            v_topic_business_number := v_topic_business_number + 1;
+        END IF;
 
         v_topic_business_number := v_topic_business_number + 1;
     END LOOP;
