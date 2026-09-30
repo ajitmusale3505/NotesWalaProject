@@ -95,7 +95,12 @@ BEGIN
            );
     END IF;
 
-    DELETE FROM academic_years
+    -- Do not delete legacy academic-year masters. Existing resources and other
+    -- records may still reference them through foreign keys. Retire them instead.
+    -- The new study-year masters above remain the active source for SPPU 2026-27.
+    UPDATE academic_years
+       SET active=FALSE
      WHERE university_id=v_sppu_id
-       AND code IN ('SPPU-2019','SPPU-2024','AY-2026-27');
+       AND code IN ('SPPU-2019','SPPU-2024','AY-2026-27')
+       AND code NOT IN ('SPPU-FE-2026-27','SPPU-SE-2026-27','SPPU-TE-2026-27','SPPU-BE-2026-27');
 END $$;
