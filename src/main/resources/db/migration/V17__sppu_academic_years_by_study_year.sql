@@ -90,6 +90,20 @@ BEGIN
             AND ay.code IN ('SPPU-2019', 'SPPU-2024', 'AY-2026-27')
      );
 
+    -- Ensure all eight engineering semesters exist under the correct study-year master.
+    INSERT INTO semesters(number, name, active, academic_year_id)
+    SELECT x.number, 'Semester ' || x.number, TRUE,
+           CASE
+               WHEN x.number IN (1,2) THEN v_fe_id
+               WHEN x.number IN (3,4) THEN v_se_id
+               WHEN x.number IN (5,6) THEN v_te_id
+               ELSE v_be_id
+           END
+      FROM (VALUES (1),(2),(3),(4),(5),(6),(7),(8)) AS x(number)
+     WHERE NOT EXISTS (
+         SELECT 1 FROM semesters s WHERE s.number = x.number
+     );
+
     -- Keep legacy subject records aligned with their semester study year.
     UPDATE subjects sub
        SET academic_year_id = sem.academic_year_id
