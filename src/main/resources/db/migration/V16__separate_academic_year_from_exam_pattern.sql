@@ -1,14 +1,9 @@
 -- Correct the SPPU revised 2024 Pattern seed.
 --
--- "Exam Pattern" and "Academic Year" are different academic concepts.
--- The revised S.E. Computer Engineering 2024 Pattern curriculum seeded in V11
--- is effective from Academic Year 2026-27. V11 previously used the value
--- "SPPU 2024 Pattern" for the academic_years master, which caused the UI to
--- show the same values (2019 / 2024 Pattern) in both dropdowns.
---
--- Keep the existing academic_year primary key so existing semester/profile
--- foreign keys remain valid. Only the academic-year master attributes are
--- corrected.
+-- Exam Pattern and Academic Year are different concepts.
+-- V11 seeded the revised 2024 Pattern curriculum (effective AY 2026-27)
+-- but incorrectly used "SPPU 2024 Pattern" as the academic-year master.
+-- Keep the existing academic_year PK so existing semester/profile FKs remain valid.
 
 DO $$
 DECLARE
@@ -30,10 +25,7 @@ BEGIN
       INTO v_academic_year_id
       FROM academic_years
      WHERE university_id = v_university_id
-       AND (
-            code = 'SPPU-2024'
-            OR name = 'SPPU 2024 Pattern'
-       )
+       AND (code = 'SPPU-2024' OR name = 'SPPU 2024 Pattern')
      ORDER BY id DESC
      LIMIT 1;
 
@@ -42,7 +34,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Avoid creating a duplicate if a correct 2026-27 record already exists.
     IF EXISTS (
         SELECT 1
           FROM academic_years
@@ -53,37 +44,23 @@ BEGIN
                 OR (start_year = 2026 AND end_year = 2027)
            )
     ) THEN
-        -- Move semesters to the already-correct academic year before removing
-        -- the duplicate master row. This branch is only for databases that
-        -- already contain the correct 2026-27 master.
-        SELECT id
-          INTO v_academic_year_id
-          FROM academic_years
-         WHERE university_id = v_university_id
-           AND id <> v_academic_year_id
-           AND (
-                code = 'AY-2026-27'
-                OR (start_year = 2026 AND end_year = 2027)
-           )
-         ORDER BY CASE WHEN code = 'AY-2026-27' THEN 0 ELSE 1 END, id
-         LIMIT 1;
-    ELSE
-        UPDATE academic_years
-           SET name = 'Academic Year 2026-27',
-               code = 'AY-2026-27',
-               start_year = 2026,
-               end_year = 2027,
-               active = TRUE
-         WHERE id = v_academic_year_id;
+        RAISE EXCEPTION
+            'A separate SPPU Academic Year 2026-27 already exists. Resolve the duplicate academic-year master before V16.';
     END IF;
+
+    UPDATE academic_years
+       SET name = 'Academic Year 2026-27',
+           code = 'AY-2026-27',
+           start_year = 2026,
+           end_year = 2027,
+           active = TRUE
+     WHERE id = v_academic_year_id;
 END $$;
 
--- The revised 2024 Pattern remains the exam pattern:
+-- The revised exam pattern remains unchanged:
 --   exam_patterns.name = 'SPPU 2024 Pattern'
 --   exam_patterns.code = 'SPPU-2024'
 --
 -- The academic year is now:
 --   academic_years.name = 'Academic Year 2026-27'
 --   academic_years.code = 'AY-2026-27'
---
--- This intentionally does not modify exam_patterns.
