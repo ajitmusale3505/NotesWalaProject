@@ -55,6 +55,15 @@ BEGIN
            end_year = 2027,
            active = TRUE
      WHERE id = v_academic_year_id;
+
+    -- The legacy SPPU 2019 record is also an academic-cycle master, not an
+    -- exam-pattern label. Keep its code for backward compatibility but make
+    -- its display name unambiguous.
+    UPDATE academic_years
+       SET name = 'Academic Year 2019-2024'
+     WHERE university_id = v_university_id
+       AND code = 'SPPU-2019'
+       AND name = 'SPPU 2019 Pattern';
 END $$;
 
 -- The revised exam pattern remains unchanged:
