@@ -857,7 +857,7 @@ public class DataInitializer implements CommandLineRunner {
 
         academicYearRepository.save(
                 AcademicYear.builder()
-                        .name("SPPU 2019 Pattern")
+                        .name("Academic Year 2019-2024")
                         .code("SPPU-2019")
                         .startYear(2019)
                         .endYear(2024)
@@ -868,7 +868,7 @@ public class DataInitializer implements CommandLineRunner {
 
         academicYearRepository.save(
                 AcademicYear.builder()
-                        .name("SPPU 2024 NEP Pattern")
+                        .name("Academic Year 2024-2028")
                         .code("SPPU-2024")
                         .startYear(2024)
                         .endYear(2028)
