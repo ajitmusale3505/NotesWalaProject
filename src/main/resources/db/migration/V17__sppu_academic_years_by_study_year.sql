@@ -75,7 +75,7 @@ BEGIN
     UPDATE user_academic_profiles p
        SET academic_year_id=sem.academic_year_id
       FROM semesters sem
-     WHERE p.current_semester_id=sem.id
+     WHERE p.semester_id=sem.id
        AND p.university_id=v_sppu_id
        AND sem.academic_year_id IN (v_fe_id,v_se_id,v_te_id,v_be_id);
 
