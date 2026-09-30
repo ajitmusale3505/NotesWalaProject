@@ -234,6 +234,13 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
         if (!semester.getAcademicYear().getId().equals(academicYear.getId())) {
             throw new BadRequestException("Semester does not belong to selected academic year");
         }
+
+        // SPPU study-year masters are intentionally mapped to fixed semester
+        // ranges. Keep the rule server-side so the UI cannot submit an
+        // inconsistent academic-year/semester combination.
+        validateSppuStudyYearSemester(academicYear, semester);
+
+
         if (academicYear.getUniversity() != null
                 && !academicYear.getUniversity().getId().equals(university.getId())) {
             throw new BadRequestException("Selected academic year does not belong to selected university");
@@ -244,6 +251,34 @@ public class UserAcademicProfileServiceImpl implements UserAcademicProfileServic
                 && academicYear.getUniversity() != null
                 && !semester.getAcademicYear().getUniversity().getId().equals(university.getId())) {
             throw new BadRequestException("Selected semester does not belong to selected university");
+        }
+    }
+
+    private void validateSppuStudyYearSemester(AcademicYear academicYear, Semester semester) {
+        if (!"SPPU".equalsIgnoreCase(academicYear.getUniversity().getShortCode())) {
+            return;
+        }
+
+        String code = academicYear.getCode() == null ? "" : academicYear.getCode().toUpperCase(Locale.ROOT);
+        int minSemester;
+        int maxSemester;
+
+        if (code.startsWith("SPPU-FE-")) {
+            minSemester = 1; maxSemester = 2;
+        } else if (code.startsWith("SPPU-SE-")) {
+            minSemester = 3; maxSemester = 4;
+        } else if (code.startsWith("SPPU-TE-")) {
+            minSemester = 5; maxSemester = 6;
+        } else if (code.startsWith("SPPU-BE-")) {
+            minSemester = 7; maxSemester = 8;
+        } else {
+            return;
+        }
+
+        int semesterNumber = semester.getNumber();
+        if (semesterNumber < minSemester || semesterNumber > maxSemester) {
+            throw new BadRequestException(
+                    "Selected semester does not belong to the selected academic year");
         }
     }
 
