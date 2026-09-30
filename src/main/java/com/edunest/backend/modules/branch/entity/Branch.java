@@ -28,11 +28,16 @@ public class Branch {
     @Column(nullable=false)
     private boolean active;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "university_id", nullable = false)
     private University university;
 
+    /**
+     * A branch is a catalog/master entity. It is not tied to a student's
+     * study-year academic-year record. Academic year is resolved from
+     * semester/curriculum in the student's academic context.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "academic_year_id", nullable = false)
+    @JoinColumn(name = "academic_year_id")
     private AcademicYear academicYear;
 }
