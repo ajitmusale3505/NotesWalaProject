@@ -130,7 +130,7 @@ public class SubjectSelectionServiceImpl implements SubjectSelectionService {
                 profile.getProgram().getId(),
                 profile.getExamPattern().getId(),
                 profile.getCurrentSemester().getId(),
-                profile.getCurrentYear());
+                resolveStudyYear(profile));
     }
 
     private UserAcademicProfile getValidatedProfile() {
@@ -150,11 +150,22 @@ public class SubjectSelectionServiceImpl implements SubjectSelectionService {
         if (profile.getExamPattern() == null) {
             throw new BadRequestException("Exam pattern is required before managing subjects");
         }
-        if (profile.getCurrentYear() == null || profile.getCurrentYear() < 1 || profile.getCurrentYear() > 4) {
+        Integer studyYear = resolveStudyYear(profile);
+        if (studyYear == null || studyYear < 1 || studyYear > 4) {
             throw new BadRequestException(
                     "Current academic year must be between 1 and 4 before managing subjects");
         }
 
         return profile;
+    }
+
+    private Integer resolveStudyYear(UserAcademicProfile profile) {
+        String code = profile.getAcademicYear().getCode() == null
+                ? "" : profile.getAcademicYear().getCode().toUpperCase();
+        if (code.startsWith("SPPU-FE-")) return 1;
+        if (code.startsWith("SPPU-SE-")) return 2;
+        if (code.startsWith("SPPU-TE-")) return 3;
+        if (code.startsWith("SPPU-BE-")) return 4;
+        return profile.getCurrentYear();
     }
 }
