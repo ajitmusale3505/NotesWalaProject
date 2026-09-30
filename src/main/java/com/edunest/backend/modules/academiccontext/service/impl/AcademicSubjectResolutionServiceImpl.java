@@ -64,7 +64,7 @@ public class AcademicSubjectResolutionServiceImpl implements AcademicSubjectReso
                         profile.getProgram().getId(),
                         profile.getExamPattern().getId(),
                         profile.getCurrentSemester().getId(),
-                        profile.getCurrentYear())
+                        resolveStudyYear(profile))
                 .stream()
                 .map(so -> AcademicSubjectResponse.builder()
                         .subjectOfferingId(so.getId())
