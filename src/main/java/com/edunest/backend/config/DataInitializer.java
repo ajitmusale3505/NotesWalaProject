@@ -241,7 +241,7 @@ public class DataInitializer implements CommandLineRunner {
                     : i <= 6 ? thirdYear
                     : finalYear;
 
-            if (semesterRepository.findByNumberAndAcademicYear_Code(i, academicYear.getCode()).isEmpty()) {
+            if (semesterRepository.findByNumberAndAcademicYear_CodeAndActiveTrue(i, academicYear.getCode()).isEmpty()) {
                 semesterRepository.save(Semester.builder().number(i).name("Semester " + i)
                         .active(true).academicYear(academicYear).build());
             }
@@ -254,7 +254,7 @@ public class DataInitializer implements CommandLineRunner {
         Branch comp = branchRepository.findByCode("COMP")
                 .orElseThrow(() -> new IllegalStateException("COMP branch not found"));
 
-        Semester sem5 = semesterRepository.findByNumberAndAcademicYear_Code(5, "SPPU-TE-2026-27")
+        Semester sem5 = semesterRepository.findByNumberAndAcademicYear_CodeAndActiveTrue(5, "SPPU-TE-2026-27")
                 .orElseThrow(() -> new IllegalStateException("Semester 5 not found"));
 
         AcademicYear year = academicYearRepository.findByCode("SPPU-TE-2026-27")
