@@ -23,5 +23,5 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, String> 
     List<Curriculum> findByExamPatternIdAndActiveTrueOrderByStartYearDesc(String examPatternId);
 
     boolean existsByBranchIdAndExamPatternIdAndCodeIgnoreCase(
-            Long branchId, Long examPatternId, String code);
+            Long branchId, String examPatternId, String code);
 }
