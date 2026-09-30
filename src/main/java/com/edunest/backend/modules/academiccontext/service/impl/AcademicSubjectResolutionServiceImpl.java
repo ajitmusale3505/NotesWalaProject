@@ -109,8 +109,29 @@ public class AcademicSubjectResolutionServiceImpl implements AcademicSubjectReso
         return profile;
     }
 
+    /**
+     * Resolve the curriculum study year from the user's authoritative semester.
+     *
+     * The profile's currentYear is onboarding/profile data and can become stale
+     * when a user changes academic year or semester. Subject resolution must
+     * therefore not depend on that stale value. For SPPU, semesters have a
+     * fixed study-year mapping:
+     *   1-2 -> FE, 3-4 -> SE, 5-6 -> TE, 7-8 -> BE.
+     *
+     * We still fall back to currentYear for non-SPPU institutions because their
+     * semester-to-year rules may differ.
+     */
     private Integer resolveStudyYear(UserAcademicProfile profile) {
-        String code = profile.getAcademicYear().getCode() == null
+        if (profile.getCurrentSemester() != null
+                && profile.getUniversity() != null
+                && "SPPU".equalsIgnoreCase(profile.getUniversity().getShortCode())) {
+            Integer semesterNumber = profile.getCurrentSemester().getNumber();
+            if (semesterNumber != null && semesterNumber >= 1 && semesterNumber <= 8) {
+                return (semesterNumber + 1) / 2;
+            }
+        }
+
+        String code = profile.getAcademicYear() == null || profile.getAcademicYear().getCode() == null
                 ? "" : profile.getAcademicYear().getCode().toUpperCase();
         if (code.startsWith("SPPU-FE-")) return 1;
         if (code.startsWith("SPPU-SE-")) return 2;
