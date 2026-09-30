@@ -64,6 +64,11 @@ BEGIN
      WHERE sub.semester_id=sem.id
        AND sem.academic_year_id IN (v_fe_id,v_se_id,v_te_id,v_be_id);
 
+    -- Branches are catalog entities, not study-year entities. The entity mapping
+    -- is nullable, so make the legacy database column nullable before clearing
+    -- obsolete year links. This is intentionally limited to the branch master.
+    ALTER TABLE branches ALTER COLUMN academic_year_id DROP NOT NULL;
+
     UPDATE branches SET academic_year_id=NULL
      WHERE university_id=v_sppu_id;
 
