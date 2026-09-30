@@ -16,5 +16,5 @@ public interface SemesterRepository extends JpaRepository<Semester, Long> {
     @EntityGraph(attributePaths = {"academicYear"})
     List<Semester> findByAcademicYearIdAndActiveTrue(Long academicYearId);
     @EntityGraph(attributePaths = {"academicYear"})
-    Optional<Semester> findByNumberAndAcademicYear_Code(Integer number, String code);
+    Optional<Semester> findByNumberAndAcademicYear_CodeAndActiveTrue(Integer number, String code);
 }
