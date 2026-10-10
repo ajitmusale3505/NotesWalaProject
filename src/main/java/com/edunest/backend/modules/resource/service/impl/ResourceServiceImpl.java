@@ -822,8 +822,11 @@ public class ResourceServiceImpl implements ResourceService {
                 || !branch.getUniversity().getId().equals(university.getId())) {
             throw new BadRequestException("Branch does not belong to selected university");
         }
-        if (branch.getAcademicYear() == null
-                || !branch.getAcademicYear().getId().equals(academicYear.getId())) {
+        // A branch is a master catalog entity and its academic-year relation is
+        // optional. When configured, it must match; otherwise the selected semester
+        // and subject determine the academic year for this resource.
+        if (branch.getAcademicYear() != null
+                && !branch.getAcademicYear().getId().equals(academicYear.getId())) {
             throw new BadRequestException("Branch does not belong to selected academic year");
         }
         if (semester.getAcademicYear() == null
