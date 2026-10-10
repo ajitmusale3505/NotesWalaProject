@@ -62,8 +62,15 @@ public class BranchServiceImpl implements BranchService {
                 .active(branch.isActive())
                 .universityId(PublicIdUtils.universityId(branch.getUniversity().getId()))
                 .universityName(branch.getUniversity().getName())
-                .academicYearId(PublicIdUtils.academicYearId(branch.getAcademicYear().getId()))
-                .academicYearName(branch.getAcademicYear().getName())
+                // Branch academic year is optional in the master catalog.
+                // Older code dereferenced it unconditionally and returned HTTP 500
+                // when branches were loaded through a college mapping.
+                .academicYearId(branch.getAcademicYear() != null
+                        ? PublicIdUtils.academicYearId(branch.getAcademicYear().getId())
+                        : null)
+                .academicYearName(branch.getAcademicYear() != null
+                        ? branch.getAcademicYear().getName()
+                        : null)
                 .build();
     }
 }
