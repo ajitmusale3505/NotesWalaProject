@@ -52,6 +52,7 @@ public class AdminResourceController {
             @RequestParam Long academicYearId,
             @RequestParam Long semesterId,
             @RequestParam Long subjectId,
+            @RequestParam String subjectOfferingId,
 
             @RequestParam DocumentType documentType,
             @RequestParam(required = false) MaterialType materialType,
@@ -86,6 +87,7 @@ public class AdminResourceController {
                         .academicYearId(academicYearId)
                         .semesterId(semesterId)
                         .subjectId(subjectId)
+                        .subjectOfferingId(subjectOfferingId)
                         .documentType(documentType)
                         .materialType(materialType)
                         .accessType(accessType)
