@@ -1,6 +1,7 @@
 package com.edunest.backend.modules.resource.service.impl;
 
 import com.edunest.backend.modules.resource.repository.ResourceRepository;
+import com.edunest.backend.modules.subject.entity.Subject;
 import com.edunest.backend.modules.resource.dto.response.ResourceResponse;
 import com.edunest.backend.modules.storage.service.StorageService;
 import com.edunest.backend.modules.category.repository.CategoryRepository;
@@ -27,9 +28,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceServiceImplDiscoveryTest {
@@ -142,5 +146,46 @@ class ResourceServiceImplDiscoveryTest {
         assertEquals(10, pageable.getValue().getPageSize());
         assertEquals("popularityScore",
                 pageable.getValue().getSort().iterator().next().getProperty());
+    } 
+    @Test
+    void adminUploadSubjectResolvesStableBusinessIdReturnedBySubjectOfferingApi() {
+        Subject subject = Subject.builder()
+                .id(42L)
+                .businessId("SUB10042")
+                .name("Data Structures")
+                .code("PCC-201")
+                .active(true)
+                .build();
+        when(subjectRepository.findByBusinessId("SUB10042")).thenReturn(java.util.Optional.of(subject));
+
+        Subject resolved = resourceService.resolveAdminUploadSubject("SUB10042");
+
+        assertSame(subject, resolved);
+        verify(subjectRepository).findByBusinessId("SUB10042");
+        verify(subjectRepository, never()).findById(10042L);
     }
+
+    @Test
+    void adminUploadSubjectKeepsLegacyNumericIdCompatibility() {
+        Subject subject = Subject.builder()
+                .id(42L)
+                .businessId("SUB10042")
+                .name("Data Structures")
+                .code("PCC-201")
+                .active(true)
+                .build();
+        when(subjectRepository.findByBusinessId("42")).thenReturn(java.util.Optional.empty());
+        when(subjectRepository.findById(42L)).thenReturn(java.util.Optional.of(subject));
+
+        Subject resolved = resourceService.resolveAdminUploadSubject("42");
+
+        assertSame(subject, resolved);
+        verify(subjectRepository).findById(42L);
+    }
+
+    @Test
+    void adminUploadSubjectRejectsMissingIdentifier() {
+        assertThrows(RuntimeException.class, () -> resourceService.resolveAdminUploadSubject(" "));
+    }
+
 }
