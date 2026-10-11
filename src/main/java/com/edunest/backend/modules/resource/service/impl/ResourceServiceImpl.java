@@ -331,8 +331,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Academic year not found"));
         Semester semester = semesterRepository.findById(request.getSemesterId())
                 .orElseThrow(() -> new ResourceNotFoundException("Semester not found"));
-        Subject subject = subjectRepository.findById(request.getSubjectId())
-                .orElseThrow(() -> new ResourceNotFoundException("Subject not found"));
+        Subject subject = resolveAdminUploadSubject(request.getSubjectId());
         SubjectOffering subjectOffering = resolveSubjectOffering(request.getSubjectOfferingId(), subject, request.getSemesterId());
 
         College college = null;
@@ -439,6 +438,31 @@ public class ResourceServiceImpl implements ResourceService {
             deleteQuietly(coverImageUrl);
             throw ex;
         }
+    }
+
+    /**
+     * Resolve the stable subject business ID emitted by SubjectOfferingResponse.
+     * Numeric database IDs remain supported for compatibility with older clients.
+     */
+    private Subject resolveAdminUploadSubject(String subjectIdentifier) {
+        if (subjectIdentifier == null || subjectIdentifier.isBlank()) {
+            throw new BadRequestException("Subject ID is required");
+        }
+
+        String normalized = subjectIdentifier.trim();
+        return subjectRepository.findByBusinessId(normalized)
+                .orElseGet(() -> {
+                    if (normalized.chars().allMatch(Character::isDigit)) {
+                        try {
+                            long legacyId = Long.parseLong(normalized);
+                            return subjectRepository.findById(legacyId)
+                                    .orElseThrow(() -> new ResourceNotFoundException("Subject not found"));
+                        } catch (NumberFormatException ex) {
+                            throw new BadRequestException("Invalid subject ID");
+                        }
+                    }
+                    throw new ResourceNotFoundException("Subject not found");
+                });
     }
 
     private SubjectOffering resolveSubjectOffering(String offeringId, Subject subject, Long semesterId) {
