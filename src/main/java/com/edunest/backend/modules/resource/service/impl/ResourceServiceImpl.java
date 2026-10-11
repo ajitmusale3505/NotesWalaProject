@@ -444,7 +444,7 @@ public class ResourceServiceImpl implements ResourceService {
      * Resolve the stable subject business ID emitted by SubjectOfferingResponse.
      * Numeric database IDs remain supported for compatibility with older clients.
      */
-    private Subject resolveAdminUploadSubject(String subjectIdentifier) {
+    Subject resolveAdminUploadSubject(String subjectIdentifier) {
         if (subjectIdentifier == null || subjectIdentifier.isBlank()) {
             throw new BadRequestException("Subject ID is required");
         }
