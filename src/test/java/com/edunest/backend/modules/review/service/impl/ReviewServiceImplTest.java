@@ -70,6 +70,34 @@ class ReviewServiceImplTest {
     }
 
     @Test
+    void createReviewAllowsPublishedFreeResourcesWithoutPurchaseEntitlement() {
+        resource.setAccessType(com.edunest.backend.common.enums.AccessType.FREE);
+        resource.setActive(true);
+        resource.setPublished(true);
+        when(resourceRepository.findById(10L)).thenReturn(Optional.of(resource));
+        when(userRepository.findById(20L)).thenReturn(Optional.of(user));
+        when(entitlementService.hasActiveEntitlement(20L, 10L, "PURCHASE")).thenReturn(false);
+        when(entitlementService.hasActiveEntitlement(20L, 10L, "SUBSCRIPTION")).thenReturn(false);
+        when(reviewRepository.existsByResource_IdAndUser_Id(10L, 20L)).thenReturn(false);
+        when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> {
+            Review review = invocation.getArgument(0);
+            review.setId(2L);
+            return review;
+        });
+        when(reviewRepository.findAverageRating(10L)).thenReturn(5.0);
+        when(reviewRepository.countByResource_Id(10L)).thenReturn(1L);
+
+        ReviewResponse response = reviewService.createReview(
+                10L, 20L,
+                CreateReviewRequest.builder().rating(5).review("Helpful notes").build());
+
+        assertEquals(2L, response.getId());
+        assertEquals(5, response.getRating());
+        verify(reviewRepository).save(any(Review.class));
+        verify(resourceRepository).updateRatingSummary(10L, 5.0, 1);
+    }
+
+    @Test
     void createReviewUpdatesResourceRatingSummary() {
         when(resourceRepository.findById(10L)).thenReturn(Optional.of(resource));
         when(userRepository.findById(20L)).thenReturn(Optional.of(user));
