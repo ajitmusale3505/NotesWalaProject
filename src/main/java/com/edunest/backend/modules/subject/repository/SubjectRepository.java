@@ -24,5 +24,8 @@ public interface SubjectRepository extends JpaRepository<Subject, Long> {
 
     @EntityGraph(attributePaths = {"branch", "branch.university", "branch.academicYear", "semester", "semester.academicYear", "academicYear", "academicYear.university"})
     List<Subject> findByBranchIdAndSemesterIdAndActiveTrue(Long branchId, Long semesterId);
+    @EntityGraph(attributePaths = {"branch", "branch.university", "branch.academicYear", "semester", "semester.academicYear", "academicYear", "academicYear.university"})
+    Optional<Subject> findByBusinessId(String businessId);
+
     Optional<Subject> findByCode(String code);
 }
