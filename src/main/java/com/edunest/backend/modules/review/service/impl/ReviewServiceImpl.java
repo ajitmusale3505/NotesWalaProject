@@ -2,6 +2,7 @@ package com.edunest.backend.modules.review.service.impl;
 
 import com.edunest.backend.common.exception.BadRequestException;
 import com.edunest.backend.common.exception.ResourceNotFoundException;
+import com.edunest.backend.common.enums.AccessType;
 import com.edunest.backend.modules.resource.entity.Resource;
 import com.edunest.backend.modules.resource.repository.ResourceRepository;
 import com.edunest.backend.modules.resourceentitlement.service.UserResourceEntitlementService;
@@ -40,8 +41,14 @@ public class ReviewServiceImpl implements ReviewService {
         Resource resource = getResource(resourceId);
         User user = getUser(userId);
 
-        if (!entitlementService.hasActiveEntitlement(userId, resourceId, "PURCHASE")) {
-            throw new AccessDeniedException("Only users who purchased the resource can review it");
+        boolean publishedFreeResource = resource.getAccessType() == AccessType.FREE
+                && resource.isActive()
+                && resource.isPublished();
+        boolean hasPaidAccess = entitlementService.hasActiveEntitlement(userId, resourceId, "PURCHASE")
+                || entitlementService.hasActiveEntitlement(userId, resourceId, "SUBSCRIPTION");
+
+        if (!publishedFreeResource && !hasPaidAccess) {
+            throw new AccessDeniedException("You must have access to this resource to review it");
         }
 
         if (reviewRepository.existsByResource_IdAndUser_Id(resourceId, userId)) {
