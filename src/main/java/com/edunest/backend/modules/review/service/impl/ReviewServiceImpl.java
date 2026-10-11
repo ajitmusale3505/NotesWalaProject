@@ -44,10 +44,11 @@ public class ReviewServiceImpl implements ReviewService {
         boolean publishedFreeResource = resource.getAccessType() == AccessType.FREE
                 && resource.isActive()
                 && resource.isPublished();
-        boolean hasPaidAccess = entitlementService.hasActiveEntitlement(userId, resourceId, "PURCHASE")
+        boolean hasReviewAccess = publishedFreeResource
+                || entitlementService.hasActiveEntitlement(userId, resourceId, "PURCHASE")
                 || entitlementService.hasActiveEntitlement(userId, resourceId, "SUBSCRIPTION");
 
-        if (!publishedFreeResource && !hasPaidAccess) {
+        if (!hasReviewAccess) {
             throw new AccessDeniedException("You must have access to this resource to review it");
         }
 
