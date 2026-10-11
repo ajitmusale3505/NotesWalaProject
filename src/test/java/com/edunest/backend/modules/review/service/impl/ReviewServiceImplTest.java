@@ -76,8 +76,6 @@ class ReviewServiceImplTest {
         resource.setPublished(true);
         when(resourceRepository.findById(10L)).thenReturn(Optional.of(resource));
         when(userRepository.findById(20L)).thenReturn(Optional.of(user));
-        when(entitlementService.hasActiveEntitlement(20L, 10L, "PURCHASE")).thenReturn(false);
-        when(entitlementService.hasActiveEntitlement(20L, 10L, "SUBSCRIPTION")).thenReturn(false);
         when(reviewRepository.existsByResource_IdAndUser_Id(10L, 20L)).thenReturn(false);
         when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> {
             Review review = invocation.getArgument(0);
