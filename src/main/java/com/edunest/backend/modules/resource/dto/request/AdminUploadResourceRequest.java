@@ -25,7 +25,8 @@ public class AdminUploadResourceRequest {
     private Long branchId;
     private Long academicYearId;
     private Long semesterId;
-    private Long subjectId;
+    /** Stable subject business ID supplied by the SubjectOffering API (e.g. SUB10001). */
+    private String subjectId;
     private String subjectOfferingId;
 
     @NotNull private DocumentType documentType;
