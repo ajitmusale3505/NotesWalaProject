@@ -51,7 +51,7 @@ public class AdminResourceController {
             @RequestParam Long branchId,
             @RequestParam Long academicYearId,
             @RequestParam Long semesterId,
-            @RequestParam Long subjectId,
+            @RequestParam String subjectId,
             @RequestParam String subjectOfferingId,
 
             @RequestParam DocumentType documentType,
