@@ -21,4 +21,5 @@ public class CategoryRequest {
     @Size(max = 100)
     private String icon;
     private Integer displayOrder;
+    private Boolean active;
 }
