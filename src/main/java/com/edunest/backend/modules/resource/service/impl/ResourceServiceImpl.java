@@ -331,13 +331,24 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Academic year not found"));
         Semester semester = semesterRepository.findById(request.getSemesterId())
                 .orElseThrow(() -> new ResourceNotFoundException("Semester not found"));
-        Subject subject = resolveAdminUploadSubject(request.getSubjectId());
-        SubjectOffering subjectOffering = resolveSubjectOffering(request.getSubjectOfferingId(), subject, request.getSemesterId());
-
+        boolean syllabusResource = isSyllabusCategory(category);
+        Subject subject = null;
+        SubjectOffering subjectOffering = null;
         College college = null;
-        if (request.getCollegeId() != null) {
-            college = collegeRepository.findById(request.getCollegeId())
-                    .orElseThrow(() -> new ResourceNotFoundException("College not found"));
+
+        if (syllabusResource) {
+            if (request.getCollegeId() != null) {
+                throw new BadRequestException("Syllabus resources are university-wide and must not be assigned to a college");
+            }
+            // University-wide syllabi are scoped by university, branch, academic year and semester.
+            // They deliberately have no college, subject or subject-offering relation.
+        } else {
+            subject = resolveAdminUploadSubject(request.getSubjectId());
+            subjectOffering = resolveSubjectOffering(request.getSubjectOfferingId(), subject, request.getSemesterId());
+            if (request.getCollegeId() != null) {
+                college = collegeRepository.findById(request.getCollegeId())
+                        .orElseThrow(() -> new ResourceNotFoundException("College not found"));
+            }
         }
 
         validateAcademicHierarchy(university, college, branch, academicYear, semester, subject);
@@ -818,6 +829,13 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
+    private boolean isSyllabusCategory(Category category) {
+        if (category == null) return false;
+        String name = category.getName() == null ? "" : category.getName().toLowerCase(java.util.Locale.ROOT);
+        String slug = category.getSlug() == null ? "" : category.getSlug().toLowerCase(java.util.Locale.ROOT);
+        return name.contains("syllabus") || slug.contains("syllabus");
+    }
+
     private void validateAcademicHierarchy(
             University university,
             College college,
@@ -838,17 +856,12 @@ public class ResourceServiceImpl implements ResourceService {
         if (semester == null || !semester.isActive()) {
             throw new BadRequestException("Selected semester is inactive or missing");
         }
-        if (subject == null || !subject.isActive()) {
-            throw new BadRequestException("Selected subject is inactive or missing");
-        }
-
         if (branch.getUniversity() == null
                 || !branch.getUniversity().getId().equals(university.getId())) {
             throw new BadRequestException("Branch does not belong to selected university");
         }
         // A branch is a master catalog entity and its academic-year relation is
-        // optional. When configured, it must match; otherwise the selected semester
-        // and subject determine the academic year for this resource.
+        // optional. When configured, it must match the selected academic year.
         if (branch.getAcademicYear() != null
                 && !branch.getAcademicYear().getId().equals(academicYear.getId())) {
             throw new BadRequestException("Branch does not belong to selected academic year");
@@ -857,17 +870,24 @@ public class ResourceServiceImpl implements ResourceService {
                 || !semester.getAcademicYear().getId().equals(academicYear.getId())) {
             throw new BadRequestException("Semester does not belong to selected academic year");
         }
-        if (subject.getBranch() == null
-                || !subject.getBranch().getId().equals(branch.getId())) {
-            throw new BadRequestException("Subject does not belong to selected branch");
-        }
-        if (subject.getSemester() == null
-                || !subject.getSemester().getId().equals(semester.getId())) {
-            throw new BadRequestException("Subject does not belong to selected semester");
-        }
-        if (subject.getAcademicYear() == null
-                || !subject.getAcademicYear().getId().equals(academicYear.getId())) {
-            throw new BadRequestException("Subject does not belong to selected academic year");
+
+        // Subject is intentionally absent for university-wide syllabus resources.
+        if (subject != null) {
+            if (!subject.isActive()) {
+                throw new BadRequestException("Selected subject is inactive or missing");
+            }
+            if (subject.getBranch() == null
+                    || !subject.getBranch().getId().equals(branch.getId())) {
+                throw new BadRequestException("Subject does not belong to selected branch");
+            }
+            if (subject.getSemester() == null
+                    || !subject.getSemester().getId().equals(semester.getId())) {
+                throw new BadRequestException("Subject does not belong to selected semester");
+            }
+            if (subject.getAcademicYear() == null
+                    || !subject.getAcademicYear().getId().equals(academicYear.getId())) {
+                throw new BadRequestException("Subject does not belong to selected academic year");
+            }
         }
         if (college != null) {
             if (!college.isActive()) {
