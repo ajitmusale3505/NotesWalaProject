@@ -1060,7 +1060,7 @@ public class ResourceServiceImpl implements ResourceService {
             throw new IllegalArgumentException("Title is required and must be at most 200 characters");
         }
         if (request.getDocumentType() == null || request.getAccessType() == null) {
-            throw new IllegalArgumentException("Material type and access type are required");
+            throw new IllegalArgumentException("Document type and access type are required");
         }
         if (request.getPrice() == null || request.getPrice().signum() < 0) {
             throw new IllegalArgumentException("Price must be zero or positive");
