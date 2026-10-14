@@ -16,6 +16,8 @@ public class AcademicSubjectResponse {
     boolean mandatory;
     String universityId;
     String branchId;
+    String academicYearId;
+    String semesterId;
     String examPatternId;
     String curriculumId;
     String curriculumSemesterId;
