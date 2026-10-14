@@ -30,6 +30,8 @@ public interface ResourceService {
 
     ResourceResponse getResourceById(Long id);
 
+    ResourceResponse getCurrentUserSyllabus(Long userId);
+
     List<ResourceResponse> searchResources(String keyword);
 
     List<ResourceResponse> getResourcesByBranch(Long branchId);
