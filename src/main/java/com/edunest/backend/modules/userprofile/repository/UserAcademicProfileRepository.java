@@ -1,10 +1,14 @@
 package com.edunest.backend.modules.userprofile.repository;
 
 import com.edunest.backend.modules.userprofile.entity.UserAcademicProfile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.util.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserAcademicProfileRepository extends JpaRepository<UserAcademicProfile, Long> {
@@ -18,6 +22,11 @@ public interface UserAcademicProfileRepository extends JpaRepository<UserAcademi
             "user", "university", "college", "branch", "academicYear", "currentSemester"
     })
     Optional<UserAcademicProfile> findByUserId(Long userId);
+
+    @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
+    Page<UserAcademicProfile> findByUniversity_IdAndActiveTrue(Long universityId, Pageable pageable);
+
+    long countByUniversity_IdAndActiveTrue(Long universityId);
 
     @Query("""
             select p.user.id
