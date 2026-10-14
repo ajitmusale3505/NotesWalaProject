@@ -65,7 +65,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .description(normalize(request.getDescription()))
                 .icon(normalize(request.getIcon()))
                 .displayOrder(request.getDisplayOrder())
-                .active(true)
+                .active(request.getActive() == null || request.getActive())
                 .build();
         return map(repository.save(category), 0L);
     }
@@ -86,6 +86,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setDescription(normalize(request.getDescription()));
         category.setIcon(normalize(request.getIcon()));
         category.setDisplayOrder(request.getDisplayOrder());
+        if (request.getActive() != null) category.setActive(request.getActive());
         return map(repository.save(category), 0L);
     }
 
