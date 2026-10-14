@@ -47,6 +47,8 @@ import com.edunest.backend.modules.university.entity.University;
 import com.edunest.backend.modules.university.repository.UniversityRepository;
 import com.edunest.backend.modules.user.entity.User;
 import com.edunest.backend.modules.user.repository.UserRepository;
+import com.edunest.backend.modules.userprofile.entity.UserAcademicProfile;
+import com.edunest.backend.modules.userprofile.repository.UserAcademicProfileRepository;
 import com.edunest.backend.modules.year.entity.AcademicYear;
 import com.edunest.backend.modules.year.repository.AcademicYearRepository;
 
@@ -78,6 +80,7 @@ public class ResourceServiceImpl implements ResourceService {
     
     private final OrderService orderService;
     private final UserRepository userRepository;
+    private final UserAcademicProfileRepository userAcademicProfileRepository;
     private final UserResourceEntitlementService userResourceEntitlementService;
     private final StorageService storageService;
     private final UniversityRepository universityRepository;
@@ -518,6 +521,27 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 
         return mapToResponse(resource);
+    }
+
+    @Override
+    public ResourceResponse getCurrentUserSyllabus(Long userId) {
+        UserAcademicProfile profile = userAcademicProfileRepository.findByUserIdAndActiveTrue(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Complete your academic profile to find your university syllabus"));
+
+        List<Resource> matchingSyllabi = resourceRepository.findPublishedSyllabusForAcademicScope(
+                profile.getUniversity().getId(),
+                profile.getBranch().getId(),
+                profile.getAcademicYear().getId(),
+                profile.getCurrentSemester().getId(),
+                PageRequest.of(0, 1));
+
+        Resource syllabus = matchingSyllabi.stream()
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No published syllabus is available for your university, branch, academic year and semester"));
+
+        return mapToResponse(syllabus);
     }
 
     @Override
