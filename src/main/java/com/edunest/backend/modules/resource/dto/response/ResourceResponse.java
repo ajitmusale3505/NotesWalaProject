@@ -28,8 +28,11 @@ public class ResourceResponse {
     private String branchName;
     private Integer semesterNumber;
     private String subjectName;
-    
     private String collegeName;
+    private String universityId;
+    private String branchId;
+    private String academicYearId;
+    private String semesterId;
 
     // Type
     private DocumentType documentType;
