@@ -2,6 +2,7 @@ package com.edunest.backend.modules.resource.service.impl;
 
 import com.edunest.backend.common.exception.BadRequestException;
 import com.edunest.backend.common.exception.ResourceNotFoundException;
+import com.edunest.backend.common.util.PublicIdUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -1110,16 +1111,24 @@ public class ResourceServiceImpl implements ResourceService {
                 .categoryName(resource.getCategory() != null
                         ? resource.getCategory().getName()
                         : null)
-
+                .universityId(resource.getUniversity() != null
+                        ? PublicIdUtils.universityId(resource.getUniversity().getId())
+                        : null)
+                .branchId(resource.getBranch() != null
+                        ? PublicIdUtils.branchId(resource.getBranch().getId())
+                        : null)
+                .academicYearId(resource.getAcademicYear() != null
+                        ? PublicIdUtils.academicYearId(resource.getAcademicYear().getId())
+                        : null)
+                .semesterId(resource.getSemester() != null
+                        ? PublicIdUtils.semesterId(resource.getSemester().getId())
+                        : null)
                 .branchName(resource.getBranch() != null
                         ? resource.getBranch().getName()
                         : null)
-                .collegeName(
-                	    resource.getCollege() != null
-                	        ? resource.getCollege().getName()
-                	        : null
-                	)
-
+                .collegeName(resource.getCollege() != null
+                        ? resource.getCollege().getName()
+                        : null)
                 .semesterNumber(resource.getSemester() != null
                         ? resource.getSemester().getNumber()
                         : null)
