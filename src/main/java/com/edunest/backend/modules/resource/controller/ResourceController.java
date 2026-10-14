@@ -70,6 +70,16 @@ public class ResourceController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/my-syllabus")
+    public ResponseEntity<ApiResponse<ResourceResponse>> getCurrentUserSyllabus() {
+        ResourceResponse syllabus = resourceService.getCurrentUserSyllabus(SecurityUtils.getCurrentUserId());
+        return ResponseEntity.ok(ApiResponse.<ResourceResponse>builder()
+                .success(true)
+                .message("Syllabus fetched successfully")
+                .data(syllabus)
+                .build());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ResourceResponse>> getResourceById(
             @PathVariable Long id) {
