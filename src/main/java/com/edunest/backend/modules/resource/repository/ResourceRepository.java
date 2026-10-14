@@ -24,6 +24,26 @@ public interface ResourceRepository extends JpaRepository<Resource, Long>, JpaSp
     // Existing Filters
     boolean existsBySlug(String slug);
 
+    @Query("""
+            select r
+              from Resource r
+              join r.category c
+             where r.active = true
+               and r.published = true
+               and (lower(c.name) like '%syllabus%' or lower(c.slug) like '%syllabus%')
+               and r.university.id = :universityId
+               and r.branch.id = :branchId
+               and r.academicYear.id = :academicYearId
+               and r.semester.id = :semesterId
+             order by r.createdAt desc, r.id desc
+            """)
+    List<Resource> findPublishedSyllabusForAcademicScope(
+            @Param("universityId") Long universityId,
+            @Param("branchId") Long branchId,
+            @Param("academicYearId") Long academicYearId,
+            @Param("semesterId") Long semesterId,
+            Pageable pageable);
+
     List<Resource> findBySubject_Id(Long subjectId);
 
     List<Resource> findByBranch_Id(Long branchId);
