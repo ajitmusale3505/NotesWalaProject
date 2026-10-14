@@ -1,5 +1,6 @@
 package com.edunest.backend.modules.category.dto;
 
+import java.time.LocalDateTime;
 import lombok.*;
 
 @Getter
@@ -15,4 +16,7 @@ public class CategoryResponse {
     private String icon;
     private Integer displayOrder;
     private boolean active;
+    private long resourceCount;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
