@@ -6,7 +6,9 @@ import java.util.List;
 
 public interface CategoryService {
     List<CategoryResponse> getActiveCategories();
+    List<CategoryResponse> getAllCategories();
     CategoryResponse create(CategoryRequest request);
     CategoryResponse update(Long id, CategoryRequest request);
+    CategoryResponse updateStatus(Long id, boolean active);
     CategoryResponse deactivate(Long id);
 }
