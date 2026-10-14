@@ -78,6 +78,10 @@ public class AcademicSubjectResolutionServiceImpl implements AcademicSubjectReso
                         .mandatory(so.isMandatory())
                         .universityId(PublicIdUtils.universityId(so.getCurriculumSemester().getCurriculum().getUniversity().getId()))
                         .branchId(PublicIdUtils.branchId(so.getCurriculumSemester().getCurriculum().getBranch().getId()))
+                        .academicYearId(so.getCurriculumSemester().getSemester().getAcademicYear() == null
+                                ? null
+                                : PublicIdUtils.academicYearId(so.getCurriculumSemester().getSemester().getAcademicYear().getId()))
+                        .semesterId(PublicIdUtils.semesterId(so.getCurriculumSemester().getSemester().getId()))
                         .examPatternId(so.getCurriculumSemester().getCurriculum().getExamPattern().getId())
                         .curriculumId(so.getCurriculumSemester().getCurriculum().getId())
                         .curriculumSemesterId(so.getCurriculumSemester().getId())
