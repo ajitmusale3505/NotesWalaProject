@@ -12,11 +12,10 @@ import com.edunest.backend.modules.communitychat.repository.CommunityChannelRepo
 import com.edunest.backend.modules.communitychat.service.UniversityCommunityService;
 import com.edunest.backend.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/community/channels")
@@ -38,12 +37,13 @@ public class CommunityChannelController {
     }
 
     @GetMapping("/university/members")
-    public ResponseEntity<ApiResponse<List<CommunityMemberResponse>>> currentUniversityMembers(
+    public ResponseEntity<ApiResponse<Page<CommunityMemberResponse>>> currentUniversityMembers(
+            @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "8") int limit) {
-        return ResponseEntity.ok(ApiResponse.<List<CommunityMemberResponse>>builder()
+        return ResponseEntity.ok(ApiResponse.<Page<CommunityMemberResponse>>builder()
                 .success(true)
                 .message("University community members loaded successfully")
-                .data(universityCommunityService.getCurrentMembers(SecurityUtils.getCurrentUserId(), limit))
+                .data(universityCommunityService.getCurrentMembers(SecurityUtils.getCurrentUserId(), page, limit))
                 .build());
     }
 

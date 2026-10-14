@@ -9,16 +9,17 @@ import com.edunest.backend.modules.communitychat.repository.CommunityChannelRepo
 import com.edunest.backend.modules.userprofile.entity.UserAcademicProfile;
 import com.edunest.backend.modules.userprofile.repository.UserAcademicProfileRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class UniversityCommunityService {
+
+    private static final int MAX_MEMBER_PAGE_SIZE = 50;
 
     private final UserAcademicProfileRepository profileRepository;
     private final CommunityChannelRepository channelRepository;
@@ -47,20 +48,19 @@ public class UniversityCommunityService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommunityMemberResponse> getCurrentMembers(Long userId, int limit) {
+    public Page<CommunityMemberResponse> getCurrentMembers(Long userId, int page, int limit) {
         UserAcademicProfile profile = activeProfile(userId);
-        int boundedLimit = Math.min(Math.max(1, limit), 50);
+        int boundedPage = Math.max(0, page);
+        int boundedLimit = Math.min(Math.max(1, limit), MAX_MEMBER_PAGE_SIZE);
         return profileRepository.findByUniversity_IdAndActiveTrue(
-                        profile.getUniversity().getId(), PageRequest.of(0, boundedLimit))
-                .stream()
+                        profile.getUniversity().getId(), PageRequest.of(boundedPage, boundedLimit))
                 .map(member -> CommunityMemberResponse.builder()
                         .userId(member.getUser().getId())
                         .fullName(member.getUser().getFullName())
                         .branchName(member.getBranch().getName())
                         .semesterName(member.getCurrentSemester().getName())
                         .currentYear(member.getCurrentYear())
-                        .build())
-                .toList();
+                        .build());
     }
 
     private UserAcademicProfile activeProfile(Long userId) {
