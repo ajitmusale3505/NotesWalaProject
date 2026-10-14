@@ -45,6 +45,9 @@ public interface ResourceRepository extends JpaRepository<Resource, Long>, JpaSp
     long countByActiveTrue();
     long countByPublishedTrue();
 
+    @Query("select r.category.id, count(r.id) from Resource r where r.category is not null group by r.category.id")
+    List<Object[]> findCategoryResourceCounts();
+
     // Feed API
     List<Resource> findByBranch_IdAndSemester_IdAndActiveTrueAndPublishedTrue(
             Long branchId,
