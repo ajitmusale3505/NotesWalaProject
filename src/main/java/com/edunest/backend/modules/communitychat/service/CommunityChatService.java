@@ -14,6 +14,9 @@ import java.util.List;
 public interface CommunityChatService {
     Page<CommunityMessageResponse> history(Long userId, Long channelId, int page, int size);
     Page<CommunityMessageResponse> historyBefore(Long userId, Long channelId, Long beforeId, int size);
+    Page<CommunityMessageResponse> searchHistory(
+            Long userId, Long channelId, String query, int page, int size);
+    List<CommunityMessageResponse> context(Long userId, Long channelId, Long messageId, int size);
     Page<CommunityMessageResponse> thread(Long userId, Long channelId, Long messageId, int page, int size);
     Page<CommunityMemberResponse> members(Long userId, Long channelId, int page, int size);
     CommunityMessageResponse pinned(Long userId, Long channelId);

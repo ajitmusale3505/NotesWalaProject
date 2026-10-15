@@ -36,6 +36,25 @@ public class CommunityChatController {
         return ok("Messages fetched successfully", messages);
     }
 
+    @GetMapping("/{channelId}/messages/search")
+    public ResponseEntity<ApiResponse<Page<CommunityMessageResponse>>> searchMessages(
+            @PathVariable Long channelId,
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ok("Message search results fetched successfully",
+                service.searchHistory(SecurityUtils.getCurrentUserId(), channelId, query, page, size));
+    }
+
+    @GetMapping("/{channelId}/messages/{messageId}/context")
+    public ResponseEntity<ApiResponse<List<CommunityMessageResponse>>> messageContext(
+            @PathVariable Long channelId,
+            @PathVariable Long messageId,
+            @RequestParam(defaultValue = "30") int size) {
+        return ok("Message context fetched successfully",
+                service.context(SecurityUtils.getCurrentUserId(), channelId, messageId, size));
+    }
+
     @GetMapping("/{channelId}/members")
     public ResponseEntity<ApiResponse<Page<CommunityMemberResponse>>> members(
             @PathVariable Long channelId,

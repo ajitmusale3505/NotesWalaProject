@@ -37,6 +37,39 @@ public interface CommunityMessageRepository extends JpaRepository<CommunityMessa
             Long channelId, CommunityMessageStatus status, Pageable pageable);
 
     @EntityGraph(attributePaths = {"author", "channel"})
+    @Query(value = """
+            select m
+              from CommunityMessage m
+              join m.author a
+             where m.channel.id = :channelId
+               and m.status = com.edunest.backend.modules.communitychat.entity.CommunityMessageStatus.ACTIVE
+               and (
+                    lower(m.content) like concat('%', lower(:query), '%')
+                    or lower(a.fullName) like concat('%', lower(:query), '%')
+               )
+             order by m.createdAt desc, m.id desc
+            """,
+            countQuery = """
+            select count(m.id)
+              from CommunityMessage m
+              join m.author a
+             where m.channel.id = :channelId
+               and m.status = com.edunest.backend.modules.communitychat.entity.CommunityMessageStatus.ACTIVE
+               and (
+                    lower(m.content) like concat('%', lower(:query), '%')
+                    or lower(a.fullName) like concat('%', lower(:query), '%')
+               )
+            """)
+    Page<CommunityMessage> searchByChannelAndQuery(
+            @Param("channelId") Long channelId,
+            @Param("query") String query,
+            Pageable pageable);
+
+    @EntityGraph(attributePaths = {"author", "channel"})
+    Page<CommunityMessage> findByChannel_IdAndIdGreaterThanAndStatusOrderByIdAsc(
+            Long channelId, Long id, CommunityMessageStatus status, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"author", "channel"})
     Page<CommunityMessage> findByChannel_IdAndIdLessThanAndStatusOrderByIdDesc(
             Long channelId, Long beforeId, CommunityMessageStatus status, Pageable pageable);
 

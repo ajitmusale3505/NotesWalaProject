@@ -74,6 +74,53 @@ public class CommunityChatServiceImpl implements CommunityChatService {
     }
 
     @Override
+    public Page<CommunityMessageResponse> searchHistory(
+            Long userId, Long channelId, String query, int page, int size) {
+        authorize(userId, channelId);
+        String normalizedQuery = query == null ? "" : query.trim();
+        if (normalizedQuery.length() < 2) {
+            throw new BadRequestException("Enter at least 2 characters to search messages");
+        }
+        if (normalizedQuery.length() > 100) {
+            normalizedQuery = normalizedQuery.substring(0, 100);
+        }
+
+        return messageRepository.searchByChannelAndQuery(
+                        channelId,
+                        normalizedQuery,
+                        PageRequest.of(Math.max(0, page), boundedSize(size)))
+                .map(this::response);
+    }
+
+    @Override
+    public List<CommunityMessageResponse> context(
+            Long userId, Long channelId, Long messageId, int size) {
+        authorize(userId, channelId);
+        CommunityMessage target = getMessage(messageId, channelId);
+        if (target.getStatus() != CommunityMessageStatus.ACTIVE) {
+            throw new ResourceNotFoundException("Message not found");
+        }
+
+        int safeSize = boundedSize(size);
+        int olderLimit = safeSize / 2;
+        int newerLimit = Math.max(0, safeSize - olderLimit - 1);
+
+        List<CommunityMessage> older = new java.util.ArrayList<>(
+                messageRepository.findByChannel_IdAndIdLessThanAndStatusOrderByIdDesc(
+                        channelId, messageId, CommunityMessageStatus.ACTIVE,
+                        PageRequest.of(0, olderLimit)).getContent());
+        java.util.Collections.reverse(older);
+        older.add(target);
+
+        if (newerLimit > 0) {
+            older.addAll(messageRepository.findByChannel_IdAndIdGreaterThanAndStatusOrderByIdAsc(
+                    channelId, messageId, CommunityMessageStatus.ACTIVE,
+                    PageRequest.of(0, newerLimit)).getContent());
+        }
+        return older.stream().map(this::response).toList();
+    }
+
+    @Override
     public Page<CommunityMessageResponse> thread(Long userId, Long channelId, Long messageId, int page, int size) {
         authorize(userId, channelId);
         CommunityMessage parent = getMessage(messageId, channelId);
