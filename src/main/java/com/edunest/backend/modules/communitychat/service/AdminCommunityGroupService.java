@@ -7,10 +7,17 @@ import com.edunest.backend.modules.branch.entity.Branch;
 import com.edunest.backend.modules.branch.repository.BranchRepository;
 import com.edunest.backend.modules.communitychat.dto.request.AdminCommunityGroupRequest;
 import com.edunest.backend.modules.communitychat.dto.response.AdminCommunityGroupResponse;
+import com.edunest.backend.modules.communitychat.dto.response.AdminCommunityGroupMemberResponse;
+import com.edunest.backend.modules.communitychat.dto.response.AdminCommunityGroupStatisticsResponse;
 import com.edunest.backend.modules.communitychat.dto.response.AdminCommunityGroupSummaryResponse;
+import com.edunest.backend.modules.communitychat.dto.response.CommunityMessageResponse;
 import com.edunest.backend.modules.communitychat.entity.CommunityChannel;
 import com.edunest.backend.modules.communitychat.entity.CommunityChannelType;
+import com.edunest.backend.modules.communitychat.entity.CommunityMessage;
+import com.edunest.backend.modules.communitychat.entity.CommunityMessageStatus;
 import com.edunest.backend.modules.communitychat.repository.CommunityChannelRepository;
+import com.edunest.backend.modules.communitychat.repository.CommunityMessageRepository;
+import com.edunest.backend.modules.communitychat.repository.CommunityReportRepository;
 import com.edunest.backend.modules.semester.entity.Semester;
 import com.edunest.backend.modules.semester.repository.SemesterRepository;
 import com.edunest.backend.modules.storage.dto.UploadResponse;
@@ -36,6 +43,8 @@ public class AdminCommunityGroupService {
     private static final long MAX_ICON_BYTES = 2L * 1024 * 1024;
 
     private final CommunityChannelRepository channelRepository;
+    private final CommunityMessageRepository messageRepository;
+    private final CommunityReportRepository reportRepository;
     private final UniversityRepository universityRepository;
     private final BranchRepository branchRepository;
     private final SemesterRepository semesterRepository;
@@ -72,6 +81,135 @@ public class AdminCommunityGroupService {
                         CommunityChannelRepository.CommunityGroupMemberCount::getChannelId,
                         item -> item.getMemberCount() == null ? 0L : item.getMemberCount()));
         return groups.map(group -> toResponse(group, memberCounts.getOrDefault(group.getId(), 0L)));
+    }
+
+    public AdminCommunityGroupResponse getGroup(Long id) {
+        CommunityChannel channel = findGroup(id);
+        return toResponse(channel, countMembers(channel));
+    }
+
+    public AdminCommunityGroupStatisticsResponse statistics(Long id) {
+        CommunityChannel channel = findGroup(id);
+        Long universityId = channel.getUniversity().getId();
+        Long branchId = channel.getBranch().getId();
+        Long semesterId = channel.getSemester().getId();
+
+        long totalMembers = profileRepository.countByUniversity_IdAndBranch_IdAndCurrentSemester_Id(
+                universityId, branchId, semesterId);
+        long activeMembers = profileRepository.countByUniversity_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+                universityId, branchId, semesterId);
+        long inactiveMembers = Math.max(0, totalMembers - activeMembers);
+        long totalMessages = messageRepository.countByChannel_IdAndStatus(
+                channel.getId(), CommunityMessageStatus.ACTIVE);
+        long suspiciousUsers = reportRepository.countDistinctReportedAuthorsByChannelId(channel.getId());
+
+        return AdminCommunityGroupStatisticsResponse.builder()
+                .totalMembers(totalMembers)
+                .activeMembers(activeMembers)
+                .inactiveMembers(inactiveMembers)
+                .totalMessages(totalMessages)
+                .suspiciousUsers(suspiciousUsers)
+                .activePercentage(totalMembers == 0 ? 0 : Math.round(activeMembers * 1000.0 / totalMembers) / 10.0)
+                .inactivePercentage(totalMembers == 0 ? 0 : Math.round(inactiveMembers * 1000.0 / totalMembers) / 10.0)
+                .build();
+    }
+
+    public Page<AdminCommunityGroupMemberResponse> members(
+            Long id, int page, int size, String query, String status, String activityLevel) {
+        CommunityChannel channel = findGroup(id);
+        int safePage = Math.max(0, page);
+        int safeSize = Math.min(Math.max(1, size), MAX_PAGE_SIZE);
+        String normalizedQuery = query == null || query.isBlank() ? "" : query.trim();
+        String normalizedStatus = switch (status == null ? "all" : status.trim().toLowerCase(Locale.ROOT)) {
+            case "active" -> "active";
+            case "inactive" -> "inactive";
+            default -> "all";
+        };
+        String normalizedActivity = switch (activityLevel == null ? "all" : activityLevel.trim().toLowerCase(Locale.ROOT)) {
+            case "none", "low", "medium", "high" -> activityLevel.trim().toLowerCase(Locale.ROOT);
+            default -> "all";
+        };
+
+        Page<com.edunest.backend.modules.userprofile.entity.UserAcademicProfile> profiles = profileRepository
+                .searchAdminGroupMembers(
+                        channel.getId(),
+                        channel.getUniversity().getId(),
+                        channel.getBranch().getId(),
+                        channel.getSemester().getId(),
+                        normalizedQuery,
+                        normalizedStatus,
+                        normalizedActivity,
+                        PageRequest.of(safePage, safeSize));
+
+        if (profiles.isEmpty()) {
+            return profiles.map(profile -> toMemberResponse(profile, 0L, 0L));
+        }
+
+        List<Long> userIds = profiles.getContent().stream()
+                .map(profile -> profile.getUser().getId())
+                .toList();
+        Map<Long, Long> messageCounts = messageRepository.countActiveMessagesByAuthors(channel.getId(), userIds).stream()
+                .collect(Collectors.toMap(
+                        CommunityMessageRepository.AuthorMessageCount::getUserId,
+                        item -> item.getCountValue() == null ? 0L : item.getCountValue()));
+        Map<Long, Long> reportCounts = reportRepository.countReportsByAuthors(channel.getId(), userIds).stream()
+                .collect(Collectors.toMap(
+                        CommunityReportRepository.AuthorReportCount::getUserId,
+                        item -> item.getCountValue() == null ? 0L : item.getCountValue()));
+
+        return profiles.map(profile -> toMemberResponse(
+                profile,
+                messageCounts.getOrDefault(profile.getUser().getId(), 0L),
+                reportCounts.getOrDefault(profile.getUser().getId(), 0L)));
+    }
+
+    public Page<CommunityMessageResponse> messages(Long id, int page, int size) {
+        CommunityChannel channel = findGroup(id);
+        int safePage = Math.max(0, page);
+        int safeSize = Math.min(Math.max(1, size), MAX_PAGE_SIZE);
+        return messageRepository.findByChannel_IdAndStatusOrderByCreatedAtDesc(
+                        channel.getId(), CommunityMessageStatus.ACTIVE, PageRequest.of(safePage, safeSize))
+                .map(this::toMessageResponse);
+    }
+
+    private AdminCommunityGroupMemberResponse toMemberResponse(
+            com.edunest.backend.modules.userprofile.entity.UserAcademicProfile profile,
+            long messageCount,
+            long suspiciousActivityCount) {
+        String phone = profile.getPhoneNumber();
+        if (phone == null || phone.isBlank()) {
+            phone = profile.getUser().getPhoneNumber();
+        }
+        return AdminCommunityGroupMemberResponse.builder()
+                .userId(profile.getUser().getId())
+                .fullName(profile.getUser().getFullName())
+                .rollNumber(profile.getRollNumber())
+                .email(profile.getUser().getEmail())
+                .phoneNumber(phone)
+                .semesterName(profile.getCurrentSemester() == null ? null : profile.getCurrentSemester().getName())
+                .branchName(profile.getBranch() == null ? null : profile.getBranch().getName())
+                .currentYear(profile.getCurrentYear())
+                .messageCount(messageCount)
+                .suspiciousActivityCount(suspiciousActivityCount)
+                .active(profile.isActive())
+                .joinedAt(profile.getCreatedAt())
+                .build();
+    }
+
+    private CommunityMessageResponse toMessageResponse(CommunityMessage message) {
+        return CommunityMessageResponse.builder()
+                .id(message.getId())
+                .channelId(message.getChannel().getId())
+                .authorId(message.getAuthor().getId())
+                .parentMessageId(message.getParentMessage() == null ? null : message.getParentMessage().getId())
+                .clientMessageId(message.getClientMessageId())
+                .authorName(message.getAuthor().getFullName())
+                .content(message.getContent())
+                .status(message.getStatus().name())
+                .pinned(message.isPinned())
+                .createdAt(message.getCreatedAt())
+                .updatedAt(message.getUpdatedAt())
+                .build();
     }
 
     public AdminCommunityGroupSummaryResponse summary() {

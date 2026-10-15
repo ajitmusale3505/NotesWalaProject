@@ -7,9 +7,30 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface CommunityMessageRepository extends JpaRepository<CommunityMessage, Long> {
+
+    interface AuthorMessageCount {
+        Long getUserId();
+        Long getCountValue();
+    }
+
+    @Query("""
+        select m.author.id as userId, count(m.id) as countValue
+          from CommunityMessage m
+         where m.channel.id = :channelId
+           and m.author.id in :userIds
+           and m.status = com.edunest.backend.modules.communitychat.entity.CommunityMessageStatus.ACTIVE
+         group by m.author.id
+        """)
+    List<AuthorMessageCount> countActiveMessagesByAuthors(
+            @Param("channelId") Long channelId,
+            @Param("userIds") Collection<Long> userIds);
+
+    long countByChannel_IdAndStatus(Long channelId, CommunityMessageStatus status);
 
     @EntityGraph(attributePaths = {"author", "channel"})
     Page<CommunityMessage> findByChannel_IdAndStatusOrderByCreatedAtDesc(

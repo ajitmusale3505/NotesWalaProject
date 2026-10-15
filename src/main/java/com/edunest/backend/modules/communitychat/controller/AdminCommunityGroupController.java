@@ -3,7 +3,10 @@ package com.edunest.backend.modules.communitychat.controller;
 import com.edunest.backend.common.response.ApiResponse;
 import com.edunest.backend.modules.communitychat.dto.request.AdminCommunityGroupRequest;
 import com.edunest.backend.modules.communitychat.dto.response.AdminCommunityGroupResponse;
+import com.edunest.backend.modules.communitychat.dto.response.AdminCommunityGroupMemberResponse;
+import com.edunest.backend.modules.communitychat.dto.response.AdminCommunityGroupStatisticsResponse;
 import com.edunest.backend.modules.communitychat.dto.response.AdminCommunityGroupSummaryResponse;
+import com.edunest.backend.modules.communitychat.dto.response.CommunityMessageResponse;
 import com.edunest.backend.modules.communitychat.service.AdminCommunityGroupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +36,51 @@ public class AdminCommunityGroupController {
                 .success(true)
                 .message("Community groups fetched successfully.")
                 .data(service.list(page, size, query, universityId, status))
+                .build());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<AdminCommunityGroupResponse>> getGroup(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.<AdminCommunityGroupResponse>builder()
+                .success(true)
+                .message("Community group fetched successfully.")
+                .data(service.getGroup(id))
+                .build());
+    }
+
+    @GetMapping("/{id}/statistics")
+    public ResponseEntity<ApiResponse<AdminCommunityGroupStatisticsResponse>> statistics(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.<AdminCommunityGroupStatisticsResponse>builder()
+                .success(true)
+                .message("Community group statistics fetched successfully.")
+                .data(service.statistics(id))
+                .build());
+    }
+
+    @GetMapping("/{id}/members")
+    public ResponseEntity<ApiResponse<Page<AdminCommunityGroupMemberResponse>>> members(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "all") String status,
+            @RequestParam(defaultValue = "all") String activityLevel) {
+        return ResponseEntity.ok(ApiResponse.<Page<AdminCommunityGroupMemberResponse>>builder()
+                .success(true)
+                .message("Community group members fetched successfully.")
+                .data(service.members(id, page, size, query, status, activityLevel))
+                .build());
+    }
+
+    @GetMapping("/{id}/messages")
+    public ResponseEntity<ApiResponse<Page<CommunityMessageResponse>>> messages(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(ApiResponse.<Page<CommunityMessageResponse>>builder()
+                .success(true)
+                .message("Community group messages fetched successfully.")
+                .data(service.messages(id, page, size))
                 .build());
     }
 
