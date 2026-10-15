@@ -31,14 +31,42 @@ public interface UserAcademicProfileRepository extends JpaRepository<UserAcademi
             Long universityId, Long branchId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
+    Page<UserAcademicProfile> findByUniversity_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+            Long universityId, Long branchId, Long semesterId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
     Page<UserAcademicProfile> findByCollege_IdAndBranch_IdAndActiveTrue(
             Long collegeId, Long branchId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
+    Page<UserAcademicProfile> findByCollege_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+            Long collegeId, Long branchId, Long semesterId, Pageable pageable);
 
     long countByUniversity_IdAndActiveTrue(Long universityId);
 
     long countByUniversity_IdAndBranch_IdAndActiveTrue(Long universityId, Long branchId);
 
+    long countByUniversity_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+            Long universityId, Long branchId, Long semesterId);
+
     long countByCollege_IdAndBranch_IdAndActiveTrue(Long collegeId, Long branchId);
+
+    long countByCollege_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+            Long collegeId, Long branchId, Long semesterId);
+
+    @Query("""
+            select count(p.id)
+            from UserAcademicProfile p
+            where p.active = true
+              and exists (
+                select c.id from com.edunest.backend.modules.communitychat.entity.CommunityChannel c
+                where c.channelType = com.edunest.backend.modules.communitychat.entity.CommunityChannelType.UNIVERSITY_BRANCH
+                  and c.university.id = p.university.id
+                  and c.branch.id = p.branch.id
+                  and c.semester.id = p.currentSemester.id
+              )
+            """)
+    long countActiveMembersMappedToUniversityBranchGroups();
 
     @Query("""
             select p.user.id

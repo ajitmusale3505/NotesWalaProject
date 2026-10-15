@@ -29,6 +29,7 @@ public class UniversityCommunityService {
         Long universityId = profile.getUniversity().getId();
         Long collegeId = profile.getCollege().getId();
         Long branchId = profile.getBranch().getId();
+        Long semesterId = profile.getCurrentSemester().getId();
 
         if (!universityId.equals(profile.getCollege().getUniversity().getId())
                 || !universityId.equals(profile.getBranch().getUniversity().getId())) {
@@ -38,36 +39,46 @@ public class UniversityCommunityService {
             throw new AccessDeniedException("Your selected branch is not active for this college");
         }
 
-        // Only these two rooms are returned to this user's UI.
-        channelRepository.insertUniversityBranchChannelIfAbsent(universityId, branchId);
-        channelRepository.insertCollegeBranchChannelIfAbsent(collegeId, branchId);
-
         CommunityChannel universityBranch = channelRepository
-                .findByChannelTypeAndUniversity_IdAndBranch_Id(
-                        CommunityChannelType.UNIVERSITY_BRANCH, universityId, branchId)
-                .orElseThrow(() -> new ResourceNotFoundException("University branch group could not be created"));
+                .findByChannelTypeAndUniversity_IdAndBranch_IdAndSemester_Id(
+                        CommunityChannelType.UNIVERSITY_BRANCH, universityId, branchId, semesterId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Your university branch group has not been created by an administrator yet."));
+        if (!universityBranch.isActive()) {
+            throw new AccessDeniedException("Your university branch group is currently inactive");
+        }
+
+        String collegeGroupName = profile.getBranch().getName() + " · College Branch Group";
+        channelRepository.insertCollegeBranchChannelIfAbsent(collegeId, branchId, semesterId, collegeGroupName);
         CommunityChannel collegeBranch = channelRepository
-                .findByChannelTypeAndCollege_IdAndBranch_Id(
-                        CommunityChannelType.BRANCH, collegeId, branchId)
+                .findByChannelTypeAndCollege_IdAndBranch_IdAndSemester_Id(
+                        CommunityChannelType.BRANCH, collegeId, branchId, semesterId)
                 .orElseThrow(() -> new ResourceNotFoundException("College branch group could not be created"));
+        if (!collegeBranch.isActive()) {
+            throw new AccessDeniedException("Your college branch group is currently inactive");
+        }
 
         return List.of(
                 response(universityBranch, "UNIVERSITY_BRANCH",
-                        profile.getBranch().getName() + " · University Branch Group", profile,
-                        profileRepository.countByUniversity_IdAndBranch_IdAndActiveTrue(universityId, branchId)),
+                        profile, profileRepository.countByUniversity_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+                                universityId, branchId, semesterId)),
                 response(collegeBranch, "BRANCH",
-                        profile.getBranch().getName() + " · College Branch Group", profile,
-                        profileRepository.countByCollege_IdAndBranch_IdAndActiveTrue(collegeId, branchId))
+                        profile, profileRepository.countByCollege_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+                                collegeId, branchId, semesterId))
         );
     }
 
     private CommunityRoomResponse response(
-            CommunityChannel channel, String type, String displayName,
-            UserAcademicProfile profile, long count) {
+            CommunityChannel channel, String type, UserAcademicProfile profile, long count) {
         return CommunityRoomResponse.builder()
                 .id(channel.getId())
                 .groupType(type)
-                .displayName(displayName)
+                .displayName(channel.getName() == null || channel.getName().isBlank()
+                        ? profile.getBranch().getName() + (type.equals("UNIVERSITY_BRANCH")
+                            ? " · University Branch Group" : " · College Branch Group")
+                        : channel.getName())
+                .description(channel.getDescription())
+                .iconUrl(channel.getIconUrl())
                 .universityId(profile.getUniversity().getId())
                 .universityName(profile.getUniversity().getName())
                 .collegeId(profile.getCollege().getId())
@@ -75,7 +86,8 @@ public class UniversityCommunityService {
                 .branchId(profile.getBranch().getId())
                 .branchName(profile.getBranch().getName())
                 .memberCount(count)
-                .semesterName(profile.getCurrentSemester().getName())
+                .semesterName(channel.getSemester() == null
+                        ? profile.getCurrentSemester().getName() : channel.getSemester().getName())
                 .currentYear(profile.getCurrentYear())
                 .active(channel.isActive())
                 .build();

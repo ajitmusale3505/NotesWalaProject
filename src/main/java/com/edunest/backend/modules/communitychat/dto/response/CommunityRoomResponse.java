@@ -10,6 +10,8 @@ public class CommunityRoomResponse {
     private Long id;
     private String groupType;
     private String displayName;
+    private String description;
+    private String iconUrl;
     private Long universityId;
     private String universityName;
     private Long collegeId;
