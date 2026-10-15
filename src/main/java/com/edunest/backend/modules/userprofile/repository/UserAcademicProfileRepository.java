@@ -1,10 +1,14 @@
 package com.edunest.backend.modules.userprofile.repository;
 
 import com.edunest.backend.modules.userprofile.entity.UserAcademicProfile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.util.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserAcademicProfileRepository extends JpaRepository<UserAcademicProfile, Long> {
@@ -18,6 +22,51 @@ public interface UserAcademicProfileRepository extends JpaRepository<UserAcademi
             "user", "university", "college", "branch", "academicYear", "currentSemester"
     })
     Optional<UserAcademicProfile> findByUserId(Long userId);
+
+    @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
+    Page<UserAcademicProfile> findByUniversity_IdAndActiveTrue(Long universityId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
+    Page<UserAcademicProfile> findByUniversity_IdAndBranch_IdAndActiveTrue(
+            Long universityId, Long branchId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
+    Page<UserAcademicProfile> findByUniversity_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+            Long universityId, Long branchId, Long semesterId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
+    Page<UserAcademicProfile> findByCollege_IdAndBranch_IdAndActiveTrue(
+            Long collegeId, Long branchId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
+    Page<UserAcademicProfile> findByCollege_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+            Long collegeId, Long branchId, Long semesterId, Pageable pageable);
+
+    long countByUniversity_IdAndActiveTrue(Long universityId);
+
+    long countByUniversity_IdAndBranch_IdAndActiveTrue(Long universityId, Long branchId);
+
+    long countByUniversity_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+            Long universityId, Long branchId, Long semesterId);
+
+    long countByCollege_IdAndBranch_IdAndActiveTrue(Long collegeId, Long branchId);
+
+    long countByCollege_IdAndBranch_IdAndCurrentSemester_IdAndActiveTrue(
+            Long collegeId, Long branchId, Long semesterId);
+
+    @Query("""
+            select count(p.id)
+            from UserAcademicProfile p
+            where p.active = true
+              and exists (
+                select c.id from com.edunest.backend.modules.communitychat.entity.CommunityChannel c
+                where c.channelType = com.edunest.backend.modules.communitychat.entity.CommunityChannelType.UNIVERSITY_BRANCH
+                  and c.university.id = p.university.id
+                  and c.branch.id = p.branch.id
+                  and c.semester.id = p.currentSemester.id
+              )
+            """)
+    long countActiveMembersMappedToUniversityBranchGroups();
 
     @Query("""
             select p.user.id
