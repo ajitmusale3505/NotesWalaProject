@@ -21,8 +21,10 @@ public class UserAcademicProfileRequest {
     @NotBlank(message = "Branch ID is required")
     private String branchId;
 
+    @NotBlank(message = "Academic program is required")
     private String programId;
 
+    @NotBlank(message = "Exam pattern is required")
     private String examPatternId;
 
     @NotBlank(message = "Academic year ID is required")
