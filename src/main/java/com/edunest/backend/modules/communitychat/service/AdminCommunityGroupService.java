@@ -53,7 +53,8 @@ public class AdminCommunityGroupService {
             case "inactive" -> false;
             default -> null;
         };
-        String normalizedQuery = query == null || query.isBlank() ? null : query.trim();
+        // Always bind a non-null String so PostgreSQL does not infer bytea for lower(:query).
+        String normalizedQuery = query == null || query.isBlank() ? "" : query.trim();
 
         Page<CommunityChannel> groups = channelRepository.searchAdminGroups(
                 CommunityChannelType.UNIVERSITY_BRANCH,

@@ -44,7 +44,7 @@ public interface CommunityChannelRepository extends JpaRepository<CommunityChann
           and (:universityId is null or u.id = :universityId)
           and (:active is null or c.active = :active)
           and (
-              :query is null
+              :query = ''
               or lower(coalesce(c.name, '')) like concat('%', lower(:query), '%')
               or lower(coalesce(u.name, '')) like concat('%', lower(:query), '%')
               or lower(coalesce(b.name, '')) like concat('%', lower(:query), '%')
