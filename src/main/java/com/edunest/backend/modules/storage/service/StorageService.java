@@ -24,6 +24,8 @@ public interface StorageService {
 
     String generatePresignedUrl(String key, Duration duration);
 
+    String generateDownloadUrl(String key, String fileName, Duration duration);
+
     FileStreamResponse getFile(String key);
 
     void deleteFile(String key);

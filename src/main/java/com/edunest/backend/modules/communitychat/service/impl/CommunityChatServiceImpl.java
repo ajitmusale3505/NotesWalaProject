@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -203,7 +204,7 @@ public class CommunityChatServiceImpl implements CommunityChatService {
         UploadResponse uploaded = storageService.uploadFile(file, "community-chat");
         CommunityMessageAttachment attachment = CommunityMessageAttachment.builder()
                 .message(message)
-                .storageKey(uploaded.getFileUrl())
+                .storageKey(uploaded.getFileName())
                 .fileName(uploaded.getOriginalFileName())
                 .contentType(uploaded.getContentType())
                 .sizeBytes(uploaded.getFileSizeBytes())
@@ -398,15 +399,33 @@ public class CommunityChatServiceImpl implements CommunityChatService {
 
     private CommunityAttachmentResponse attachmentResponse(CommunityMessageAttachment attachment) {
         CommunityMessage message = attachment.getMessage();
+        String storageKey = normalizeAttachmentStorageKey(attachment.getStorageKey());
+        String downloadUrl = storageService.generateDownloadUrl(
+                storageKey, attachment.getFileName(), Duration.ofHours(1));
         return CommunityAttachmentResponse.builder()
                 .id(attachment.getId())
                 .messageId(message.getId())
                 .authorName(message.getAuthor().getFullName())
                 .fileName(attachment.getFileName())
                 .contentType(attachment.getContentType())
-                .fileUrl(attachment.getStorageKey())
+                .fileUrl(downloadUrl)
                 .sizeBytes(attachment.getSizeBytes())
                 .createdAt(message.getCreatedAt())
                 .build();
+    }
+
+    private String normalizeAttachmentStorageKey(String storedValue) {
+        if (storedValue == null || storedValue.isBlank()) {
+            throw new BadRequestException("Stored attachment location is missing");
+        }
+        String value = storedValue.trim();
+        if (value.startsWith("r2://")) {
+            int keyStart = value.indexOf('/', "r2://".length());
+            if (keyStart < 0 || keyStart == value.length() - 1) {
+                throw new BadRequestException("Stored attachment location is invalid");
+            }
+            return value.substring(keyStart + 1);
+        }
+        return value;
     }
 }

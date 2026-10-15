@@ -151,11 +151,44 @@ public class R2StorageServiceImpl implements StorageService {
                 : generatePresignedUrlInternal(key, configuredSignedUrlLifetime());
     }
 
+    @Override
+    public String generateDownloadUrl(String key, String fileName, Duration duration) {
+        validateKey(key);
+        Duration safeDuration = duration == null ? configuredSignedUrlLifetime() : duration;
+        if (safeDuration.isNegative() || safeDuration.isZero()
+                || safeDuration.compareTo(MAX_SIGNED_URL_LIFETIME) > 0) {
+            throw new BadRequestException("Invalid presigned URL duration");
+        }
+
+        String safeFileName = fileName == null || fileName.isBlank()
+                ? key.substring(key.lastIndexOf('/') + 1)
+                : fileName.trim();
+        safeFileName = safeFileName.replace('\\r', '_')
+                .replace('\\n', '_')
+                .replace('"', '_')
+                .replace('\\\\', '_')
+                .replace('/', '_');
+        if (safeFileName.isBlank()) {
+            safeFileName = "download";
+        }
+
+        return generatePresignedUrlInternal(
+                key, safeDuration, "attachment; filename=\"" + safeFileName + "\"");
+    }
+
     private String generatePresignedUrlInternal(String key, Duration duration) {
-        GetObjectRequest request = GetObjectRequest.builder()
+        return generatePresignedUrlInternal(key, duration, null);
+    }
+
+    private String generatePresignedUrlInternal(
+            String key, Duration duration, String contentDisposition) {
+        GetObjectRequest.Builder requestBuilder = GetObjectRequest.builder()
                 .bucket(bucketName)
-                .key(key)
-                .build();
+                .key(key);
+        if (contentDisposition != null && !contentDisposition.isBlank()) {
+            requestBuilder.responseContentDisposition(contentDisposition);
+        }
+        GetObjectRequest request = requestBuilder.build();
 
         GetObjectPresignRequest presign = GetObjectPresignRequest.builder()
                 .signatureDuration(duration)
