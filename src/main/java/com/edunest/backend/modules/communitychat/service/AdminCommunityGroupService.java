@@ -167,7 +167,8 @@ public class AdminCommunityGroupService {
         }
 
         UploadResponse upload = storageService.uploadImage(file, "community-groups");
-        channel.setIconUrl(upload.getFileUrl());
+        // Store the stable R2 object key; r2://bucket/key is not a browser-loadable image URL.
+        channel.setIconUrl(upload.getFileName());
         return toResponse(channelRepository.save(channel), countMembers(channel));
     }
 
@@ -211,7 +212,7 @@ public class AdminCommunityGroupService {
                 .id(channel.getId())
                 .name(channel.getName())
                 .description(channel.getDescription())
-                .iconUrl(channel.getIconUrl())
+                .iconUrl(resolveIconUrl(channel.getIconUrl()))
                 .universityId(university == null ? null : PublicIdUtils.universityId(university.getId()))
                 .universityName(university == null ? "—" : university.getName())
                 .universityShortCode(university == null ? null : university.getShortCode())
@@ -225,6 +226,30 @@ public class AdminCommunityGroupService {
                 .createdAt(channel.getCreatedAt())
                 .updatedAt(channel.getUpdatedAt())
                 .build();
+    }
+
+    private String resolveIconUrl(String storedIconUrl) {
+        if (storedIconUrl == null || storedIconUrl.isBlank()) {
+            return null;
+        }
+
+        String value = storedIconUrl.trim();
+        if (value.startsWith("r2://")) {
+            // Backward compatibility for icons persisted before the object-key fix.
+            int keyStart = value.indexOf('/', "r2://".length());
+            if (keyStart < 0 || keyStart == value.length() - 1) {
+                return null;
+            }
+            value = value.substring(keyStart + 1);
+        }
+
+        // Preserve a previously configured HTTP URL if one is already stored.
+        if (value.startsWith("https://") || value.startsWith("http://")) {
+            return value;
+        }
+
+        // R2 signed URLs expire, so issue a fresh browser-accessible URL per API response.
+        return storageService.generateImageUrl(value);
     }
 
     private long countMembers(CommunityChannel channel) {
