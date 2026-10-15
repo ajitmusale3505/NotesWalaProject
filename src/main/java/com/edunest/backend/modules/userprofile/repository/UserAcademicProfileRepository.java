@@ -37,9 +37,9 @@ public interface UserAcademicProfileRepository extends JpaRepository<UserAcademi
     @Query("""
             select p
               from UserAcademicProfile p
-              join fetch p.user u
-              left join fetch p.branch b
-              left join fetch p.currentSemester s
+              join p.user u
+              left join p.branch b
+              left join p.currentSemester s
              where p.university.id = :universityId
                and p.branch.id = :branchId
                and p.currentSemester.id = :semesterId
@@ -73,6 +73,7 @@ public interface UserAcademicProfileRepository extends JpaRepository<UserAcademi
                )
              order by p.createdAt desc, p.id desc
             """)
+    @EntityGraph(attributePaths = {"user", "university", "branch", "currentSemester"})
     Page<UserAcademicProfile> searchAdminGroupMembers(
             @Param("channelId") Long channelId,
             @Param("universityId") Long universityId,
