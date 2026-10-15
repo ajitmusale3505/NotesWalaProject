@@ -21,6 +21,12 @@ BEGIN
                 FOREIGN KEY (semester_id) REFERENCES public.semesters(id);
         END IF;
 
+        -- Remove constraints from the original non-semester-scoped model before rebuilding uniqueness.
+        ALTER TABLE public.community_channels
+            DROP CONSTRAINT IF EXISTS uk_community_uni_branch_channel;
+        ALTER TABLE public.community_channels
+            DROP CONSTRAINT IF EXISTS uk_community_college_branch_channel;
+
         -- University branch groups are unique per semester, not just per branch.
         DROP INDEX IF EXISTS public.uk_community_university_branch_group;
         CREATE UNIQUE INDEX IF NOT EXISTS uk_community_university_branch_semester_group

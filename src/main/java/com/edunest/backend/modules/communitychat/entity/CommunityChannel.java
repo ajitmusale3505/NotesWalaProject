@@ -12,6 +12,12 @@ import java.time.ZoneOffset;
 
 @Entity
 @Table(name = "community_channels",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_community_uni_branch_semester_channel",
+                        columnNames = {"channel_type", "university_id", "branch_id", "semester_id"}),
+                @UniqueConstraint(name = "uk_community_college_branch_semester_channel",
+                        columnNames = {"channel_type", "college_id", "branch_id", "semester_id"})
+        },
         indexes = {
                 @Index(name = "idx_community_channel_type", columnList = "channel_type"),
                 @Index(name = "idx_community_channel_university_branch_semester", columnList = "university_id,branch_id,semester_id")
