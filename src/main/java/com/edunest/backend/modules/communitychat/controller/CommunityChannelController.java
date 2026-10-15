@@ -5,17 +5,18 @@ import com.edunest.backend.modules.branch.entity.Branch;
 import com.edunest.backend.modules.branch.repository.BranchRepository;
 import com.edunest.backend.modules.college.entity.College;
 import com.edunest.backend.modules.college.repository.CollegeRepository;
-import com.edunest.backend.modules.communitychat.dto.response.CommunityMemberResponse;
 import com.edunest.backend.modules.communitychat.dto.response.CommunityRoomResponse;
-import com.edunest.backend.modules.communitychat.entity.*;
+import com.edunest.backend.modules.communitychat.entity.CommunityChannel;
+import com.edunest.backend.modules.communitychat.entity.CommunityChannelType;
 import com.edunest.backend.modules.communitychat.repository.CommunityChannelRepository;
 import com.edunest.backend.modules.communitychat.service.UniversityCommunityService;
 import com.edunest.backend.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/community/channels")
@@ -27,26 +28,20 @@ public class CommunityChannelController {
     private final BranchRepository branchRepository;
     private final UniversityCommunityService universityCommunityService;
 
-    @GetMapping("/university")
-    public ResponseEntity<ApiResponse<CommunityRoomResponse>> currentUniversityRoom() {
-        return ResponseEntity.ok(ApiResponse.<CommunityRoomResponse>builder()
+    /**
+     * Returns exactly the two groups allowed by the current user's active academic profile:
+     * their university + branch group and their own college + branch group.
+     */
+    @GetMapping("/groups")
+    public ResponseEntity<ApiResponse<List<CommunityRoomResponse>>> currentUserGroups() {
+        return ResponseEntity.ok(ApiResponse.<List<CommunityRoomResponse>>builder()
                 .success(true)
-                .message("University community loaded successfully")
-                .data(universityCommunityService.getCurrentRoom(SecurityUtils.getCurrentUserId()))
+                .message("Your two community groups were loaded successfully")
+                .data(universityCommunityService.getCurrentGroups(SecurityUtils.getCurrentUserId()))
                 .build());
     }
 
-    @GetMapping("/university/members")
-    public ResponseEntity<ApiResponse<Page<CommunityMemberResponse>>> currentUniversityMembers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int limit) {
-        return ResponseEntity.ok(ApiResponse.<Page<CommunityMemberResponse>>builder()
-                .success(true)
-                .message("University community members loaded successfully")
-                .data(universityCommunityService.getCurrentMembers(SecurityUtils.getCurrentUserId(), page, limit))
-                .build());
-    }
-
+    // Administrative provisioning endpoints retained for compatibility with existing admin tooling.
     @PostMapping("/college/{collegeId}")
     public ResponseEntity<ApiResponse<Long>> createCollege(@PathVariable Long collegeId) {
         if (!SecurityUtils.isAdmin()) {
@@ -72,6 +67,9 @@ public class CommunityChannelController {
         }
         College college = collegeRepository.findById(collegeId).orElseThrow();
         Branch branch = branchRepository.findById(branchId).orElseThrow();
+        if (!college.getUniversity().getId().equals(branch.getUniversity().getId())) {
+            throw new IllegalArgumentException("The branch does not belong to this college's university");
+        }
         CommunityChannel channel = repository
                 .findByChannelTypeAndCollege_IdAndBranch_Id(CommunityChannelType.BRANCH, collegeId, branchId)
                 .orElseGet(() -> repository.save(CommunityChannel.builder()
@@ -81,6 +79,6 @@ public class CommunityChannelController {
                         .active(true)
                         .build()));
         return ResponseEntity.ok(ApiResponse.<Long>builder().success(true)
-                .message("Branch channel ready").data(channel.getId()).build());
+                .message("College branch channel ready").data(channel.getId()).build());
     }
 }

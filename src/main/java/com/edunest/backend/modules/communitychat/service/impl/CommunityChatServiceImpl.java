@@ -8,6 +8,7 @@ import com.edunest.backend.modules.communitychat.dto.request.ReportMessageReques
 import com.edunest.backend.modules.communitychat.dto.request.SendMessageRequest;
 import com.edunest.backend.modules.communitychat.dto.response.CommunityAttachmentResponse;
 import com.edunest.backend.modules.communitychat.dto.response.CommunityMessageResponse;
+import com.edunest.backend.modules.communitychat.dto.response.CommunityMemberResponse;
 import com.edunest.backend.modules.communitychat.entity.*;
 import com.edunest.backend.modules.communitychat.event.CommunityMessageCreatedEvent;
 import com.edunest.backend.modules.communitychat.repository.*;
@@ -78,6 +79,33 @@ public class CommunityChatServiceImpl implements CommunityChatService {
         return messageRepository.findThread(channelId, parent.getId(),
                         PageRequest.of(Math.max(0, page), boundedSize(size)))
                 .map(this::response);
+    }
+
+    @Override
+    public Page<CommunityMemberResponse> members(Long userId, Long channelId, int page, int size) {
+        CommunityChannel channel = authorize(userId, channelId);
+        UserAcademicProfile actorProfile = profileRepository.findByUserIdAndActiveTrue(userId)
+                .orElseThrow(() -> new AccessDeniedException("Active academic profile required"));
+        Pageable pageable = PageRequest.of(Math.max(0, page), boundedSize(size));
+
+        Page<UserAcademicProfile> profiles;
+        if (channel.getChannelType() == CommunityChannelType.UNIVERSITY_BRANCH) {
+            profiles = profileRepository.findByUniversity_IdAndBranch_IdAndActiveTrue(
+                    actorProfile.getUniversity().getId(), actorProfile.getBranch().getId(), pageable);
+        } else if (channel.getChannelType() == CommunityChannelType.BRANCH) {
+            profiles = profileRepository.findByCollege_IdAndBranch_IdAndActiveTrue(
+                    actorProfile.getCollege().getId(), actorProfile.getBranch().getId(), pageable);
+        } else {
+            throw new AccessDeniedException("Members are only available for your two assigned groups");
+        }
+
+        return profiles.map(profile -> CommunityMemberResponse.builder()
+                .userId(profile.getUser().getId())
+                .fullName(profile.getUser().getFullName())
+                .branchName(profile.getBranch().getName())
+                .semesterName(profile.getCurrentSemester().getName())
+                .currentYear(profile.getCurrentYear())
+                .build());
     }
 
     @Override
@@ -286,31 +314,37 @@ public class CommunityChatServiceImpl implements CommunityChatService {
             throw new BadRequestException("Channel is inactive");
         }
 
-        if (channel.getChannelType() == CommunityChannelType.UNIVERSITY) {
-            if (channel.getUniversity() == null || profile.getUniversity() == null
-                    || !channel.getUniversity().getId().equals(profile.getUniversity().getId())) {
-                throw new AccessDeniedException("You do not have access to this university community");
+        Long universityId = profile.getUniversity().getId();
+        Long collegeId = profile.getCollege().getId();
+        Long branchId = profile.getBranch().getId();
+
+        if (channel.getChannelType() == CommunityChannelType.UNIVERSITY_BRANCH) {
+            if (channel.getUniversity() == null || channel.getBranch() == null
+                    || !universityId.equals(channel.getUniversity().getId())
+                    || !branchId.equals(channel.getBranch().getId())
+                    || !universityId.equals(channel.getBranch().getUniversity().getId())) {
+                throw new AccessDeniedException("You do not have access to this university branch group");
             }
             return channel;
         }
 
-        College channelCollege = channel.getCollege();
-        if (channelCollege == null || profile.getCollege() == null
-                || !channelCollege.getId().equals(profile.getCollege().getId())) {
-            throw new AccessDeniedException("You do not have access to this college channel");
+        if (channel.getChannelType() == CommunityChannelType.BRANCH) {
+            if (channel.getCollege() == null || channel.getBranch() == null
+                    || !collegeId.equals(channel.getCollege().getId())
+                    || !branchId.equals(channel.getBranch().getId())
+                    || !universityId.equals(channel.getCollege().getUniversity().getId())
+                    || !universityId.equals(channel.getBranch().getUniversity().getId())) {
+                throw new AccessDeniedException("You do not have access to this college branch group");
+            }
+
+            if (!collegeBranchRepository.existsByCollege_IdAndBranch_IdAndActiveTrue(collegeId, branchId)) {
+                throw new AccessDeniedException("Branch is not active for this college");
+            }
+            return channel;
         }
 
-        if (channel.getChannelType() == CommunityChannelType.BRANCH
-                && (channel.getBranch() == null || !channel.getBranch().getId().equals(profile.getBranch().getId()))) {
-            throw new AccessDeniedException("You do not have access to this branch channel");
-        }
-
-        if (channel.getChannelType() == CommunityChannelType.BRANCH
-                && !collegeBranchRepository.existsByCollege_IdAndBranch_IdAndActiveTrue(
-                        profile.getCollege().getId(), profile.getBranch().getId())) {
-            throw new AccessDeniedException("Branch is not active for this college");
-        }
-        return channel;
+        throw new AccessDeniedException(
+                "Only your university branch group and your college branch group are available");
     }
 
     private CommunityChannel channel(Long channelId) {

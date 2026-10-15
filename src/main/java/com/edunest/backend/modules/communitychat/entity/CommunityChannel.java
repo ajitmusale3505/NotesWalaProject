@@ -8,9 +8,12 @@ import lombok.*;
 
 @Entity
 @Table(name = "community_channels",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_community_channel_type_university",
-                columnNames = {"channel_type", "university_id"}),
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_community_uni_branch_channel",
+                        columnNames = {"channel_type", "university_id", "branch_id"}),
+                @UniqueConstraint(name = "uk_community_college_branch_channel",
+                        columnNames = {"channel_type", "college_id", "branch_id"})
+        },
         indexes = @Index(name = "idx_community_channel_type", columnList = "channel_type"))
 @Getter
 @Setter

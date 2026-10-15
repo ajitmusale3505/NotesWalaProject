@@ -1,8 +1,10 @@
 package com.edunest.backend.modules.communitychat.controller;
 
 import com.edunest.backend.common.response.ApiResponse;
-import com.edunest.backend.modules.communitychat.dto.request.*;
+import com.edunest.backend.modules.communitychat.dto.request.ReportMessageRequest;
+import com.edunest.backend.modules.communitychat.dto.request.SendMessageRequest;
 import com.edunest.backend.modules.communitychat.dto.response.CommunityAttachmentResponse;
+import com.edunest.backend.modules.communitychat.dto.response.CommunityMemberResponse;
 import com.edunest.backend.modules.communitychat.dto.response.CommunityMessageResponse;
 import com.edunest.backend.modules.communitychat.service.CommunityChatService;
 import com.edunest.backend.security.util.SecurityUtils;
@@ -32,6 +34,15 @@ public class CommunityChatController {
                 ? service.history(SecurityUtils.getCurrentUserId(), channelId, page, size)
                 : service.historyBefore(SecurityUtils.getCurrentUserId(), channelId, beforeId, size);
         return ok("Messages fetched successfully", messages);
+    }
+
+    @GetMapping("/{channelId}/members")
+    public ResponseEntity<ApiResponse<Page<CommunityMemberResponse>>> members(
+            @PathVariable Long channelId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "30") int size) {
+        return ok("Group members fetched successfully",
+                service.members(SecurityUtils.getCurrentUserId(), channelId, page, size));
     }
 
     @GetMapping("/{channelId}/pinned")

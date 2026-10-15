@@ -16,6 +16,31 @@ public interface CommunityChannelRepository extends JpaRepository<CommunityChann
     Optional<CommunityChannel> findByChannelTypeAndUniversity_Id(
             CommunityChannelType type, Long universityId);
 
+    @EntityGraph(attributePaths = {"university", "college", "branch"})
+    Optional<CommunityChannel> findByChannelTypeAndUniversity_IdAndBranch_Id(
+            CommunityChannelType type, Long universityId, Long branchId);
+
+    @Modifying
+    @Query(value = """
+        INSERT INTO community_channels (channel_type, college_id, branch_id, university_id, active)
+        VALUES ('UNIVERSITY_BRANCH', NULL, :branchId, :universityId, TRUE)
+        ON CONFLICT DO NOTHING
+        """, nativeQuery = true)
+    void insertUniversityBranchChannelIfAbsent(
+            @Param("universityId") Long universityId,
+            @Param("branchId") Long branchId);
+
+    @Modifying
+    @Query(value = """
+        INSERT INTO community_channels (channel_type, college_id, branch_id, university_id, active)
+        VALUES ('BRANCH', :collegeId, :branchId, NULL, TRUE)
+        ON CONFLICT DO NOTHING
+        """, nativeQuery = true)
+    void insertCollegeBranchChannelIfAbsent(
+            @Param("collegeId") Long collegeId,
+            @Param("branchId") Long branchId);
+
+    // Kept for legacy admin tooling; student authorization rejects UNIVERSITY-only rooms.
     @Modifying
     @Query(value = """
         INSERT INTO community_channels (channel_type, college_id, branch_id, university_id, active)

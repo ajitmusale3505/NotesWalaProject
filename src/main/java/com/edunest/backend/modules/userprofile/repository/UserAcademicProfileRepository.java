@@ -26,7 +26,19 @@ public interface UserAcademicProfileRepository extends JpaRepository<UserAcademi
     @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
     Page<UserAcademicProfile> findByUniversity_IdAndActiveTrue(Long universityId, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
+    Page<UserAcademicProfile> findByUniversity_IdAndBranch_IdAndActiveTrue(
+            Long universityId, Long branchId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "branch", "currentSemester"})
+    Page<UserAcademicProfile> findByCollege_IdAndBranch_IdAndActiveTrue(
+            Long collegeId, Long branchId, Pageable pageable);
+
     long countByUniversity_IdAndActiveTrue(Long universityId);
+
+    long countByUniversity_IdAndBranch_IdAndActiveTrue(Long universityId, Long branchId);
+
+    long countByCollege_IdAndBranch_IdAndActiveTrue(Long collegeId, Long branchId);
 
     @Query("""
             select p.user.id

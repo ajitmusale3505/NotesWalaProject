@@ -3,6 +3,7 @@ package com.edunest.backend.modules.communitychat.service;
 import com.edunest.backend.modules.communitychat.dto.request.ReportMessageRequest;
 import com.edunest.backend.modules.communitychat.dto.request.SendMessageRequest;
 import com.edunest.backend.modules.communitychat.dto.response.CommunityAttachmentResponse;
+import com.edunest.backend.modules.communitychat.dto.response.CommunityMemberResponse;
 import com.edunest.backend.modules.communitychat.dto.response.CommunityMessageResponse;
 import com.edunest.backend.modules.communitychat.entity.CommunityMessageReport;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ public interface CommunityChatService {
     Page<CommunityMessageResponse> history(Long userId, Long channelId, int page, int size);
     Page<CommunityMessageResponse> historyBefore(Long userId, Long channelId, Long beforeId, int size);
     Page<CommunityMessageResponse> thread(Long userId, Long channelId, Long messageId, int page, int size);
+    Page<CommunityMemberResponse> members(Long userId, Long channelId, int page, int size);
     CommunityMessageResponse pinned(Long userId, Long channelId);
     List<CommunityAttachmentResponse> attachments(Long userId, Long channelId, int limit);
     CommunityMessageResponse send(Long userId, Long channelId, SendMessageRequest request);
