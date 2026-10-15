@@ -179,7 +179,7 @@ public class CommunityChatServiceImpl implements CommunityChatService {
 
         CommunityMessage saved = messageRepository.save(message);
         CommunityMessageResponse result = response(saved);
-        eventPublisher.publishEvent(new CommunityMessageCreatedEvent(result));
+        eventPublisher.publishEvent(new CommunityMessageCreatedEvent(saved));
         return result;
     }
 

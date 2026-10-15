@@ -1,5 +1,5 @@
 package com.edunest.backend.modules.communitychat.event;
 
-import com.edunest.backend.modules.communitychat.dto.response.CommunityMessageResponse;
+import com.edunest.backend.modules.communitychat.entity.CommunityMessage;
 
-public record CommunityMessageCreatedEvent(CommunityMessageResponse message) {}
+public record CommunityMessageCreatedEvent(CommunityMessage message) {}
