@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 public class JwtStompInterceptor implements ChannelInterceptor {
 
     private static final Pattern COMMUNITY_DESTINATION =
-            Pattern.compile("^/topic/community/(\\d+)/(messages|typing)$");
+            Pattern.compile("^/topic/community/(\\d+)(?:/(messages|typing))?$");
 
     private final JwtService jwtService;
     private final CustomUserDetailsService users;
