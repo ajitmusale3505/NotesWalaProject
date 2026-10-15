@@ -6,6 +6,7 @@ import com.edunest.backend.security.principal.CustomUserDetails;
 import com.edunest.backend.security.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.*;
+import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.simp.stomp.*;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.security.access.AccessDeniedException;
