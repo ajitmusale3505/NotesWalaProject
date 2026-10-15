@@ -163,10 +163,10 @@ public class R2StorageServiceImpl implements StorageService {
         String safeFileName = fileName == null || fileName.isBlank()
                 ? key.substring(key.lastIndexOf('/') + 1)
                 : fileName.trim();
-        safeFileName = safeFileName.replace('\\r', '_')
-                .replace('\\n', '_')
+        safeFileName = safeFileName.replace('\r', '_')
+                .replace('\n', '_')
                 .replace('"', '_')
-                .replace('\\\\', '_')
+                .replace('\\', '_')
                 .replace('/', '_');
         if (safeFileName.isBlank()) {
             safeFileName = "download";
